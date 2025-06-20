@@ -7,7 +7,10 @@ import { moedas } from '../../data/gameData';
 import toast from 'react-hot-toast';
 
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { AppContainer, Title, CharacterSelectContainer, CharacterSlot, NewCharacterButton, DeleteButton, NewCharacterForm, PointsInput, CharacterInfo, StatusLabel } from './styles';
+import {
+    AppContainer, Title, CharacterSelectContainer, CharacterSlot, NewCharacterButton,
+    DeleteButton, NewCharacterForm, PointsInput, CharacterInfo, StatusLabel
+} from './styles';
 
 export const CharacterSelect = () => {
     const [characters, setCharacters] = useState([]);
@@ -18,17 +21,25 @@ export const CharacterSelect = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
+    // Efeito para buscar as fichas do Firestore em tempo real
     useEffect(() => {
         if (!currentUser) return;
         setLoading(true);
-        const q = query(collection(db, "characters"), where("ownerId", "==", currentUser.uid));
-        
+
+        // CORREÇÃO: A consulta agora filtra pelo array 'viewers',
+        // que é a mesma condição da nossa regra de segurança de leitura.
+        const q = query(collection(db, "characters"), where("viewers", "array-contains", currentUser.uid));
+
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const charactersData = [];
             querySnapshot.forEach((doc) => {
                 charactersData.push({ id: doc.id, ...doc.data() });
             });
             setCharacters(charactersData);
+            setLoading(false);
+        }, (error) => {
+            console.error("Erro ao buscar fichas: ", error);
+            toast.error("Não foi possível carregar suas fichas.");
             setLoading(false);
         });
 
@@ -39,24 +50,35 @@ export const CharacterSelect = () => {
         e.preventDefault();
         const newChar = {
             ownerId: currentUser.uid,
+            viewers: [currentUser.uid], // O criador é o primeiro e único a poder ver
             name: 'Novo Herói',
-            backstory: '', notes: '', isDead: false, 
-            money: { amount: 0, type: moedas[0] }, basePoints: parseInt(basePoints, 10) || 12,
-            level: 0, xp: { current: 0, target: 100, system: 'unit' },
+            backstory: '',
+            notes: '',
+            isDead: false,
+            money: { amount: 0, type: moedas[0] },
+            basePoints: parseInt(basePoints, 10) || 12,
+            level: 0,
+            xp: { current: 0, target: 100, system: 'unit' },
             inventorySettings: { system: 'attribute', attribute: 'poder', multiplier: 10, fixedMax: 50 },
-            archetype: null, archetypeChoices: {},
+            archetype: null,
+            archetypeChoices: {},
             attributes: { poder: 0, habilidade: 0, resistencia: 0 },
-            pv_current: 1, pm_current: 1, pa_current: 1,
-            skills: [], advantages: [], disadvantages: [], inventory: [],
+            pv_current: 1,
+            pm_current: 1,
+            pa_current: 1,
+            skills: [],
+            advantages: [],
+            disadvantages: [],
+            inventory: [],
         };
 
         try {
             const docRef = await addDoc(collection(db, "characters"), newChar);
-            toast.success("Nova ficha criada com bravura!");
-            // CORREÇÃO: Enviamos um estado na navegação para indicar que é uma ficha nova
+            toast.success("Nova ficha forjada com bravura!");
             navigate(`/sheet/${docRef.id}`, { state: { isNew: true } });
         } catch (error) {
-            toast.error("Erro ao criar nova ficha.");
+            toast.error("Erro ao forjar a nova ficha.");
+            console.error("Erro ao criar personagem: ", error);
         }
     };
 
@@ -67,6 +89,11 @@ export const CharacterSelect = () => {
 
     const confirmDeletion = async () => {
         if (showConfirmModal) {
+            // Garante que apenas o dono possa deletar
+            if (showConfirmModal.ownerId !== currentUser.uid) {
+                toast.error("Você não tem permissão para deletar esta ficha.");
+                return;
+            }
             try {
                 await deleteDoc(doc(db, "characters", showConfirmModal.id));
                 toast.success(`Ficha de "${showConfirmModal.name}" enviada para o além...`);
@@ -83,7 +110,13 @@ export const CharacterSelect = () => {
 
     return (
         <>
-            <ConfirmModal isOpen={!!showConfirmModal} onClose={() => setShowConfirmModal(null)} onConfirm={confirmDeletion} title="Confirmar Exclusão" message={`Você tem certeza que deseja apagar permanentemente a ficha de "${showConfirmModal?.name}"?`} />
+            <ConfirmModal
+                isOpen={!!showConfirmModal}
+                onClose={() => setShowConfirmModal(null)}
+                onConfirm={confirmDeletion}
+                title="Confirmar Exclusão"
+                message={`Você tem certeza que deseja apagar permanentemente a ficha de "${showConfirmModal?.name}"?`}
+            />
             <AppContainer>
                 <Title>Seus Heróis</Title>
                 <CharacterSelectContainer>
@@ -94,16 +127,29 @@ export const CharacterSelect = () => {
                                     <span>{char.name || 'Personagem sem nome'} (Nv. {char.level || 0})</span>
                                     {char.isDead && <StatusLabel>Morto 💀</StatusLabel>}
                                 </CharacterInfo>
-                                <DeleteButton onClick={(e) => handleDeleteClick(e, char)}>X</DeleteButton>
+                                {/* Só mostra o botão de deletar se o usuário for o dono */}
+                                {char.ownerId === currentUser.uid && (
+                                    <DeleteButton onClick={(e) => handleDeleteClick(e, char)}>X</DeleteButton>
+                                )}
                             </CharacterSlot>
                         ))
                     ) : (
                         <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center' }}>Nenhuma lenda foi forjada ainda. Crie uma nova abaixo!</p>
                     )}
                     <NewCharacterForm onSubmit={handleNewCharacter}>
-                        <label htmlFor="points" style={{textAlign: 'center', marginBottom: '0.5rem', fontWeight: '500'}}>Pontos Iniciais da Campanha</label>
-                        <PointsInput id="points" type="number" value={basePoints} onChange={(e) => setBasePoints(e.target.value)} min="0" />
-                        <NewCharacterButton type="submit">+ Criar Nova Ficha com {basePoints} Pontos</NewCharacterButton>
+                        <label htmlFor="points" style={{ textAlign: 'center', marginBottom: '0.5rem', fontWeight: '500' }}>
+                            Pontos Iniciais da Campanha
+                        </label>
+                        <PointsInput
+                            id="points"
+                            type="number"
+                            value={basePoints}
+                            onChange={(e) => setBasePoints(e.target.value)}
+                            min="0"
+                        />
+                        <NewCharacterButton type="submit">
+                            + Criar Nova Ficha com {basePoints} Pontos
+                        </NewCharacterButton>
                     </NewCharacterForm>
                 </CharacterSelectContainer>
             </AppContainer>

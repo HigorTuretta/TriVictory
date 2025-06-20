@@ -1,10 +1,8 @@
 import { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyle = createGlobalStyle`
-  /* Importa a fonte que estamos usando no projeto */
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap');
+  /* A linha de @import foi REMOVIDA daqui */
 
-  /* Reseta os estilos padrão do navegador */
   * {
     margin: 0;
     padding: 0;
@@ -13,14 +11,12 @@ export const GlobalStyle = createGlobalStyle`
 
   body {
     font-family: 'Inter', sans-serif;
-    /* Usa as variáveis do tema para definir as cores de fundo e de texto */
     background-color: ${({ theme }) => theme.background};
     color: ${({ theme }) => theme.textPrimary};
     overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
-
-  /* Estilos padrão para botões */
+  
   button {
     font-family: 'Inter', sans-serif;
     cursor: pointer;
@@ -31,7 +27,6 @@ export const GlobalStyle = createGlobalStyle`
     transition: all 0.2s ease-in-out;
   }
 
-  /* Estilos padrão para inputs */
   input, textarea, select {
     font-family: 'Inter', sans-serif;
     background-color: ${({ theme }) => theme.background};
@@ -48,7 +43,6 @@ export const GlobalStyle = createGlobalStyle`
     border-color: ${({ theme }) => theme.primary};
   }
 
-  /* Estilos da barra de rolagem */
   ::-webkit-scrollbar {
     width: 8px;
   }

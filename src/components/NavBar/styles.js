@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, NavLink as RouterNavLink } from "react-router-dom";
 
 export const NavContainer = styled.nav`
     width: 100%;
@@ -19,6 +19,33 @@ export const Logo = styled(Link)`
     font-weight: 900;
     color: ${({ theme }) => theme.primary};
     text-decoration: none;
+`;
+
+export const NavLinks = styled.div`
+    display: flex;
+    gap: 2rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+
+    @media (max-width: 768px) {
+        display: none; /* Esconde os links no mobile por simplicidade */
+    }
+`;
+
+export const NavLink = styled(RouterNavLink)`
+    font-weight: 500;
+    color: ${({ theme }) => theme.textSecondary};
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &.active {
+        color: ${({ theme }) => theme.primary};
+    }
+
+    &:hover {
+        color: ${({ theme }) => theme.primary};
+    }
 `;
 
 export const UserInfo = styled.div`

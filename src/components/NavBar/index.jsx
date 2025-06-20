@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { NavContainer, Logo, UserInfo, UserName, LogoutButton } from './styles';
+import { NavContainer, Logo, NavLinks, NavLink, UserInfo, UserName, LogoutButton } from './styles';
 import { FaSignOutAlt } from 'react-icons/fa';
 
 export const NavBar = () => {
@@ -22,6 +22,12 @@ export const NavBar = () => {
   return (
     <NavContainer>
         <Logo to="/">TriVictory</Logo>
+        
+        <NavLinks>
+            <NavLink to="/">Minhas Salas</NavLink>
+            <NavLink to="/characters">Meus Personagens</NavLink>
+        </NavLinks>
+
         {currentUser && (
             <UserInfo>
                 <span>Olá, <UserName>{currentUser.nickname || currentUser.displayName}</UserName></span>

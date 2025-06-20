@@ -24,7 +24,7 @@ export const LevelDisplay = styled.div`
 export const XPBar = styled.div`
   flex-grow: 1;
   height: 25px;
-  background-color: ${({ theme }) => theme.border};
+  background-color: #101014;
   border-radius: 25px;
   position: relative;
   overflow: hidden;
@@ -33,12 +33,8 @@ export const XPBar = styled.div`
 
 export const XPProgress = styled.div`
   height: 100%;
-  width: ${({ $progress }) => $progress}%;
-  background: linear-gradient(
-    90deg,
-    ${({ theme }) => theme.primary},
-    ${({ theme }) => theme.secondary}
-  );
+  width: ${props => props.$progress}%;
+  background: linear-gradient(90deg, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
   border-radius: 25px;
   transition: width 0.5s ease-in-out;
 `;
@@ -55,125 +51,111 @@ export const XPText = styled.span`
 `;
 
 export const ActionButtonsWrapper = styled.div`
-  display: flex;
-  gap: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    
+    button {
+        background-color: ${({ theme }) => theme.border};
+        color: ${({ theme }) => theme.textSecondary};
+        border-radius: 4px;
+        padding: 4px;
+        line-height: 0;
+        
+        &:hover {
+            color: ${({ theme }) => theme.textPrimary};
+        }
 
-  button {
-    background-color: ${({ theme }) => theme.border};
-    color: ${({ theme }) => theme.secondary};
-    border-radius: 4px;
-    padding: 4px;
-    line-height: 0;
-
-    &:hover {
-      color: ${({ theme }) => theme.textPrimary};
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            color: ${({ theme }) => theme.textSecondary};
+        }
     }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      color: ${({ theme }) => theme.secondary};
-    }
-  }
 `;
 
 export const AddXPButton = styled.button`
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: ${({ theme }) => theme.success};
-  color: white;
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: ${({ theme }) => theme.success};
+    color: white;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  &:disabled {
-    background-color: ${({ theme }) => theme.border};
-    cursor: not-allowed;
-  }
+    &:disabled {
+        background-color: ${({ theme }) => theme.border};
+        cursor: not-allowed;
+    }
 
-  &.remove {
-    background-color: ${({ theme }) => theme.error};
-  }
+    &.remove {
+        background-color: ${({ theme }) => theme.error};
+    }
+
+    &:hover:not(:disabled) {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px ${({ theme }) => theme.success};
+    }
+
+    &.remove:hover:not(:disabled) {
+        box-shadow: 0 0 10px ${({ theme }) => theme.error};
+    }
 `;
 
 export const AddXpForm = styled.form`
-  display: flex;
-  gap: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
 `;
 
 export const AddXpInput = styled.input`
-  width: 60px;
-  padding: 5px;
-  text-align: center;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 4px;
-  background-color: ${({ theme }) => theme.surface};
-  color: ${({ theme }) => theme.textPrimary};
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.primary};
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
-  }
+    width: 60px;
+    padding: 5px;
+    text-align: center;
 `;
 
 export const EditContainer = styled.div`
-  background-color: ${({ theme }) => theme.background};
-  padding: 1rem;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  height: 100%;
-  justify-content: center;
+    background-color: ${({ theme }) => theme.background};
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    justify-content: center;
 `;
 
 export const EditForm = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 `;
 
 export const EditLabel = styled.label`
-  color: ${({ theme }) => theme.secondary};
-  font-weight: 500;
-  flex-basis: 150px;
-  white-space: nowrap;
+    color: ${({ theme }) => theme.textSecondary};
+    font-weight: 500;
+    flex-basis: 150px;
+    white-space: nowrap;
 `;
 
 export const EditInput = styled.input`
-  flex-grow: 1;
-  padding: 0.5rem;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 4px;
-  background-color: ${({ theme }) => theme.surface};
-  color: ${({ theme }) => theme.textPrimary};
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.primary};
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
-  }
+    flex-grow: 1;
 `;
 
 export const RadioGroup = styled.div`
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-
-  label {
-    margin-right: 10px;
-    cursor: pointer;
-    color: ${({ theme }) => theme.textPrimary};
-  }
-
-  input[type='radio'] {
-    width: auto;
-    cursor: pointer;
-  }
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    
+    label {
+        margin-right: 10px;
+        cursor: pointer;
+    }
+    input[type="radio"] {
+        width: auto;
+        cursor: pointer;
+    }
 `;
