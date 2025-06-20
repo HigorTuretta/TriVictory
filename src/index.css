@@ -2,14 +2,14 @@
 
 :root {
   --color-background: #121217;
-  --color-surface: #1E1E26;
-  --color-primary: #8A4FFF;
+  --color-surface:   #1E1E26;
+  --color-primary:   #8A4FFF;
   --color-secondary: #00BCD4;
-  --color-text-primary: #EAEAEA;
+  --color-text-primary:   #EAEAEA;
   --color-text-secondary: #A0A0B0;
-  --color-border: #33333F;
-  --color-success: #4CAF50;
-  --color-error: #F44336;
+  --color-border:     #33333F;
+  --color-success:    #4CAF50;
+  --color-error:      #F44336;
 }
 
 * {
@@ -18,13 +18,18 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  max-width: 100vw;   /* impede estouro lateral */
+  overflow-x: hidden; /* evita scroll horizontal */
+}
+
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--color-background);
+  background: var(--color-background);
   color: var(--color-text-primary);
-  background-size: cover;
   background-attachment: fixed;
-  overflow-x: hidden; /* CORREÇÃO: Impede o scroll horizontal no mobile */
+  background-size: cover;
 }
 
 button {
@@ -37,35 +42,37 @@ button {
   transition: all 0.2s ease-in-out;
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   font-family: 'Inter', sans-serif;
-  background-color: var(--color-background);
+  background: var(--color-background);
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
   padding: 10px;
   border-radius: 4px;
   width: 100%;
+  max-width: 100%;     /* NOVO: evita extravasar no mobile */
 }
 
-input:focus, textarea:focus, select:focus {
-    outline: none;
-    border-color: var(--color-primary);
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
 }
 
-
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: var(--color-surface);
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--color-primary);
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: #a178ff;
 }

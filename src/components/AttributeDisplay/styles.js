@@ -89,16 +89,21 @@ export const CompactCard = styled.div`
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 0.75rem 1rem;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   flex: 1 1 calc(33.333% - 0.67rem);
   min-width: 250px;
 
   @media(max-width: 768px) {
     flex: 1 1 100%;
   }
+`;
+
+export const RowContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 `;
 
 export const ResourceBar = styled.div`
@@ -150,5 +155,60 @@ export const ResourceButton = styled.button`
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+`;
+
+export const ResourceLabel = styled.p`
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+export const ResourceHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-shadow: 0 0 3px rgba(0,0,0,0.4);
+`;
+
+export const ResourceIcon = styled.div`
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 1.5s infinite;
+
+  &.life {
+    color: #F44336;
+    animation-name: pulse-life;
+  }
+  &.mana {
+    color: #00BCD4;
+    animation-name: pulse-mana;
+  }
+  &.action {
+    color: #FFC107;
+    animation-name: pulse-action;
+  }
+
+  @keyframes pulse-life {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+  }
+  @keyframes pulse-mana {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.15); }
+  }
+  @keyframes pulse-action {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
   }
 `;
