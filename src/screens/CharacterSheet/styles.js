@@ -99,9 +99,9 @@ export const CharacterNameInput = styled.input`
 `;
 
 export const Section = styled.section`
-  /* Apenas um container sem margem para ser usado dentro dos grids */
+  width: 100%;
+  display: block;
 `;
-
 export const FinalizedSection = styled.div`
     margin-bottom: 2.5rem;
     padding: 1.5rem;
@@ -148,16 +148,10 @@ export const VisibilityButton = styled.button`
 `;
 
 export const HeaderPanel = styled.div`
-  display: grid;
-  grid-template-columns: 3fr 1fr;
-  gap: 2rem;
+  width: 100%;
   padding-bottom: 2rem;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: 2rem;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 export const SheetLayoutGrid = styled.div`

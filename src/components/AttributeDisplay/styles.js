@@ -2,12 +2,13 @@ import styled from 'styled-components';
 
 // --- Estilos para Modo Edição ---
 export const AttributeGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 1.5rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
 
   @media(max-width: 600px) {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 `;
 
@@ -21,6 +22,12 @@ export const AttributeCard = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  flex: 1 1 calc(33.333% - 1rem); /* 3 cards por linha com espaço */
+  min-width: 250px;
+
+  @media(max-width: 600px) {
+    flex: 1 1 100%;
+  }
 `;
 
 export const CardValue = styled.h3`
@@ -71,24 +78,27 @@ export const ControlButton = styled.button`
 
 // --- Estilos para Modo Jogo ---
 export const CompactWrapper = styled.div`
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-
-    @media(max-width: 768px) {
-        grid-template-columns: 1fr;
-    }
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
 `;
 
 export const CompactCard = styled.div`
-    background-color: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 1rem;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  flex: 1 1 calc(33.333% - 0.67rem);
+  min-width: 250px;
+
+  @media(max-width: 768px) {
+    flex: 1 1 100%;
+  }
 `;
 
 export const ResourceBar = styled.div`
@@ -120,25 +130,25 @@ export const ResourceText = styled.span`
 `;
 
 export const ResourceControls = styled.div`
-    display: flex;
-    gap: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
 `;
 
 export const ResourceButton = styled.button`
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    font-size: 1rem;
-    font-weight: bold;
-    background-color: var(--color-border);
-    color: var(--color-text-primary);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
