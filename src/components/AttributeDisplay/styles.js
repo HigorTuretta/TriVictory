@@ -2,13 +2,12 @@ import styled from 'styled-components';
 
 // --- Estilos para Modo Edição ---
 export const AttributeGrid = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  justify-content: space-between;
-  flex-wrap: wrap;
 
   @media(max-width: 600px) {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 `;
 
@@ -22,12 +21,6 @@ export const AttributeCard = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  flex: 1 1 calc(33.333% - 1rem); /* 3 cards por linha com espaço */
-  min-width: 250px;
-
-  @media(max-width: 600px) {
-    flex: 1 1 100%;
-  }
 `;
 
 export const CardValue = styled.h3`
@@ -51,6 +44,10 @@ export const CardResource = styled.p`
   color: var(--color-text-secondary);
   margin-bottom: 1rem;
   min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 `;
 
 export const ControlWrapper = styled.div`
@@ -78,32 +75,24 @@ export const ControlButton = styled.button`
 
 // --- Estilos para Modo Jogo ---
 export const CompactWrapper = styled.div`
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-  flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+
+    @media(max-width: 600px) {
+        grid-template-columns: 1fr;
+    }
 `;
 
 export const CompactCard = styled.div`
-  background-color: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1 1 calc(33.333% - 0.67rem);
-  min-width: 250px;
-
-  @media(max-width: 768px) {
-    flex: 1 1 100%;
-  }
-`;
-
-export const RowContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
 `;
 
 export const ResourceBar = styled.div`
@@ -135,80 +124,25 @@ export const ResourceText = styled.span`
 `;
 
 export const ResourceControls = styled.div`
-  display: flex;
-  gap: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
 `;
 
 export const ResourceButton = styled.button`
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  font-size: 1rem;
-  font-weight: bold;
-  background-color: var(--color-border);
-  color: var(--color-text-primary);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: var(--color-border);
+    color: var(--color-text-primary);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-export const ResourceLabel = styled.p`
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-export const ResourceHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.3rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  text-shadow: 0 0 3px rgba(0,0,0,0.4);
-`;
-
-export const ResourceIcon = styled.div`
-  font-size: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: pulse 1.5s infinite;
-
-  &.life {
-    color: #F44336;
-    animation-name: pulse-life;
-  }
-  &.mana {
-    color: #00BCD4;
-    animation-name: pulse-mana;
-  }
-  &.action {
-    color: #FFC107;
-    animation-name: pulse-action;
-  }
-
-  @keyframes pulse-life {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.7; }
-  }
-  @keyframes pulse-mana {
-    0%, 100% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(10deg) scale(1.15); }
-  }
-  @keyframes pulse-action {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-2px); }
-  }
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 `;

@@ -1,28 +1,21 @@
 import React from 'react';
 import {
-    CompactWrapper,
-    CompactCard,
-    ResourceBar,
-    ResourceProgress,
-    ResourceText,
-    ResourceControls,
-    ResourceButton,
-    ResourceHeader,
-    ResourceIcon,
-    RowContent
+    AttributeCard, AttributeGrid, CardValue, CardLabel, CardResource,
+    ControlWrapper, ControlButton,
+    CompactWrapper, CompactCard, ResourceBar, ResourceProgress, ResourceText, ResourceControls, ResourceButton
 } from './styles';
 import { FaHeart, FaStar, FaBolt, FaArrowUp } from 'react-icons/fa';
 
 export const AttributeDisplay = ({ attributes, resources, currentResources, onAttributeChange, onResourceChange, isEditing, isDead }) => {
-
+    
     const handleCurrentChange = (resourceKey, currentValue, amount, max) => {
-        if (isDead) return;
+        if(isDead) return;
         const newValue = Math.max(0, Math.min(max, currentValue + amount));
         onResourceChange(resourceKey, newValue);
     }
-
+    
     const handleSetToMax = (resourceKey, max) => {
-        if (isDead) return;
+        if(isDead) return;
         onResourceChange(resourceKey, max);
     }
 
@@ -64,64 +57,41 @@ export const AttributeDisplay = ({ attributes, resources, currentResources, onAt
     // --- MODO DE JOGO ---
     return (
         <CompactWrapper>
-            {/* VIDA */}
             <CompactCard>
-                <ResourceHeader>
-                    <ResourceIcon className="life"><FaHeart /></ResourceIcon>
-                    Pontos de Vida
-                </ResourceHeader>
-                <RowContent>
-                    <ResourceBar>
-                        <ResourceProgress $progress={(currentResources.pv_current / resources.pv) * 100} $color="var(--color-error)" />
-                        <ResourceText>{currentResources.pv_current} / {resources.pv}</ResourceText>
-                    </ResourceBar>
-                    <ResourceControls>
-                        <ResourceButton onClick={() => handleCurrentChange('pv_current', currentResources.pv_current, -1, resources.pv)} disabled={isDead}>-</ResourceButton>
-                        <ResourceButton onClick={() => handleCurrentChange('pv_current', currentResources.pv_current, 1, resources.pv)} disabled={isDead}>+</ResourceButton>
-                        <ResourceButton onClick={() => handleSetToMax('pv_current', resources.pv)} disabled={isDead}><FaArrowUp /></ResourceButton>
-                    </ResourceControls>
-                </RowContent>
-
+                <FaHeart color="#F44336" title="Pontos de Vida" />
+                <ResourceBar>
+                    <ResourceProgress $progress={(currentResources.pv_current / resources.pv) * 100} $color="var(--color-error)" />
+                    <ResourceText>{currentResources.pv_current} / {resources.pv}</ResourceText>
+                </ResourceBar>
+                <ResourceControls>
+                    <ResourceButton onClick={() => handleCurrentChange('pv_current', currentResources.pv_current, -1, resources.pv)} disabled={isDead}>-</ResourceButton>
+                    <ResourceButton onClick={() => handleCurrentChange('pv_current', currentResources.pv_current, 1, resources.pv)} disabled={isDead}>+</ResourceButton>
+                    <ResourceButton onClick={() => handleSetToMax('pv_current', resources.pv)} disabled={isDead} title="Restaurar Vida"><FaArrowUp /></ResourceButton>
+                </ResourceControls>
             </CompactCard>
-
-            {/* MANA */}
             <CompactCard>
-                <ResourceHeader>
-                    <ResourceIcon className="mana"><FaBolt /></ResourceIcon>
-                    Pontos de Mana
-                </ResourceHeader>
-                <RowContent>
-                    <ResourceBar>
-                        <ResourceProgress $progress={(currentResources.pm_current / resources.pm) * 100} $color="var(--color-secondary)" />
-                        <ResourceText>{currentResources.pm_current} / {resources.pm}</ResourceText>
-                    </ResourceBar>
-                    <ResourceControls>
-                        <ResourceButton onClick={() => handleCurrentChange('pm_current', currentResources.pm_current, -1, resources.pm)} disabled={isDead}>-</ResourceButton>
-                        <ResourceButton onClick={() => handleCurrentChange('pm_current', currentResources.pm_current, 1, resources.pm)} disabled={isDead}>+</ResourceButton>
-                        <ResourceButton onClick={() => handleSetToMax('pm_current', resources.pm)} disabled={isDead}><FaArrowUp /></ResourceButton>
-                    </ResourceControls>
-                </RowContent>
-
+                <FaBolt color="#00BCD4" title="Pontos de Mana" />
+                <ResourceBar>
+                    <ResourceProgress $progress={(currentResources.pm_current / resources.pm) * 100} $color="var(--color-secondary)" />
+                    <ResourceText>{currentResources.pm_current} / {resources.pm}</ResourceText>
+                </ResourceBar>
+                <ResourceControls>
+                    <ResourceButton onClick={() => handleCurrentChange('pm_current', currentResources.pm_current, -1, resources.pm)} disabled={isDead}>-</ResourceButton>
+                    <ResourceButton onClick={() => handleCurrentChange('pm_current', currentResources.pm_current, 1, resources.pm)} disabled={isDead}>+</ResourceButton>
+                    <ResourceButton onClick={() => handleSetToMax('pm_current', resources.pm)} disabled={isDead} title="Restaurar Mana"><FaArrowUp /></ResourceButton>
+                </ResourceControls>
             </CompactCard>
-
-            {/* AÇÃO */}
             <CompactCard>
-                <ResourceHeader>
-                    <ResourceIcon className="action"><FaStar /></ResourceIcon>
-                    Pontos de Ação
-                </ResourceHeader>
-                <RowContent>
-                    <ResourceBar>
-                        <ResourceProgress $progress={(currentResources.pa_current / resources.pa) * 100} $color="#FFC107" />
-                        <ResourceText>{currentResources.pa_current} / {resources.pa}</ResourceText>
-                    </ResourceBar>
-                    <ResourceControls>
-                        <ResourceButton onClick={() => handleCurrentChange('pa_current', currentResources.pa_current, -1, resources.pa)} disabled={isDead}>-</ResourceButton>
-                        <ResourceButton onClick={() => handleCurrentChange('pa_current', currentResources.pa_current, 1, resources.pa)} disabled={isDead}>+</ResourceButton>
-                        <ResourceButton onClick={() => handleSetToMax('pa_current', resources.pa)} disabled={isDead}><FaArrowUp /></ResourceButton>
-                    </ResourceControls>
-                </RowContent>
-
+                <FaStar color="#FFC107" title="Pontos de Ação" />
+                <ResourceBar>
+                    <ResourceProgress $progress={(currentResources.pa_current / resources.pa) * 100} $color="#FFC107" />
+                    <ResourceText>{currentResources.pa_current} / {resources.pa}</ResourceText>
+                </ResourceBar>
+                <ResourceControls>
+                    <ResourceButton onClick={() => handleCurrentChange('pa_current', currentResources.pa_current, -1, resources.pa)} disabled={isDead}>-</ResourceButton>
+                    <ResourceButton onClick={() => handleCurrentChange('pa_current', currentResources.pa_current, 1, resources.pa)} disabled={isDead}>+</ResourceButton>
+                    <ResourceButton onClick={() => handleSetToMax('pa_current', resources.pa)} disabled={isDead} title="Restaurar Ação"><FaArrowUp /></ResourceButton>
+                </ResourceControls>
             </CompactCard>
         </CompactWrapper>
     );
