@@ -23,7 +23,7 @@ import { CustomItemModal } from '../../components/CustomItemModal';
 import { MoneyTracker } from '../../components/MoneyTracker';
 
 // Dados e Animação
-import deathAnimation from '../../assets/lotties/deathAnimation.json'; 
+import deathAnimation from '../../assets/lotties/deathAnimation.json';
 
 // Estilos
 import {
@@ -78,7 +78,7 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
     const [choiceModal, setChoiceModal] = useState(null);
     const [confirmDeathModal, setConfirmDeathModal] = useState(false);
     const [confirmResurrectionModal, setConfirmResurrectionModal] = useState(false);
-    
+
     const debouncedUpdate = useCallback(_.debounce((id, data) => {
         if (!id) return;
         const charRef = doc(db, "characters", id);
@@ -91,9 +91,9 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
         const unsubscribe = onSnapshot(charRef, (doc) => {
             if (doc.exists()) {
                 const charData = doc.data();
-                if (charData.ownerId === currentUser.uid) {
+                // CORREÇÃO: A verificação agora é se o usuário está na lista de 'viewers'
+                if (charData.viewers && charData.viewers.includes(currentUser.uid)) {
                     setCharacter({ id: doc.id, ...charData });
-                    // A lógica inicial de `isEditing` foi movida para o useState
                 } else {
                     toast.error("Você não tem permissão para ver esta ficha.");
                     navigate('/');
@@ -106,7 +106,7 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
         });
         return () => unsubscribe();
     }, [characterId, currentUser.uid, navigate]);
-    
+
     useEffect(() => {
         if (!character) return;
         const { attributes, archetype, skills, advantages, disadvantages, basePoints } = character;
@@ -120,7 +120,7 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
         const totalWithDisadvantages = totalBasePoints - disadvantagesBonus;
         setPoints({ total: totalWithDisadvantages, used, remaining: totalWithDisadvantages - used });
     }, [character]);
-    
+
     useEffect(() => {
         if (!character) return;
         const archetype = character.archetype;
@@ -135,7 +135,7 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
 
     useEffect(() => {
         if (!character) return;
-        if(isEditing) {
+        if (isEditing) {
             const newMaxPv = (character.attributes.resistencia || 0) * 5 || 1;
             const newMaxPm = (character.attributes.habilidade || 0) * 5 || 1;
             const newMaxPa = character.attributes.poder || 1;
@@ -144,7 +144,7 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
             if ((character.pm_current || 0) > newMaxPm || character.pm_current === undefined) updates.pm_current = newMaxPm;
             if ((character.pa_current || 0) > newMaxPa || character.pa_current === undefined) updates.pa_current = newMaxPa;
             if (Object.keys(updates).length > 0) {
-                setCharacter(prev => ({...prev, ...updates}));
+                setCharacter(prev => ({ ...prev, ...updates }));
             }
         }
     }, [character?.attributes, isEditing]);
@@ -179,7 +179,7 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
         handleUpdate({ archetype: newArchetype, archetypeChoices: {}, advantages: advantagesList });
         if (!newArchetype) setChoiceModal(null);
     };
-    
+
     const handleMakeChoice = (choice, chosenItem, subOption = null) => {
         const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true };
         const listToUpdate = choice.tipo === 'vantagem' ? 'advantages' : 'disadvantages';
@@ -234,7 +234,7 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
     };
 
     if (loading || !character) {
-        return <div style={{textAlign: 'center', marginTop: '5rem'}}>Forjando a Lenda...</div>;
+        return <div style={{ textAlign: 'center', marginTop: '5rem' }}>Forjando a Lenda...</div>;
     }
 
     const { poder, habilidade, resistencia } = character.attributes;
@@ -252,20 +252,22 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
 
     const disabledItems = [...Object.values(character.archetypeChoices || {}).map(c => c.nome), ...(character.archetype?.vantagensGratuitas || [])];
 
+    const isOwner = currentUser.uid === character.ownerId;
+
     return (
         <SheetContainer $isDead={character.isDead}>
             <ConfirmModal isOpen={confirmDeathModal} onClose={() => setConfirmDeathModal(false)} onConfirm={handleDeathConfirm} title="Confirmar Morte do Personagem" message="Esta ação marcará o personagem como morto e irá desabilitar a maioria das interações. Tem certeza?" />
             <ConfirmModal isOpen={confirmResurrectionModal} onClose={() => setConfirmResurrectionModal(false)} onConfirm={handleResurrectionConfirm} title="Ressuscitar Personagem" message={`Deseja trazer ${character.name} de volta à vida? Seus Pontos de Vida serão totalmente restaurados.`} confirmButtonClass="resurrect" />
             {character.isDead && (<DeathAnimationOverlay><Lottie animationData={deathAnimation} loop={true} /></DeathAnimationOverlay>)}
-            {choiceModal && ( <Modal isOpen={!!choiceModal} onClose={() => setChoiceModal(null)}> <h3>{choiceModal.mensagem}</h3> <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}> {(() => { const sourceList = choiceModal.tipo === 'desvantagem' ? gameData.desvantagens : gameData.vantagens; const itemsToShow = sourceList.filter(item => (choiceModal.listaFiltro && choiceModal.listaFiltro.includes(item.nome)) || (choiceModal.nomeFiltro && choiceModal.nomeFiltro === item.nome) ); return itemsToShow.map(item => { if (item.opcoes) { return item.opcoes.map(opt => ( <ChoiceButton key={opt} onClick={() => handleMakeChoice(choiceModal, item, opt)}> {item.nome}: {opt} </ChoiceButton> )); } return ( <ChoiceButton key={item.nome} onClick={() => handleMakeChoice(choiceModal, item)}> Escolher {item.nome} </ChoiceButton> ) }) })()} </div> </Modal> )}
+            {choiceModal && (<Modal isOpen={!!choiceModal} onClose={() => setChoiceModal(null)}> <h3>{choiceModal.mensagem}</h3> <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}> {(() => { const sourceList = choiceModal.tipo === 'desvantagem' ? gameData.desvantagens : gameData.vantagens; const itemsToShow = sourceList.filter(item => (choiceModal.listaFiltro && choiceModal.listaFiltro.includes(item.nome)) || (choiceModal.nomeFiltro && choiceModal.nomeFiltro === item.nome)); return itemsToShow.map(item => { if (item.opcoes) { return item.opcoes.map(opt => (<ChoiceButton key={opt} onClick={() => handleMakeChoice(choiceModal, item, opt)}> {item.nome}: {opt} </ChoiceButton>)); } return (<ChoiceButton key={item.nome} onClick={() => handleMakeChoice(choiceModal, item)}> Escolher {item.nome} </ChoiceButton>) }) })()} </div> </Modal>)}
 
-            <BackButton onClick={() => navigate('/')}>← Voltar para Seleção</BackButton>
-            
+            <BackButton onClick={() => navigate(-1)}>← Voltar para Seleção</BackButton>
+
             <Header>
                 <CharacterNameInput type="text" value={character.name} onChange={(e) => handleUpdate({ name: e.target.value })} placeholder="Nome do Personagem" disabled={!isEditing || character.isDead} />
-                <PointTracker points={points} basePoints={character.basePoints || 12} />
+                {isOwner && <PointTracker points={points} basePoints={character.basePoints || 12} />}
             </Header>
-            
+
             <HeaderPanel>
                 <Section><SectionTitle>Atributos e Recursos</SectionTitle><AttributeDisplay attributes={character.attributes} resources={resources} currentResources={{ pv_current: character.pv_current, pm_current: character.pm_current, pa_current: character.pa_current }} onAttributeChange={handleAttributeChange} onResourceChange={handleResourceChange} isEditing={isEditing} isDead={character.isDead} /></Section>
             </HeaderPanel>
@@ -275,18 +277,18 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
                     <Section><SectionTitle>Dinheiro e Finanças</SectionTitle><MoneyTracker money={character.money || { amount: 0, type: { nome: 'Moedas de Ouro', sigla: 'MO' } }} onUpdate={(newMoney) => handleUpdate({ money: newMoney })} isEditing={isEditing} isDead={character.isDead} /></Section>
                     <Section><SectionTitle>Nível & XP</SectionTitle><LevelXPTracker level={character.level} xp={character.xp} isEditing={isEditing} onUpdate={handleUpdate} isDead={character.isDead} /></Section>
                     <ArchetypeSection character={character} gameData={gameData} isEditing={isEditing} handleArchetypeChange={handleArchetypeChange} goToArchetypeCreator={goToArchetypeCreator} />
-                    <Section><SectionTitle>Anotações de Jogo</SectionTitle><NotesTextarea placeholder='Anote informações da sessão, nomes de NPCs, pistas importantes...' value={character.notes || ''} onChange={(e) => handleUpdate({notes: e.target.value})} disabled={character.isDead}/></Section>
+                    <Section><SectionTitle>Anotações de Jogo</SectionTitle><NotesTextarea placeholder='Anote informações da sessão, nomes de NPCs, pistas importantes...' value={character.notes || ''} onChange={(e) => handleUpdate({ notes: e.target.value })} disabled={character.isDead} /></Section>
                 </LeftColumn>
 
                 <RightColumn>
-                     <Section style={{height: '100%'}}>
-                       <SectionTitle>Mochila</SectionTitle>
-                       {isEditing && (<InventorySettings settings={inventorySettings} onUpdate={(newSettings) => handleUpdate({ inventorySettings: newSettings })}/>)}
-                       <Mochila items={character.inventory || []} onUpdate={(inv) => handleUpdate({ inventory: inv })} capacity={carryingCapacity} totalWeight={totalWeight} isDead={character.isDead}/>
+                    <Section style={{ height: '100%' }}>
+                        <SectionTitle>Mochila</SectionTitle>
+                        {isEditing && (<InventorySettings settings={inventorySettings} onUpdate={(newSettings) => handleUpdate({ inventorySettings: newSettings })} />)}
+                        <Mochila items={character.inventory || []} onUpdate={(inv) => handleUpdate({ inventory: inv })} capacity={carryingCapacity} totalWeight={totalWeight} isDead={character.isDead} />
                     </Section>
                 </RightColumn>
             </SheetLayoutGrid>
-            
+
             <FooterPanel>
                 {isEditing ? (
                     <>
@@ -302,16 +304,18 @@ export const CharacterSheet = ({ gameData, onAddCustomItem, onUpdateCustomItem, 
                     </>
                 )}
                 <Section>
-                    <SectionHeader><SectionTitle style={{marginBottom: 0}}>História do Personagem</SectionTitle><VisibilityButton onClick={() => setIsBackstoryVisible(!isBackstoryVisible)}>{isBackstoryVisible ? <FaEyeSlash /> : <FaEye />}</VisibilityButton></SectionHeader>
-                    { (isEditing || isBackstoryVisible) && <BackstoryTextarea placeholder='Escreva a história, personalidade e objetivos do seu personagem aqui...' value={character.backstory || ''} onChange={(e) => handleUpdate({backstory: e.target.value})} readOnly={!isEditing} disabled={character.isDead} />}
+                    <SectionHeader><SectionTitle style={{ marginBottom: 0 }}>História do Personagem</SectionTitle><VisibilityButton onClick={() => setIsBackstoryVisible(!isBackstoryVisible)}>{isBackstoryVisible ? <FaEyeSlash /> : <FaEye />}</VisibilityButton></SectionHeader>
+                    {(isEditing || isBackstoryVisible) && <BackstoryTextarea placeholder='Escreva a história, personalidade e objetivos do seu personagem aqui...' value={character.backstory || ''} onChange={(e) => handleUpdate({ backstory: e.target.value })} readOnly={!isEditing} disabled={character.isDead} />}
                 </Section>
             </FooterPanel>
-            
-            <FloatingActionButton onClick={() => setIsEditing(!isEditing)} disabled={character.isDead} title={isEditing ? "Salvar e ir para Modo Jogo" : "Entrar no Modo Edição"}>
-                {isEditing ? <FaSave /> : <FaPencilAlt />}
-            </FloatingActionButton>
 
-            {!isEditing && (
+            {isOwner && (
+                <FloatingActionButton onClick={() => setIsEditing(!isEditing)} disabled={character.isDead} title={isEditing ? "Salvar e ir para Modo Jogo" : "Entrar no Modo Edição"}>
+                    {isEditing ? <FaSave /> : <FaPencilAlt />}
+                </FloatingActionButton>
+            )}
+
+            {!isEditing && isOwner && (
                 character.isDead ? (
                     <DeathButton className="resurrect" onClick={() => setConfirmResurrectionModal(true)}><FaHeartbeat /> Ressuscitar</DeathButton>
                 ) : (
