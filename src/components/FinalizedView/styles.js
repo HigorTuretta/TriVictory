@@ -1,4 +1,4 @@
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 
 export const ViewContainer = styled.div`
   display: flex;
@@ -7,32 +7,33 @@ export const ViewContainer = styled.div`
 `;
 
 export const Item = styled.div`
-  background-color: var(--color-surface);
+  background-color: ${({ theme }) => theme.surface};
   padding: 0.75rem 1rem;
   border-radius: 6px;
-  border-left: 3px solid var(--color-primary);
+  border-left: 3px solid ${({ theme }) => theme.primary};
   transition: all 0.2s ease-in-out;
-  cursor: pointer; /* Indica que o item é clicável */
+  cursor: pointer;
 
   &:hover {
-    background-color: #2a2a33; /* Um leve destaque no hover */
-    border-left-color: var(--color-secondary);
+    background-color: ${({ theme }) =>
+      theme.mode === 'dark' ? '#2a2a33' : '#e9e9ef'};
+    border-left-color: ${({ theme }) => theme.secondary};
   }
 `;
 
 export const ItemName = styled.strong`
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: ${({ theme }) => theme.textPrimary};
 `;
 
 export const ItemSubOption = styled.span`
-  color: var(--color-text-secondary);
+  color: ${({ theme }) => theme.secondary};
   margin-left: 0.5rem;
 `;
 
 export const HintText = styled.p`
-    font-size: 0.8rem;
-    color: var(--color-text-secondary);
-    margin-top: 1rem;
-    text-align: right;
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.secondary};
+  margin-top: 1rem;
+  text-align: right;
 `;
