@@ -117,10 +117,14 @@ export const DmControls = styled.div`
         padding: 10px;
         font-weight: bold;
         background-color: ${({ theme }) => theme.border};
-
+        color: ${({ theme }) => theme.textPrimary};
         &:last-child {
             background-color: ${({ theme }) => theme.primary};
-            color: white;
+            color: white
+        }
+
+        &:hover{
+            filter: brightness(.8);
         }
     }
 `;
