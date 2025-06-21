@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot, getDocs, collection, query, where, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -14,6 +14,8 @@ import {
     PlayerCard, PlayerInfo, PlayerName, CharacterName, LinkCharacterButton, GameArea,
     MasterDashboard, DashboardGrid
 } from './styles';
+import { TurnTracker } from '../../components/TurnTracker';
+import _ from 'lodash';
 
 export const GameRoom = () => {
     const { roomId } = useParams();
@@ -30,6 +32,12 @@ export const GameRoom = () => {
     const [isLinking, setIsLinking] = useState(false);
 
     const inviteLink = `${window.location.origin}/invite/${roomId}`;
+
+    // Função de atualização para o TurnTracker
+    const handleRoomUpdate = useCallback(_.debounce((update) => {
+        const roomRef = doc(db, "rooms", roomId);
+        updateDoc(roomRef, update);
+    }, 500), [roomId]);
 
     // Busca os dados da sala e dos jogadores
     useEffect(() => {
@@ -216,6 +224,11 @@ export const GameRoom = () => {
                                 )}
                             </MasterDashboard>
                         )}
+                        <TurnTracker 
+                            room={room} 
+                            linkedCharactersData={linkedCharactersData}
+                            onUpdate={handleRoomUpdate}
+                        />
                         <div style={{ marginTop: '2rem', padding: '2rem', border: '1px dashed var(--color-text-secondary)', borderRadius: '8px', textAlign: 'center', color: 'var(--color-text-secondary)'}}>
                             <h2>Mesa de Jogo</h2>
                             <p>(Em breve: Controle de Turnos, Rolador de Dados e mais!)</p>

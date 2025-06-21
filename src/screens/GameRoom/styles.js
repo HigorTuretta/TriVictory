@@ -28,6 +28,8 @@ export const RoomTitle = styled.h1`
     margin-bottom: 0.5rem;
 `;
 
+export const ActionButton = styled.button``
+
 export const MasterInfo = styled.p`
     font-size: 1rem;
     color: ${({ theme }) => theme.textSecondary};

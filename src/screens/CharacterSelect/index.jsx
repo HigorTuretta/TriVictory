@@ -7,9 +7,9 @@ import { moedas } from '../../data/gameData';
 import toast from 'react-hot-toast';
 
 import { ConfirmModal } from '../../components/ConfirmModal';
-import {
-    AppContainer, Title, CharacterSelectContainer, CharacterSlot, NewCharacterButton,
-    DeleteButton, NewCharacterForm, PointsInput, CharacterInfo, StatusLabel
+import { 
+    AppContainer, Title, CharacterSelectContainer, CharacterSlot, NewCharacterButton, 
+    DeleteButton, NewCharacterForm, PointsInput, CharacterInfo, StatusLabel 
 } from './styles';
 
 export const CharacterSelect = () => {
@@ -21,15 +21,14 @@ export const CharacterSelect = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
-    // Efeito para buscar as fichas do Firestore em tempo real
+    // Efeito para buscar as fichas do Firestore
     useEffect(() => {
         if (!currentUser) return;
-        setLoading(true);
-
-        // CORREÇÃO: A consulta agora filtra pelo array 'viewers',
-        // que é a mesma condição da nossa regra de segurança de leitura.
-        const q = query(collection(db, "characters"), where("viewers", "array-contains", currentUser.uid));
-
+        setLoading(true);      
+        // A consulta agora filtra pelo 'ownerId', garantindo que apenas as fichas
+        // do próprio usuário sejam exibidas nesta tela.
+        const q = query(collection(db, "characters"), where("ownerId", "==", currentUser.uid));
+        
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const charactersData = [];
             querySnapshot.forEach((doc) => {
@@ -50,25 +49,25 @@ export const CharacterSelect = () => {
         e.preventDefault();
         const newChar = {
             ownerId: currentUser.uid,
-            viewers: [currentUser.uid], // O criador é o primeiro e único a poder ver
+            viewers: [currentUser.uid],
             name: 'Novo Herói',
-            backstory: '',
-            notes: '',
-            isDead: false,
+            backstory: '', 
+            notes: '', 
+            isDead: false, 
             money: { amount: 0, type: moedas[0] },
             basePoints: parseInt(basePoints, 10) || 12,
             level: 0,
             xp: { current: 0, target: 100, system: 'unit' },
             inventorySettings: { system: 'attribute', attribute: 'poder', multiplier: 10, fixedMax: 50 },
-            archetype: null,
+            archetype: null, 
             archetypeChoices: {},
             attributes: { poder: 0, habilidade: 0, resistencia: 0 },
-            pv_current: 1,
+            pv_current: 1, 
             pm_current: 1,
             pa_current: 1,
-            skills: [],
-            advantages: [],
-            disadvantages: [],
+            skills: [], 
+            advantages: [], 
+            disadvantages: [], 
             inventory: [],
         };
 
@@ -89,7 +88,6 @@ export const CharacterSelect = () => {
 
     const confirmDeletion = async () => {
         if (showConfirmModal) {
-            // Garante que apenas o dono possa deletar
             if (showConfirmModal.ownerId !== currentUser.uid) {
                 toast.error("Você não tem permissão para deletar esta ficha.");
                 return;
@@ -105,20 +103,20 @@ export const CharacterSelect = () => {
     };
 
     if (loading) {
-        return <AppContainer><Title>Forjando as Lendas...</Title></AppContainer>;
+        return <AppContainer><Title>Buscando suas Lendas...</Title></AppContainer>;
     }
 
     return (
         <>
-            <ConfirmModal
-                isOpen={!!showConfirmModal}
-                onClose={() => setShowConfirmModal(null)}
-                onConfirm={confirmDeletion}
-                title="Confirmar Exclusão"
-                message={`Você tem certeza que deseja apagar permanentemente a ficha de "${showConfirmModal?.name}"?`}
+            <ConfirmModal 
+                isOpen={!!showConfirmModal} 
+                onClose={() => setShowConfirmModal(null)} 
+                onConfirm={confirmDeletion} 
+                title="Confirmar Exclusão" 
+                message={`Você tem certeza que deseja apagar permanentemente a ficha de "${showConfirmModal?.name}"?`} 
             />
             <AppContainer>
-                <Title>Seus Heróis</Title>
+                <Title>Meus Personagens</Title>
                 <CharacterSelectContainer>
                     {characters.length > 0 ? (
                         characters.map((char) => (
@@ -127,20 +125,17 @@ export const CharacterSelect = () => {
                                     <span>{char.name || 'Personagem sem nome'} (Nv. {char.level || 0})</span>
                                     {char.isDead && <StatusLabel>Morto 💀</StatusLabel>}
                                 </CharacterInfo>
-                                {/* Só mostra o botão de deletar se o usuário for o dono */}
-                                {char.ownerId === currentUser.uid && (
-                                    <DeleteButton onClick={(e) => handleDeleteClick(e, char)}>X</DeleteButton>
-                                )}
+                                <DeleteButton onClick={(e) => handleDeleteClick(e, char)}>X</DeleteButton>
                             </CharacterSlot>
                         ))
                     ) : (
                         <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center' }}>Nenhuma lenda foi forjada ainda. Crie uma nova abaixo!</p>
                     )}
                     <NewCharacterForm onSubmit={handleNewCharacter}>
-                        <label htmlFor="points" style={{ textAlign: 'center', marginBottom: '0.5rem', fontWeight: '500' }}>
+                        <label htmlFor="points" style={{textAlign: 'center', marginBottom: '0.5rem', fontWeight: '500'}}>
                             Pontos Iniciais da Campanha
                         </label>
-                        <PointsInput
+                        <PointsInput 
                             id="points"
                             type="number"
                             value={basePoints}
