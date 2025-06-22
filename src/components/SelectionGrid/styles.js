@@ -62,8 +62,8 @@ export const ItemCard = styled.div`
   transition: all 0.2s ease-in-out;
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
   position: relative;
-  border-left: 4px solid
-    ${({ $isCustom, theme }) => ($isCustom ? theme.success : 'transparent')};
+ border-left: 3px solid ${({ $isCustom, $isLocked, theme }) => 
+    $isLocked ? theme.primary : ($isCustom ? theme.success : 'transparent')};
 
   &:hover {
     transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(-3px)')};
@@ -97,8 +97,11 @@ export const SelectedItemsContainer = styled.div`
 `;
 
 export const SelectedItem = styled.div`
-  background-color: ${({ $fromArchetype, theme }) =>
-    $fromArchetype ? theme.secondary : theme.primary};
+  background-color: ${({ $fromArchetype, $isLocked, theme }) => {
+    if ($isLocked) return theme.primary;
+    if ($fromArchetype) return theme.secondary;
+    return '#555'; 
+  }};
   color: white;
   padding: 5px 10px;
   border-radius: 15px;
@@ -106,6 +109,22 @@ export const SelectedItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+`;
+export const CounterBadge = styled.div`
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: ${({ theme }) => theme.secondary};
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid ${({ theme }) => theme.surface};
 `;
 
 export const RemoveButton = styled.button`

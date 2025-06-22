@@ -46,7 +46,9 @@ const itemMatches = (item, reqName) => {
   }
   return false;
 };
-const hasReqItem = (arr, reqName) => arr.some((i) => itemMatches(i, reqName));
+// CORREÇÃO APLICADA AQUI
+const hasReqItem = (arr, reqName) => (arr || []).some((i) => itemMatches(i, reqName));
+
 const checkReq = (char, req) => {
   switch (req.tipo) {
     case 'pericia': return hasReqItem(char.skills, req.nome);
@@ -86,7 +88,7 @@ export const CharacterSheet = ({
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(location.state?.isNew || false);
   const [isBackstoryVisible, setIsBackstoryVisible] = useState(false);
-  const [points, setPoints] = useState({ total: 10, used: 0, remaining: 10 });
+  const [points, setPoints] = useState({ total: 12, used: 0, remaining: 12 });
   const [unmetClassReqs, setUnmetClassReqs] = useState([]);
   const [confirmDeathModal, setConfirmDeathModal] = useState(false);
   const [confirmResModal, setConfirmResModal] = useState(false);
@@ -129,15 +131,38 @@ export const CharacterSheet = ({
     };
   }, [character]);
 
-  const disabledItems = useMemo(() => {
-    if (!character) return [];
-    const kitReqs = character.kits?.flatMap(k => k.exigencias || []) || [];
-    const kitFreebies = character.kits?.flatMap(k => k.vantagensGratuitas || []) || [];
-    return [
-      ...(character.archetype?.vantagensGratuitas || []),
-      ...kitFreebies,
-      ...kitReqs.filter((r) => ['vantagem', 'pericia', 'desvantagem'].includes(r.tipo)).map((r) => r.nome)
+  const lockedItems = useMemo(() => {
+    if (!character) return new Set();
+    const locked = new Set();
+    (character.archetype?.vantagensGratuitas || []).forEach(name => locked.add(name));
+    (character.kits || []).forEach(kit => {
+      (kit.vantagensGratuitas || []).forEach(name => locked.add(name));
+      (kit.exigencias || []).forEach(req => {
+        if (['vantagem', 'pericia', 'desvantagem'].includes(req.tipo)) {
+          locked.add(req.nome);
+        } else if (req.tipo === 'ou') {
+          const foundOption = req.opcoes.find(opt => hasReqItem(character[opt.tipo === 'pericia' ? 'skills' : (opt.tipo === 'vantagem' ? 'advantages' : 'disadvantages')], opt.nome));
+          if (foundOption) {
+            locked.add(foundOption.nome);
+          }
+        }
+      });
+    });
+    return locked;
+  }, [character]);
+
+  const itemCounts = useMemo(() => {
+    if (!character) return {};
+    const counts = {};
+    const allItems = [
+      ...(character.skills || []),
+      ...(character.advantages || []),
+      ...(character.disadvantages || [])
     ];
+    allItems.forEach(item => {
+      counts[item.nome] = (counts[item.nome] || 0) + 1;
+    });
+    return counts;
   }, [character]);
 
   const handleUpdate = (patch) => {
@@ -151,16 +176,12 @@ export const CharacterSheet = ({
   const handleConsume = (itemName) => {
     const inventory = [...(character.inventory || [])];
     const itemIndex = inventory.findIndex(i => i.name === itemName && i.quantity > 0);
-
     if (itemIndex === -1) {
       toast.error(`Você não tem mais "${itemName}".`);
       return;
     }
-
     const updates = {};
     let toastMessage = `"${itemName}" consumido.`;
-
-    // 1. APLICA O EFEITO NO OBJETO DE ATUALIZAÇÃO
     switch (itemName) {
       case 'Cura menor':
         updates.pv_current = Math.min(resources.pv, (character.pv_current || 0) + 5);
@@ -183,12 +204,8 @@ export const CharacterSheet = ({
         toastMessage += " +1 PA recuperado.";
         break;
     }
-
-    // 2. ATUALIZA O INVENTÁRIO NO MESMO OBJETO DE ATUALIZAÇÃO
     inventory[itemIndex].quantity -= 1;
     updates.inventory = inventory.filter(i => i.quantity > 0);
-
-    // 3. CHAMA handleUpdate APENAS UMA VEZ COM TODAS AS MUDANÇAS
     handleUpdate(updates);
     toast.success(toastMessage);
   };
@@ -196,7 +213,25 @@ export const CharacterSheet = ({
   const handleAttributeChange = (attr, val) => { handleUpdate({ attributes: { ...character.attributes, [attr]: Math.max(0, Math.min(5, val)) } }); };
   const handleResourceChange = (key, val) => handleUpdate({ [key]: val });
   const addItem = (list, item, sub = null) => { if (character[list]?.some((i) => i.nome === item.nome && !item.repetivel)) { toast.error(`${item.nome} já foi adicionado(a).`); return; } handleUpdate({ [list]: [...(character[list] || []), { ...item, id: uuidv4(), subOption: sub }] }); onAddCustomItem(item); };
-  const removeItem = (list, id) => { const tgt = character[list].find((i) => i.id === id); if (!tgt) return; const isRequiredByKit = character.kits?.some(k => k.exigencias?.some(r => itemMatches(tgt, r.nome))); if (tgt.fromArchetype || tgt.fromClass || isRequiredByKit) { toast.error('Item obrigatório pelo Arquétipo/Kit.'); return; } handleUpdate({ [list]: character[list].filter((i) => i.id !== id) }); onDeleteCustomItem(tgt); };
+  const removeItem = (list, id) => {
+    const tgt = character[list].find((i) => i.id === id);
+    if (!tgt) return;
+
+    // 1. Nova verificação: Se o item veio de uma escolha de arquétipo, bloqueia a remoção.
+    if (tgt.fromArchetype) {
+      toast.error('Escolha obrigatória do Arquétipo não pode ser removida.');
+      return;
+    }
+
+    // 2. A verificação existente para itens de Kit continua válida.
+    if (lockedItems.has(tgt.nome)) {
+      toast.error('Item obrigatório por um Kit não pode ser removido.');
+      return;
+    }
+
+    handleUpdate({ [list]: character[list].filter((i) => i.id !== id) });
+    onDeleteCustomItem(tgt);
+  };
   const handleArchetypeChange = (e) => { const nome = e.target.value; const novo = gameData.arquetipos.find((a) => a.nome === nome) || null; const adv = (character.advantages || []).filter((v) => !v.fromArchetype); novo?.vantagensGratuitas?.forEach((vNome) => { if (!hasItem(adv, vNome)) { const v = findAdv(vNome); if (v) adv.push({ ...v, id: uuidv4(), fromArchetype: true }); } }); handleUpdate({ archetype: novo, archetypeChoices: {}, advantages: adv }); if (!novo?.escolhas) setChoiceModal(null); };
   useEffect(() => { if (!character) return; const archetype = character.archetype; if (isEditing && archetype && archetype.escolhas) { const hasPendingChoices = archetype.escolhas.some(choice => !(character.archetypeChoices && character.archetypeChoices[choice.id])); if (hasPendingChoices && !choiceModal) { const nextChoice = archetype.escolhas.find(choice => !(character.archetypeChoices && character.archetypeChoices[choice.id])); if (nextChoice) setChoiceModal(nextChoice); } } }, [character, isEditing, choiceModal]);
   const handleMakeChoice = (choice, chosenItem, subOption = null) => { const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true }; const listToUpdate = choice.tipo === 'vantagem' ? 'advantages' : 'disadvantages'; const updates = { archetypeChoices: { ...character.archetypeChoices, [choice.id]: newItem }, [listToUpdate]: [...(character[listToUpdate] || []), newItem] }; handleUpdate(updates); toast.success(`${newItem.nome}${subOption ? ` (${subOption})` : ''} definido como escolha de arquétipo!`); setChoiceModal(null); };
@@ -235,13 +270,14 @@ export const CharacterSheet = ({
           character={character}
           isEditing={isEditing}
           handleUpdate={handleUpdate}
-          onConsume={handleConsume} 
+          onConsume={handleConsume}
         />
       </SheetLayoutGrid>
       <SheetFooter
         isEditing={isEditing}
         character={character}
-        disabledItems={disabledItems}
+        lockedItems={lockedItems}
+        itemCounts={itemCounts}
         gameData={gameData}
         addItem={addItem}
         removeItem={removeItem}

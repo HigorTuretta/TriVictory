@@ -7,7 +7,7 @@ export const SettingsContainer = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    
+    margin-bottom: 1rem;
     h4 {
         color: var(--color-secondary);
         margin-bottom: 0.5rem;

@@ -26,17 +26,20 @@ export const SheetFooter = ({
   isBackstoryVisible,
   setIsBackstoryVisible,
   handleUpdate,
+  lockedItems,
+  itemCounts
 }) => {
   return (
     <FooterPanel>
       {isEditing ? (
         <>
-          <FinalizedSection>
+ <FinalizedSection>
             <SectionTitle>Perícias</SectionTitle>
             <SelectionGrid
               items={gameData.pericias}
               selectedItems={character.skills || []}
-              disabledItems={disabledItems}
+              lockedItems={lockedItems}
+              itemCounts={itemCounts}
               onAddItem={(i, sub) => addItem('skills', i, sub)}
               onRemoveItem={(id) => removeItem('skills', id)}
               listName='Perícias'
@@ -49,7 +52,8 @@ export const SheetFooter = ({
             <SelectionGrid
               items={gameData.vantagens}
               selectedItems={character.advantages || []}
-              disabledItems={disabledItems}
+              lockedItems={lockedItems}
+              itemCounts={itemCounts}
               onAddItem={(i, sub) => addItem('advantages', i, sub)}
               onRemoveItem={(id) => removeItem('advantages', id)}
               listName='Vantagens'
@@ -62,7 +66,8 @@ export const SheetFooter = ({
             <SelectionGrid
               items={gameData.desvantagens}
               selectedItems={character.disadvantages || []}
-              disabledItems={disabledItems}
+              lockedItems={lockedItems}
+              itemCounts={itemCounts}
               onAddItem={(i, sub) => addItem('disadvantages', i, sub)}
               onRemoveItem={(id) => removeItem('disadvantages', id)}
               listName='Desvantagens'
