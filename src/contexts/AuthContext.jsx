@@ -7,7 +7,7 @@ import {
     signOut,
     onAuthStateChanged,
     updateProfile,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config'; // Importa a configuração do Firebase
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     const register = async (nickname, email, password) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: nickname });
-        
+
         const userDocRef = doc(db, "users", userCredential.user.uid);
         await setDoc(userDocRef, {
             uid: userCredential.user.uid,
@@ -45,8 +45,20 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Função de Login com Email/Senha
-    const login = (email, password) => {
-        return signInWithEmailAndPassword(auth, email, password);
+    const login = async (email, password) => {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            setCurrentUser({ ...user, ...userDoc.data() });
+        } else {
+            setCurrentUser(user);
+        }
+
+        return userCredential;
     };
 
     // Função de Login com Google
@@ -65,8 +77,12 @@ export const AuthProvider = ({ children }) => {
                 email: user.email,
             });
         }
+
+        // opcional: garantir consistência do currentUser
+        const finalDoc = await getDoc(userDocRef);
+        setCurrentUser({ ...user, ...finalDoc.data() });
     };
-    
+
     // Função para recuperar senha
     const forgotPassword = (email) => {
         return sendPasswordResetEmail(auth, email);

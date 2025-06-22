@@ -1,36 +1,49 @@
 import React, { useState } from 'react';
-import toast from 'react-hot-toast';
 import { useAuth } from '../../../contexts/AuthContext';
-import { AuthContainer, AuthBox, Title, Form, Input, Button, LinkText, AuthLink, Subtitle } from '../../../styles/Auth';
+import toast from 'react-hot-toast';
+import {
+  AuthContainer, LeftPane, RightPane, Title, Subtitle,
+  Form, Input, Button, LinkText, AuthLink
+} from '../../../styles/Auth';
+import Logo from '../../../assets/LogoColor.png';
 
 export const ForgotPassword = () => {
-    const [email, setEmail] = useState('');
-    const [loading, setLoading] = useState(false);
-    const { forgotPassword } = useAuth();
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { forgotPassword } = useAuth();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await forgotPassword(email);
-            toast.success('Pombo-correio enviado! Verifique seu email para as instruções.');
-        } catch (error) {
-            toast.error('Falha ao enviar email de recuperação.');
-        }
-        setLoading(false);
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await forgotPassword(email);
+      toast.success("Pombo-correio enviado! Verifique seu email.");
+    } catch (error) {
+      toast.error("Erro ao enviar email de recuperação.");
+    }
+    setLoading(false);
+  };
 
-    return (
-        <AuthContainer>
-            <AuthBox>
-                <Title>Amnésia?</Title>
-                <Subtitle>Enviaremos um pombo-correio para recuperar sua palavra secreta.</Subtitle>
-                <Form onSubmit={handleSubmit}>
-                    <Input type="email" placeholder="Seu pergaminho eletrônico (email)" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                    <Button type="submit" disabled={loading}>{loading ? 'Invocando...' : 'Enviar Link de Recuperação'}</Button>
-                </Form>
-                <LinkText>Lembrou-se do caminho? <AuthLink to="/login">Voltar para a taverna.</AuthLink></LinkText>
-            </AuthBox>
-        </AuthContainer>
-    );
+  return (
+    <AuthContainer>
+      <LeftPane>
+        <img src={Logo} alt="Logo TriVictory" />
+        <h1>TriVictory</h1>
+        <p>Até os maiores heróis esquecem senhas. Recupere seu acesso com um simples feitiço.</p>
+      </LeftPane>
+      <RightPane
+        initial={{ opacity: 0, x: 40 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Title>Esqueceu sua senha?</Title>
+        <Subtitle>Informe seu email para recuperar o acesso.</Subtitle>
+        <Form onSubmit={handleSubmit}>
+          <Input type="email" placeholder="Email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Button type="submit" disabled={loading}>{loading ? 'Enviando...' : 'Enviar Link de Recuperação'}</Button>
+        </Form>
+        <LinkText>Lembrou? <AuthLink to="/login">Voltar para a Taverna</AuthLink></LinkText>
+      </RightPane>
+    </AuthContainer>
+  );
 };
