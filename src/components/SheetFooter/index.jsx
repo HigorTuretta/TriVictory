@@ -6,34 +6,27 @@ import { FinalizedView } from '../FinalizedView';
 
 // Ícones e Estilos
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { 
-  FooterPanel, 
-  FinalizedSection, 
-  Section, 
-  SectionTitle, 
-  SectionHeader, 
-  VisibilityButton, 
-  BackstoryTextarea 
+import {
+  FooterPanel,
+  FinalizedSection,
+  Section,
+  SectionTitle,
+  SectionHeader,
+  VisibilityButton,
+  BackstoryTextarea
 } from './styles';
+import { TechniqueSelectionGrid } from '../TechniqueSelectionGrid';
 
 export const SheetFooter = ({
-  isEditing,
-  character,
-  disabledItems,
-  gameData,
-  addItem,
-  removeItem,
-  isBackstoryVisible,
-  setIsBackstoryVisible,
-  handleUpdate,
-  lockedItems,
-  itemCounts
+  isEditing, character, lockedItems, itemCounts, gameData,
+  addItem, removeItem,
+  onAddTechnique, onRemoveTechnique, checkTechniqueRequirements, isBackstoryVisible
 }) => {
   return (
     <FooterPanel>
       {isEditing ? (
         <>
- <FinalizedSection>
+          <FinalizedSection>
             <SectionTitle>Perícias</SectionTitle>
             <SelectionGrid
               items={gameData.pericias}
@@ -74,6 +67,17 @@ export const SheetFooter = ({
               isEditing
             />
           </FinalizedSection>
+
+           <FinalizedSection>
+            <SectionTitle>Técnicas</SectionTitle>
+           <TechniqueSelectionGrid
+              techniques={gameData.tecnicas}
+              selectedTechniques={character.techniques || []} 
+              onAddTechnique={onAddTechnique}
+              onRemoveTechnique={onRemoveTechnique} 
+              checkRequirements={checkTechniqueRequirements}
+            />
+          </FinalizedSection>
         </>
       ) : (
         <>
@@ -88,6 +92,10 @@ export const SheetFooter = ({
           <FinalizedSection>
             <SectionTitle>Desvantagens</SectionTitle>
             <FinalizedView items={character.disadvantages || []} />
+          </FinalizedSection>
+           <FinalizedSection>
+            <h4>Técnicas Adquiridas</h4>
+            <FinalizedView items={character.techniques || []} />
           </FinalizedSection>
         </>
       )}

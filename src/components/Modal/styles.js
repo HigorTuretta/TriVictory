@@ -18,7 +18,8 @@ export const ModalContent = styled.div`
   background-color: ${({ theme }) => theme.surface};
   padding: 2rem;
   border-radius: 8px;
-  max-width: 500px;
+  max-width: 70vw;
+  min-width: fit-content;
   width: 100%;
   border: 1px solid ${({ theme }) => theme.primary};
   position: relative;

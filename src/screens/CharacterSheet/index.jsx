@@ -238,6 +238,72 @@ export const CharacterSheet = ({
   const handleAddKit = (kitName) => { if (!kitName) return; const kit = gameData.classes.find((c) => c.nome === kitName); if (!kit) return; const unmet = unmetReqsForClass(character, kit); if (unmet.length > 0) { setUnmetClassReqs(unmet); toast.error('Kit indisponível — veja os requisitos pendentes.'); return; } const newAdvantages = [...(character.advantages || [])]; kit.vantagensGratuitas?.forEach((vNome) => { if (!hasItem(newAdvantages, vNome)) { const v = findAdv(vNome); if (v) newAdvantages.push({ ...v, id: uuidv4(), fromClass: true, fromKit: kit.nome }); } }); setUnmetClassReqs([]); handleUpdate({ kits: [...(character.kits || []), kit], advantages: newAdvantages }); toast.success(`Kit "${kit.nome}" adicionado!`); };
   const handleRemoveKit = (kitName) => { const newKits = (character.kits || []).filter(k => k.nome !== kitName); const newAdvantages = (character.advantages || []).filter(adv => !(adv.fromKit === kitName)); handleUpdate({ kits: newKits, advantages: newAdvantages }); toast.success(`Kit "${kitName}" removido.`); };
 
+  const checkTechniqueRequirements = useCallback((technique) => {
+    if (!technique.requisito) return { meets: true, unmet: [] };
+
+    const requirements = technique.requisito.split(/, | e /);
+    const allCharItems = [
+      ...(character.skills || []),
+      ...(character.advantages || []),
+      ...(character.techniques || [])
+    ];
+
+    const unmetReqs = [];
+
+    requirements.forEach(req => {
+      const reqLower = req.toLowerCase();
+
+      // Verifica Atributo (Ex: "Habilidade 2")
+      const attrMatch = reqLower.match(/(poder|habilidade|resistencia) (\d+)/);
+      if (attrMatch) {
+        const [, attr, value] = attrMatch;
+        if ((character.attributes[attr] || 0) < parseInt(value, 10)) {
+          unmetReqs.push(req);
+        }
+        return;
+      }
+
+      // Verifica Vantagem, Perícia ou Técnica
+      if (!allCharItems.some(item => item.nome.toLowerCase() === reqLower)) {
+        unmetReqs.push(req);
+      }
+    });
+
+    return { meets: unmetReqs.length === 0, unmet: unmetReqs };
+  }, [character]);
+
+  const handleAddTechnique = (technique, variation) => {
+    const currentTechniques = character.techniques || [];
+    const variationName = variation ? variation.nome : null;
+
+    // VERIFICAÇÃO: Checa se a combinação de técnica + variação já existe
+    const isDuplicate = currentTechniques.some(
+      (t) => t.nome === technique.nome && t.subOption === variationName
+    );
+
+    if (isDuplicate) {
+      toast.error(`Você já possui a técnica "${technique.nome}${variationName ? `: ${variationName}` : ''}".`);
+      return; // Impede a adição
+    }
+
+    const techniqueData = {
+      ...technique,
+      id: uuidv4(),
+      subOption: variationName,
+      descricao: variation ? variation.descricao : technique.descricao,
+    };
+    delete techniqueData.variacoes;
+
+    const newTechniques = [...currentTechniques, techniqueData];
+    handleUpdate({ techniques: newTechniques });
+    toast.success(`Técnica "${technique.nome}" adicionada!`);
+  };
+
+  const handleRemoveTechnique = (techniqueId) => {
+    const newTechniques = (character.techniques || []).filter(t => t.id !== techniqueId);
+    handleUpdate({ techniques: newTechniques });
+  };
+
   if (loading || !character) { return (<div style={{ textAlign: 'center', marginTop: '5rem' }}>Carregando ficha…</div>); }
   const isOwner = currentUser.uid === character.ownerId;
 
@@ -281,6 +347,11 @@ export const CharacterSheet = ({
         gameData={gameData}
         addItem={addItem}
         removeItem={removeItem}
+
+        onAddTechnique={handleAddTechnique}
+        onRemoveTechnique={handleRemoveTechnique}
+        checkTechniqueRequirements={checkTechniqueRequirements}
+
         isBackstoryVisible={isBackstoryVisible}
         setIsBackstoryVisible={setIsBackstoryVisible}
         handleUpdate={handleUpdate}
