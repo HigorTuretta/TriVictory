@@ -6,14 +6,20 @@ export const TrackerContainer = styled.div`
   border-radius: 8px;
   text-align: right;
   border: 1px solid ${({ theme }) => theme.border};
-  min-width: 250px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: space-between;
 `;
 
 export const PointsText = styled.p`
   margin: 0.25rem 0;
   font-size: 1rem;
   color: ${({ theme }) => theme.secondary};
-
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
   span {
     font-weight: 700;
     margin-left: 0.5rem;

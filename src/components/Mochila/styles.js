@@ -1,35 +1,34 @@
 import styled, { keyframes } from 'styled-components';
 
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
 export const MochilaContainer = styled.div`
-  background-color: ${({ theme }) => theme.background};
-  border-radius: 8px;
-  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  height: 100%;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 8px;
+  background-color: ${({ theme }) => theme.background};
 `;
 
 export const InventoryHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-  width: 100%;
+`;
 
-  p {
-    font-size: 0.9rem;
-    color: ${({ theme }) => theme.secondary};
-  }
-
-  > div {
-    width: 100%;
+export const AddButton = styled.button`
+  background-color: ${({ theme }) => theme.success};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
@@ -37,8 +36,7 @@ export const CapacityBar = styled.div`
   width: 100%;
   height: 8px;
   background-color: ${({ theme }) => theme.border};
-  border-radius: 5px;
-  margin-top: 0.5rem;
+  border-radius: 4px;
   position: relative;
   overflow: hidden;
 
@@ -49,139 +47,80 @@ export const CapacityBar = styled.div`
     left: 0;
     height: 100%;
     width: ${({ $percentage }) => $percentage}%;
-    background-color: ${({ $percentage, theme }) =>
-      $percentage > 90 ? theme.error : theme.primary};
-    border-radius: 5px;
-    transition: width 0.3s ease-in-out;
-  }
-`;
-
-export const ItemForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  background-color: ${({ theme }) => theme.surface};
-  padding: 1rem;
-  border-radius: 6px;
-  border: 1px solid ${({ theme }) => theme.border};
-`;
-
-export const FormGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-export const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-`;
-
-export const FormLabel = styled.label`
-  font-size: 0.8rem;
-  color: ${({ theme }) => theme.secondary};
-  margin-bottom: 0.2rem;
-`;
-
-export const FormActions = styled.div`
-  display: flex;
-  gap: 1rem;
-
-  button[type='submit'] {
-    background-color: ${({ theme }) => theme.success};
-    color: white;
-    flex-grow: 1;
-    font-weight: bold;
-    border: none;
+    background-color: ${({ $percentage, theme }) => $percentage > 90 ? theme.error : theme.primary};
     border-radius: 4px;
-    padding: 0.5rem;
-    cursor: pointer;
-
-    &:hover {
-      background-color: #2fa94e;
-    }
+    transition: width 0.3s ease;
   }
 `;
 
 export const ItemList = styled.div`
-  flex-grow: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding-right: 5px;
-  min-height: 300px;
+  gap: 0.5rem;
+  max-height: 250px;
+  min-height: 100px;
+  overflow-y: auto;
+  padding-right: 8px;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+  padding-bottom: 1rem;
 `;
 
+// ... todos os outros estilos de ItemCard, ItemInfo, etc permanecem os mesmos ...
 export const ItemCard = styled.div`
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 4px;
   background-color: ${({ theme }) => theme.surface};
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
   border-left: 3px solid ${({ theme }) => theme.secondary};
-  gap: 0.25rem 1rem;
   cursor: pointer;
-
-  &:hover {
-    background-color: ${({ theme }) =>
-      theme.mode === 'dark' ? '#2a2a33' : '#e5e5ec'};
-  }
+  transition: background-color 0.2s;
+  &:hover { background-color: ${({ theme }) => theme.border}22; }
 `;
-
-export const ItemName = styled.span`
-  grid-column: 1 / 2;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-export const ItemQuantity = styled.span`
-  grid-column: 2 / 3;
-  grid-row: 1 / 2;
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: ${({ theme }) => theme.secondary};
-  text-align: right;
-`;
-
-export const ItemWeight = styled.span`
-  grid-column: 1 / 2;
+export const ItemInfo = styled.div``;
+export const ItemName = styled.h4`font-weight: 500;`;
+export const ItemDetails = styled.p`
   font-size: 0.8rem;
-  color: ${({ theme }) => theme.secondary};
-`;
-
-export const ItemActions = styled.div`
-  grid-column: 2 / 3;
-  grid-row: 2 / 3;
+  color: ${({ theme }) => theme.textSecondary};
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 0.5rem;
-
+`;
+export const ItemActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
   button {
-    background-color: ${({ theme }) => theme.border};
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    color: ${({ theme }) => theme.textPrimary};
+    background: transparent;
     border: none;
-    border-radius: 4px;
+    color: ${({ theme }) => theme.textSecondary};
     cursor: pointer;
+    font-size: 0.9rem;
+    padding: 4px;
+    &.delete { color: ${({ theme }) => theme.error}; }
+    &:hover:not(:disabled) { color: ${({ theme }) => theme.textPrimary}; }
   }
-
-  button.delete {
-    background-color: ${({ theme }) => theme.error};
-    color: white;
-  }
+`;
+const goldenGlow = keyframes`
+  0% { box-shadow: 0 0 5px gold; }
+  50% { box-shadow: 0 0 15px gold; }
+  100% { box-shadow: 0 0 5px gold; }
+`;
+export const RarityBadge = styled.span`
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  background-color: ${({ rarity }) => {
+    switch (rarity) {
+      case 'Comum': return '#888';
+      case 'Incomum': return '#2196F3';
+      case 'Raro': return '#9C27B0';
+      case 'Lendário': return '#FFC107';
+      default: return 'transparent';
+    }
+  }};
+  animation: ${({ rarity }) => rarity === 'Lendário' ? css`${goldenGlow} 1.5s ease-in-out infinite alternate` : 'none'};
+  box-shadow: ${({ rarity }) => rarity === 'Lendário' ? '0 0 5px gold' : 'none'};
 `;

@@ -166,3 +166,43 @@ export const CustomItemControls = styled.div`
     background: ${({ theme }) => theme.error};
   }
 `;
+export const SpecializationModalContent = styled.div`
+  h3 { margin-bottom: 0.5rem; }
+  p { margin-bottom: 1rem; color: ${({ theme }) => theme.textSecondary}; }
+  hr { 
+    border: none; 
+    border-top: 1px solid ${({ theme }) => theme.border};
+    margin: 1.5rem 0;
+  }
+`;
+
+export const SpecializationInput = styled.input`
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 6px;
+  background-color: ${({ theme }) => theme.surface};
+  color: ${({ theme }) => theme.textPrimary};
+  margin-bottom: 1rem;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.primary};
+  }
+`;
+
+export const DisclaimerText = styled.p`
+  font-size: 0.8rem;
+  font-style: italic;
+  color: ${({ theme }) => theme.textSecondary};
+  margin-top: 1.5rem !important;
+  text-align: center;
+  line-height: 1.4;
+
+  span {
+    display: block;
+    margin-top: 0.25rem;
+    font-weight: bold;
+  }
+`;

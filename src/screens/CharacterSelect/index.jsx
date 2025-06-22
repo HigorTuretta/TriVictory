@@ -15,7 +15,7 @@ import {
 export const CharacterSelect = () => {
     const [characters, setCharacters] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [basePoints, setBasePoints] = useState(12);
+    const [basePoints, setBasePoints] = useState(10);
     const [showConfirmModal, setShowConfirmModal] = useState(null);
 
     const { currentUser } = useAuth();

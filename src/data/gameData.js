@@ -256,6 +256,846 @@ export const arquetipos = [
     },
 ];
 
+export const classes = [
+  {
+    "nome": "Abastado",
+    "custo": 1,
+    "poderes": [
+      "Meritocracia: 1 vez/cena, faça um teste de compra para usar uma vantagem que não possua uma única vez.",
+      "Poder aquisitivo: seus testes de compra ganham +3 no resultado final.",
+      "Tempo é dinheiro!: seu primeiro teste de compra na sessão recebe Ganho, e o segundo não sofre Perda."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+          { "tipo": "pericia", "nome": "Influência" },
+          { "tipo": "pericia", "nome": "Manha" }
+      ]},
+      { "tipo": "vantagem", "nome": "Riqueza" }
+    ]
+  },
+  {
+    "nome": "Agente Secreto",
+    "custo": 1,
+    "poderes": [
+      "Identidade secreta: receba Ganho em testes para ocultar suas atividades. Testes de outros para descobrir sobre você têm Perda.",
+      "Olho clínico: gaste 1 ação e 1 PM para fazer um teste de Percepção (H, 9) e descobrir uma característica de um alvo.",
+      "Plano de ação: gaste um movimento e 2 PM para receber H+2 até o fim da cena."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "pericia", "nome": "Manha" },
+        { "tipo": "pericia", "nome": "Percepção" }
+      ]},
+      { "tipo": "vantagem", "nome": "Patrono" }
+    ]
+  },
+  {
+    "nome": "Alquimista",
+    "custo": 1,
+    "poderes": [
+      "Diagrama: gaste um movimento para reduzir o custo em PM da sua próxima vantagem ou técnica em -1 (mínimo 1).",
+      "Diagrama pessoal: escolha uma de suas vantagens ou técnicas. Você a utiliza com o poder Diagrama sem precisar gastar um movimento.",
+      "Troca equivalente: 1 vez/cena, no início da primeira rodada, mude seus atributos e vantagens livremente. Dura até o fim da cena."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Mística" },
+      { "tipo": "pericia", "nome": "Saber" }
+    ]
+  },
+  {
+    "nome": "Artista Marcial",
+    "custo": 1,
+    "poderes": [
+      "Kata: ao vencer a defesa do alvo, use um movimento para aumentar o dano em +2. Cada movimento adicional no turno adiciona +2.",
+      "Montagem de treino: 1 vez/sessão, faça um teste de Luta (9) antes de um combate. Se passar, recebe Maestria (Luta) durante a luta.",
+      "Lutarei para conseguir!: 1 vez/cena, use Luta para substituir qualquer outra perícia. Custa 3 PM para usos adicionais."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Luta" }
+    ]
+  },
+  {
+    "nome": "Ás Advogado",
+    "custo": 1,
+    "poderes": [
+      "Coleta de provas: em um crítico de Influência ou Saber, pode obter uma 'Prova'. Gaste Provas para conseguir críticos automáticos nesses testes.",
+      "Embargo: pague 2 PM para anular todo o dano de um ataque ou um efeito negativo de falha em teste (usos limitados).",
+      "Objeção!: sua Defesa Especial (Reflexão) causa +2 de dano ao adversário."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Influência" },
+      { "tipo": "vantagem", "nome": "Defesa Especial (Reflexão)" }
+    ]
+  },
+  {
+    "nome": "Atirador de Elite",
+    "custo": 1,
+    "poderes": [
+      "Mira perfeita: 1 vez/cena, seu primeiro ataque contra cada alvo Longe ou mais distante impõe Perda na defesa dele.",
+      "Posição vantajosa: gaste uma ação completa para receber Ganho em defesas contra ataques de Longe ou mais distantes.",
+      "Um tiro, duas mortes: ao derrotar um inimigo com um ataque à distância, o mesmo ataque atinge outro alvo sem custo."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Manha" },
+      { "tipo": "vantagem", "nome": "Alcance 2" }
+    ]
+  },
+  {
+    "nome": "Bárbaro",
+    "custo": 1,
+    "poderes": [
+      "Espírito livre: se estiver consciente, você nunca é considerado indefeso.",
+      "Frenesi de combate: gaste 3 PM para receber P+3 até o fim da cena. Depois, você fica esgotado na cena seguinte.",
+      "Resistência superior: a vantagem Vigoroso concede R+3 em vez de +2."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Sobrevivência" },
+      { "tipo": "vantagem", "nome": "Vigoroso" }
+    ]
+  },
+  {
+    "nome": "Caça-Prêmios",
+    "custo": 1,
+    "poderes": [
+      "Ataque subjugante: gaste 2 PM antes de um ataque. Se causar dano, o alvo tem Perda em ataque e defesa até o próximo turno dele.",
+      "Contrato: ao aceitar caçar um alvo, recebe a vantagem Inimigo contra ele temporariamente.",
+      "Mural de recompensas: recebe Ganho em testes para obter informações sobre procurados e para rastrear seu alvo."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Percepção" },
+      { "tipo": "ou", "opcoes": [
+          { "tipo": "pericia", "nome": "Manha" },
+          { "tipo": "pericia", "nome": "Sobrevivência" }
+      ]}
+    ]
+  },
+  {
+    "nome": "CARD Gamer",
+    "custo": 1,
+    "poderes": [
+      "Caiu na armadilha!: 1 vez/cena, após uma ação do oponente, faça um teste de Mística para usar Magia como uma reação.",
+      "Carta na manga: ao usar um poder que gasta PM, pague +2 PM para ter chance de repeti-lo de graça no próximo turno.",
+      "Escolha uma carta: gaste 1 PM para invocar um Ajudante até o fim da cena. Um teste de Mística (9) decide se você ou o mestre escolhe o tipo."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Magia" },
+      { "tipo": "pericia", "nome": "Mística" },
+      { "tipo": "vantagem", "nome": "Utensílio" }
+    ]
+  },
+  {
+    "nome": "Cavaleiro",
+    "custo": 1,
+    "poderes": [
+      "Armadura completa: ao sofrer um ataque, pague 2 PM para reduzir o resultado de cada dado do atacante em -1.",
+      "Força da honra: 1 vez/cena, receba um Ganho em um teste para cada Código que você possui.",
+      "Inspirar aliado: gaste 1 PM e uma ação para dar Ganho em um teste para um aliado no próximo turno dele."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "vantagem", "nome": "Resoluto" },
+        { "tipo": "vantagem", "nome": "Vigoroso" }
+      ]},
+      { "tipo": "desvantagem", "nome": "Código (qualquer)" }
+    ]
+  },
+  {
+    "nome": "Celebridade",
+    "custo": 1,
+    "poderes": [
+      "Grande fama: o custo para usar a vantagem Famoso é reduzido para 2 PM.",
+      "Ovação: sob efeito da sua Torcida, gaste um turno para recuperar 1D PM.",
+      "Rugido das massas: com Torcida, seu teste também se torna um crítico com 5 ou 6."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Famoso" },
+      { "tipo": "vantagem", "nome": "Torcida" }
+    ]
+  },
+  {
+    "nome": "Cientista",
+    "custo": 1,
+    "poderes": [
+      "Eureka!: 1 vez/sessão, gaste um movimento e 3 PM para adquirir uma vantagem de 1pt até o fim da cena.",
+      "Método científico: 1 vez/cena, use Saber para substituir qualquer outra perícia. Custa 3 PM para usos adicionais.",
+      "Pesquisa: gaste um movimento e 1 PM para fazer um teste de Saber (9) e descobrir informações sobre um alvo."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Saber" }
+    ]
+  },
+  {
+    "nome": "Clérigo",
+    "custo": 1,
+    "poderes": [
+      "Devoto fervoroso: pode usar a vantagem Devoto até três vezes por cena.",
+      "Dom divino: 1 vez/cena, gaste um movimento e 3 PM para adquirir uma perícia ou vantagem de 1pt até o fim da cena.",
+      "Poder concedido: 1 vez/cena, use uma vantagem escolhida de uma lista (Cura, Magia, etc.) sem gastar PM."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Devoto" }
+    ]
+  },
+  {
+    "nome": "Cosmonauta da ORDEM",
+    "custo": 1,
+    "poderes": [
+      "Primeiro contato: gaste 2 PM para receber +3 em um teste de Saber ou Sobrevivência.",
+      "Inimigo meu: use a vantagem Inimigo para seres extraterrestres que nunca viu antes.",
+      "Sensores avançados: pague 2 PM para adquirir um Sentido à sua escolha para um único teste."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Patrono" },
+      { "tipo": "vantagem", "nome": "Inimigo (aliens)" }
+    ]
+  },
+  {
+    "nome": "Curandeiro",
+    "custo": 1,
+    "poderes": [
+      "Paramédico: com uma ação e um teste de Medicina (9), você pode curar 1D Pontos de Vida.",
+      "Cura crítica: ao rolar 6 num dado de Cura, role um dado extra.",
+      "Explosão de cura: 1 vez/cena, use sua Cura na capacidade máxima sem gastar PM."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Medicina" },
+      { "tipo": "vantagem", "nome": "Cura" }
+    ]
+  },
+  {
+    "nome": "Detetive",
+    "custo": 1,
+    "poderes": [
+      "Elementar!: 1 vez/cena, use Percepção para substituir qualquer outra perícia. Custa 3 PM para usos adicionais.",
+      "Obter informação: em um crítico de Manha ou Percepção, pode obter uma 'Pista'. Gaste Pistas para conseguir críticos automáticos nesses testes.",
+      "Caso encerrado: inimigos derrotados em sua presença permanecem assim até o fim da cena, mesmo se curados."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Manha" },
+      { "tipo": "pericia", "nome": "Percepção" }
+    ]
+  },
+  {
+    "nome": "DPS",
+    "custo": 1,
+    "poderes": [
+      "Estilo de combate: escolha melee ou ranged para ganhar Especialização (Luta), mas se torna Inapto para defender e atacar no estilo oposto.",
+      "Ataque gratuito: 1 vez/cena, use um Ataque Especial sem pagar PM.",
+      "Último recurso: quando está perto da derrota, seus ataques no estilo escolhido recebem Ganho."
+    ],
+    "exigencias": [
+      { "tipo": "atributo", "nome": "Poder", "valor": 3 },
+      { "tipo": "vantagem", "nome": "Ataque Especial (qualquer)" }
+    ]
+  },
+  {
+    "nome": "Druida",
+    "custo": 1,
+    "poderes": [
+      "Forma selvagem: sua Transformação permite escolher duas vantagens extras de uma lista (Ágil, Voo, etc.) a cada mudança.",
+      "Irmãos selvagens: você pode mudar o tipo do seu Ajudante no início de cada cena.",
+      "Dádiva da natureza: 1 vez/cena, use Animais para substituir qualquer outra perícia. Custa 3 PM para usos adicionais."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Animais" },
+      { "tipo": "vantagem", "nome": "Ajudante" },
+      { "tipo": "vantagem", "nome": "Transformação" },
+      { "tipo": "desvantagem", "nome": "Código Dahllan" }
+    ]
+  },
+  {
+    "nome": "Elementalista",
+    "custo": 1,
+    "poderes": [
+      "Ambiente elemental: ao rolar 6 no dado de Ambiente, use Magia uma vez sem custo de PM.",
+      "Elemento primordial: 1 vez/sessão, gaste um movimento e 3 PM para adquirir uma perícia ou vantagem de 1pt até o fim da cena.",
+      "Moldar essência: na primeira rodada de cada cena, mude seus atributos e perícias livremente."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Magia" },
+      { "tipo": "desvantagem", "nome": "Ambiente" },
+      { "tipo": "desvantagem", "nome": "Fraqueza" }
+    ]
+  },
+  {
+    "nome": "Engenheiro Mecha",
+    "custo": 1,
+    "poderes": [
+      "A ferramenta certa: 1 vez/cena, use Máquinas para substituir qualquer outra perícia. Custa 3 PM para usos adicionais.",
+      "Engenheiro de campo: com um teste de Máquinas (9), gaste 1 PM para criar um Ajudante de sua escolha até o fim da cena.",
+      "Martelinho de ouro: com uma ação e um teste de Máquinas (9), cure 2D PV em um construto ou some 1D ao seu próximo teste."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Máquinas" },
+      { "tipo": "vantagem", "nome": "Utensílio (ferramentas)" }
+    ]
+  },
+  {
+    "nome": "Entidade Exilada",
+    "custo": 1,
+    "poderes": [
+      "Não conheci o outro mundo por querer!: em testes de morte, role 1D extra e descarte o menor resultado.",
+      "Sorte extraplanar: 1 vez/sessão, use uma vantagem, técnica ou Energia youkai sem gastar PM.",
+      "Energia youkai: gaste PM para curar PV (2 PM para 1 PV) em si mesmo ou em alguém com Elo Mental."
+    ],
+    "exigencias": []
+  },
+  {
+    "nome": "Estudante",
+    "custo": 1,
+    "poderes": [
+      "Hora do intervalo: após um conflito, receba uma refeição básica que concede Ganho em um único teste.",
+      "Prova real: pague 2 PM para rolar 1D extra em um teste de perícia e descartar o menor resultado.",
+      "Quem não cola...: use a vantagem Mentor uma segunda vez por cena."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Qualquer" },
+      { "tipo": "vantagem", "nome": "Mentor" }
+    ]
+  },
+  {
+    "nome": "Exército da Luz",
+    "custo": 1,
+    "poderes": [
+      "Artilharia total: 1 vez/cena, faça um Ataque Especial de até 3pts (você ainda paga o custo em PM).",
+      "Armadura radiante: adicione 1D em testes de resistência a efeitos nocivos e descarte o menor dado.",
+      "Ombro a ombro: gaste 2 PM para conceder Ganho a um teste de um aliado Perto."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Patrono" }
+    ]
+  },
+  {
+    "nome": "Experimento",
+    "custo": 1,
+    "poderes": [
+      "Adaptação: receba duas imunidades com a vantagem Imune em vez de uma.",
+      "Bioenergia: as vantagens +Mana ou +Vida concedem +15 em vez de +10.",
+      "Mutação: ao fazer um teste de um atributo escolhido, pague 2 PM para rolar 1D extra e descartar o menor."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Imune" },
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "vantagem", "nome": "+Mana" },
+        { "tipo": "vantagem", "nome": "+Vida" }
+      ]}
+    ]
+  },
+  {
+    "nome": "Gatuno Galante",
+    "custo": 1,
+    "poderes": [
+      "Ardiloso: pague 3 PM para usar os efeitos de Confusão, Invisível, Inofensivo ou Telepata por um turno.",
+      "Reconhecimento de terreno: 1 vez/sessão, declare o local de uma cena como sua Arena.",
+      "Um passo à frente: gaste 2 PM para receber Ganho em um teste para evitar um efeito negativo (exceto dano)."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Manha" },
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "vantagem", "nome": "Ágil" },
+        { "tipo": "vantagem", "nome": "Carismático" },
+        { "tipo": "vantagem", "nome": "Gênio" }
+      ]}
+    ]
+  },
+  {
+    "nome": "Gigante da Luz",
+    "custo": 1,
+    "poderes": [
+      "Poder interior: escolha entre Forte, Ágil ou Vigoroso. A vantagem se aplica a ambas as suas formas.",
+      "Transformação gigante: sua segunda forma aumenta sua escala para Kiodai e concede Alcance, Golpe Final e Voo.",
+      "Transformação menor: pode se transformar em sua segunda forma em tamanho normal, sem mudar a escala."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Transformação" },
+      { "tipo": "desvantagem", "nome": "Código do Combate" },
+      { "tipo": "desvantagem", "nome": "Código dos Heróis" }
+    ]
+  },
+  {
+    "nome": "Guerreira Mágica",
+    "custo": 1,
+    "poderes": [
+      "Auxílio mágico: ao usar Magia para emular Ataque Especial, Ajudante, Alcance ou Mentor, o custo em PM é normal (x1) em vez de triplicado.",
+      "Punirei você!: contra um alvo perto da derrota, seu custo em PM para usar Magia é reduzido pela metade.",
+      "Transformação radiante: gaste um movimento para se transformar. Receba Ganho em testes de Mística por 2 PM e Perda em testes para descobrir sua identidade."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Mística" },
+      { "tipo": "vantagem", "nome": "Magia" }
+    ]
+  },
+  {
+    "nome": "Guerreiro",
+    "custo": 1,
+    "poderes": [
+      "Lutar é tudo!: ao fazer um teste de Luta, pague 2 PM para somar +3 ao resultado após a rolagem.",
+      "Manobra especial: 1 vez/cena, use um Ataque ou Defesa Especial sem gastar PM.",
+      "Sem parar: ao derrotar um inimigo, pode fazer um ataque imediato contra outro oponente."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Luta" },
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "vantagem", "nome": "Ataque Especial" },
+        { "tipo": "vantagem", "nome": "Defesa Especial" }
+      ]}
+    ]
+  },
+  {
+    "nome": "Herói Sentai",
+    "custo": 1,
+    "poderes": [
+      "Hora de sincronizar: seu Elo Mental funciona com até 5 aliados, mesmo que eles não tenham a vantagem.",
+      "Soltar faísca: quando sofre dano, pague 1 PM para anular 3 pontos de dano.",
+      "Finalização: ao usar um Golpe Final, cada aliado pode pagar 3 PM para somar o Poder dele ao seu ataque."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Elo Mental" },
+      { "tipo": "vantagem", "nome": "Golpe Final" },
+      { "tipo": "vantagem", "nome": "Patrono" }
+    ]
+  },
+  {
+    "nome": "Idol",
+    "custo": 1,
+    "poderes": [
+      "Seu sorriso...: a vantagem Carismática concede P+3 em vez de +2.",
+      "...É tão resplandecente!: 1 vez/cena, use Arte para substituir qualquer outra perícia. Custa 3 PM para usos adicionais.",
+      "Me dê a mão!: com um teste de Arte (9), gaste um movimento e 1 PM para conceder Ganho a um aliado."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Arte" },
+      { "tipo": "vantagem", "nome": "Carismática" },
+      { "tipo": "vantagem", "nome": "Famosa" }
+    ]
+  },
+  {
+    "nome": "Ilusionista",
+    "custo": 1,
+    "poderes": [
+      "Gambito ilusório: 1 vez/rodada, gaste 1 PM para receber Ganho em um teste de defesa.",
+      "Glamour: mude a sua aparência ou a de aliados e objetos. As ilusões se movem com os alvos sem gastar seus movimentos.",
+      "Ilusão autônoma: crie uma ilusão que age sozinha pelo custo normal, sem gastar seus movimentos."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "pericia", "nome": "Arte" },
+        { "tipo": "pericia", "nome": "Mística" },
+        { "tipo": "vantagem", "nome": "Telepata" }
+      ]},
+      { "tipo": "vantagem", "nome": "Ilusão" }
+    ]
+  },
+  {
+    "nome": "Impostor",
+    "custo": 1,
+    "poderes": [
+      "Disfarce perfeito: com 1 movimento e 3 PM, assuma a aparência de alguém. Testes para descobrir o disfarce sofrem Perda.",
+      "Engenheiro social: 1 vez/cena, use Influência para substituir qualquer outra perícia. Custa 3 PM para usos adicionais.",
+      "Jogo da imitação: copie e mantenha duas vantagens simultaneamente com a vantagem Imitar."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Influência" },
+      { "tipo": "vantagem", "nome": "Imitar" }
+    ]
+  },
+  {
+    "nome": "Intendente",
+    "custo": 1,
+    "poderes": [
+      "Excelência: em um crítico com uma perícia, gaste 3 PM para somar o atributo correspondente mais uma vez.",
+      "Housekeeping: por 3 PM, você e até H aliados compartilham seus PMs somados até o fim da cena.",
+      "Sempre a postos: aprenda perícias com Improviso por 2 PM em vez de 3, e mantenha até duas perícias ao mesmo tempo."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "pericia", "nome": "Arte" },
+        { "tipo": "pericia", "nome": "Sobrevivência" }
+      ]},
+      { "tipo": "vantagem", "nome": "Improviso" }
+    ]
+  },
+  {
+    "nome": "Ladino",
+    "custo": 1,
+    "poderes": [
+      "Ataque furtivo: gaste 2 PM ao atacar um alvo desprevenido para impor R-1 na defesa dele.",
+      "Malandragem: 1 vez/cena, use Manha para substituir qualquer outra perícia. Custa 3 PM para usos adicionais.",
+      "Trapaça: ao usar 1 Ponto de Ação para um poder surpreendente, pode adquirir qualquer vantagem, mesmo de custo maior que 1pt."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Manha" },
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "vantagem", "nome": "Ágil" },
+        { "tipo": "vantagem", "nome": "Gênio" }
+      ]}
+    ]
+  },
+  {
+    "nome": "Maginauta",
+    "custo": 1,
+    "poderes": [
+      "Imersão: com uma ação completa e 2 PM, entre no magiespaço. Seu corpo fica indefeso, mas seus poderes mágicos são aprimorados.",
+      "Interferência: gaste uma ação e 2 PM para dar Ganho ou Perda a um teste de Mística de outro personagem.",
+      "Sobrecarga: ao usar Magia, teste Mística (9). Sucesso dá +2 ao teste mágico; falha anula a magia."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Magia" },
+      { "tipo": "pericia", "nome": "Mística" }
+    ]
+  },
+  {
+    "nome": "Mago",
+    "custo": 1,
+    "poderes": [
+      "Aptidão mágica: seu bônus máximo da vantagem Magia é H+2.",
+      "Bateria de mana: 1 vez/cena, use uma ação completa para recuperar 1D+H PM.",
+      "Preparar magias: com PMs cheios, pague metade do custo para deixar magias 'preparadas' e usá-las depois."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Mística" },
+      { "tipo": "vantagem", "nome": "Magia" }
+    ]
+  },
+  {
+    "nome": "Menestreamer",
+    "custo": 1,
+    "poderes": [
+      "Inspirar: gaste 1 movimento e 3 PM para conceder Ganho ao teste de perícia de um aliado (custa 1 PM se já tiver o poder).",
+      "É meu amigo!: pague 1 PM para conceder a vantagem Famoso a um aliado por uma cena.",
+      "Audiência generosa: com um teste de Arte ou Influência (9), receba Ganho em um teste de compra."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "pericia", "nome": "Arte" },
+        { "tipo": "pericia", "nome": "Influência" },
+        { "tipo": "vantagem", "nome": "Carismático" }
+      ]},
+      { "tipo": "vantagem", "nome": "Famoso" }
+    ]
+  },
+  {
+    "nome": "Mercenário",
+    "custo": 1,
+    "poderes": [
+      "Nem morto: em testes de morte, role 1D extra e descarte o menor resultado enquanto tiver um contrato.",
+      "Melhor no que faz: pode usar a vantagem Devoto até três vezes por cena.",
+      "Trato feito: no início de cada sessão, pode trocar de Patrono. Recebe +3 em testes de compra para o Patrono."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Devoto" },
+      { "tipo": "vantagem", "nome": "Patrono" },
+      { "tipo": "desvantagem", "nome": "Código do Mercenário" }
+    ]
+  },
+  {
+    "nome": "Mestre-Cuca",
+    "custo": 1,
+    "poderes": [
+      "Talento culinário: receba +3 em testes de Arte e Sobrevivência para cozinhar.",
+      "Prato milagroso: 1 vez/sessão, ao cozinhar, gaste Pontos de Ação para conceder uma vantagem temporária a alguém.",
+      "Despensa cheia: comece cada sessão com um número de refeições básicas igual à sua Habilidade."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "pericia", "nome": "Arte" },
+        { "tipo": "pericia", "nome": "Sobrevivência" }
+      ]}
+    ]
+  },
+  {
+    "nome": "Monge",
+    "custo": 1,
+    "poderes": [
+      "Agilidade superior: a vantagem Ágil concede H+3 em vez de +2.",
+      "Alma de aço: em um teste de Resistência, pague 1 PM para somar +1 a um dado.",
+      "Controle dos chakras: em combate, gaste um turno completo para recuperar 1D+H PV ou 1D+H PM."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Ágil" },
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "vantagem", "nome": "Resoluto" },
+        { "tipo": "vantagem", "nome": "Vigoroso" }
+      ]},
+      { "tipo": "desvantagem", "nome": "1ª Lei de Asimov" }
+    ]
+  },
+  {
+    "nome": "Motoqueiro Mascarado",
+    "custo": 1,
+    "poderes": [
+      "Henshin: gaste um movimento para vestir seu traje. Pode pagar 2 PM para receber Ganho em um teste de Luta.",
+      "Moto de batalha: por 2 PM, seu Ajudante Montaria pode agir como um Lutador.",
+      "Até o fim: você não sofre Perda e pode continuar lutando normalmente quando está Derrotado."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Luta" },
+      { "tipo": "vantagem", "nome": "Ajudante (Montaria)" }
+    ]
+  },
+  {
+    "nome": "Necromante",
+    "custo": 1,
+    "poderes": [
+      "Criar morto-vivo: com um teste de Mística (9), gaste 1 PM para invocar um Ajudante de sua escolha até o fim da cena.",
+      "Energia negativa: suas vantagens de cura funcionam em criaturas com a desvantagem Sem Vida.",
+      "Fortificar morto-vivo: o custo para usar Magia em criaturas Sem Vida é reduzido em 1 PM (mínimo 1)."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Mística" },
+      { "tipo": "vantagem", "nome": "Magia" }
+    ]
+  },
+  {
+    "nome": "Negociador",
+    "custo": 1,
+    "poderes": [
+      "Argumentação: 1 vez/cena, use Influência para substituir qualquer outra perícia. Custa 3 PM para usos adicionais.",
+      "Empatia: pague 2 PM para anular um Ganho em um teste de Poder (incluindo combate) contra você.",
+      "Palavras de conforto: qualquer poder de cura usado em sua presença tem Ganho ou recupera +2 PV."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Influência" },
+      { "tipo": "vantagem", "nome": "Carismático" }
+    ]
+  },
+  {
+    "nome": "Ninja",
+    "custo": 1,
+    "poderes": [
+      "Mestre ninja: use o Ganho da vantagem Mentor duas vezes por cena em vez de uma.",
+      "Ninpo de combate: 1 vez/rodada, gaste 1 PM para substituir um teste de ataque ou defesa por um teste de Manha.",
+      "Ougi: escolha uma vantagem ou técnica. Ela custará -1 PM (mínimo 1) e, no primeiro uso da sessão, o alvo tem Perda para resistir."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Manha" },
+      { "tipo": "vantagem", "nome": "Mentor" }
+    ]
+  },
+  {
+    "nome": "Operativo",
+    "custo": 1,
+    "poderes": [
+      "Combate tático: ao executar uma manobra de combate, pague 1 PM para receber +3 no teste.",
+      "Armas secretas: tentativas de anular ou revelar suas vantagens e técnicas sofrem Perda.",
+      "Equipamento de espião: 1 vez/sessão, seu Patrono fornece um item que simula uma vantagem de 1pt para um único uso."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Luta" },
+      { "tipo": "pericia", "nome": "Sobrevivência" },
+      { "tipo": "vantagem", "nome": "Patrono" }
+    ]
+  },
+  {
+    "nome": "Paladino",
+    "custo": 1,
+    "poderes": [
+      "Bravura final: em vez de testes de morte, o dano recebido é descontado dos seus PMs. Se os PMs acabarem, você cai Quase Morto.",
+      "Me dê sua força!: ao usar Devoto para ter Ganho, some +1 ao resultado de cada dado.",
+      "Sétimo sentido: quando estiver perto da derrota, gaste 2 PM para fazer um ataque ou defesa uma escala acima."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Devoto" },
+      { "tipo": "desvantagem", "nome": "Código dos Heróis" },
+      { "tipo": "desvantagem", "nome": "Código da Honestidade" }
+    ]
+  },
+  {
+    "nome": "Patrulheiro",
+    "custo": 1,
+    "poderes": [
+      "Natureza provedora: 1 vez/cena, use Sobrevivência para substituir qualquer outra perícia. Custa 3 PM para usos adicionais.",
+      "À prova de tudo: passe automaticamente em testes para achar descanso. Pague 1 PM para dar +3 a um teste contra privações.",
+      "Rastreador perfeito: pague 2 PM para adquirir um Sentido de sua escolha para um único teste."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Sobrevivência" }
+    ]
+  },
+  {
+    "nome": "Pescador Parrudo",
+    "custo": 1,
+    "poderes": [
+      "Quem sou? Onde estou?: 1 vez/cena, use os benefícios de Vigoroso em testes de Poder.",
+      "Parrudez: gaste 1 PM para defender com Sobrevivência, somando +1 a cada dado. Sucesso é considerado defesa perfeita.",
+      "Pescado do dia: no início da cena, teste Sobrevivência para dar +1 em testes de Resistência a todos os aliados."
+    ],
+    "exigencias": [
+      { "tipo": "atributo", "nome": "Poder", "valor": 3 },
+      { "tipo": "pericia", "nome": "Sobrevivência" },
+      { "tipo": "vantagem", "nome": "Vigoroso" }
+    ]
+  },
+  {
+    "nome": "Piloto Mecha",
+    "custo": 1,
+    "poderes": [
+      "Ajudante robô: seu Ajudante é considerado Lutador e Montaria.",
+      "Ás indomável: 1 vez/sessão, ao usar 1 Ponto de Ação, pode também aumentar o teste em uma escala.",
+      "Kiodai mecha: 1 vez/sessão, se houver um inimigo Kiodai, invoque um veículo de 10 pontos em escala Kiodai."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Máquinas" },
+      { "tipo": "vantagem", "nome": "Ajudante" }
+    ]
+  },
+  {
+    "nome": "Policial do Espaço",
+    "custo": 1,
+    "poderes": [
+      "Jouchaku!: gaste um movimento para invocar seu traje. Nele, por 2 PM, pode usar Alcance 1 ou Golpe Final.",
+      "Assistente: o custo para usar seu Ajudante é reduzido em 1 PM (mínimo 1).",
+      "Kiodai mecha: 1 vez/sessão, se houver um inimigo Kiodai, seu Patrono fornece um veículo de 10 pontos em escala Kiodai."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Luta" },
+      { "tipo": "vantagem", "nome": "Ajudante" },
+      { "tipo": "vantagem", "nome": "Patrono" },
+      { "tipo": "desvantagem", "nome": "Código dos Heróis" }
+    ]
+  },
+  {
+    "nome": "Psiônico",
+    "custo": 1,
+    "poderes": [
+      "Dom telepático: use a vantagem Telepata sem precisar gastar um movimento.",
+      "Intuição psíquica: pague 1 PM para receber Ganho em um teste de Percepção usando sua Intuição.",
+      "Sobrecarga psíquica: ao usar Obstinado, trate 1 ponto de atributo como 2 Pontos de Ação, mas com risco de cair a 0 PV."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Obstinado" },
+      { "tipo": "vantagem", "nome": "Sentido (Intuição)" },
+      { "tipo": "vantagem", "nome": "Telepata" }
+    ]
+  },
+  {
+    "nome": "Repórter Extremo",
+    "custo": 1,
+    "poderes": [
+      "Faro para notícia: pague 1 PM para trocar sua Intuição por outro Sentido para um único teste.",
+      "Fontes confiáveis: 1 vez/sessão, escolha uma vantagem de uma lista (Arena, Inimigo, etc.) para usar durante uma cena.",
+      "Furo de reportagem: 1 vez/cena, use Percepção para substituir qualquer outra perícia. Custa 3 PM para usos adicionais."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Percepção" },
+      { "tipo": "vantagem", "nome": "Sentido (Intuição)" }
+    ]
+  },
+  {
+    "nome": "Samurai",
+    "custo": 1,
+    "poderes": [
+      "Guerreiro poeta: gaste 2 PM para receber +3 em um teste de Arte ou Influência.",
+      "Artefato ancestral: no início do seu turno, gaste PM para imbuir sua arma ou armadura com uma qualidade de artefato por um turno.",
+      "Guerreiro honrado: receba 1 Ponto de Ação extra para cada Patrono e Código que possuir."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "vantagem", "nome": "Patrono" },
+        { "tipo": "desvantagem", "nome": "Código" }
+      ]}
+    ]
+  },
+  {
+    "nome": "Servo da Centelha",
+    "custo": 1,
+    "poderes": [
+      "Bater onde dói: ao atacar, pague 2 PM para impor R-1 na defesa do alvo.",
+      "Combate violento: em um acerto crítico de ataque, some +2 ao resultado final.",
+      "Faísca da Centelha: ao usar Devoto, em vez do normal, receba P+2 e R+1 por um número de rodadas igual ao seu Poder."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Luta" },
+      { "tipo": "vantagem", "nome": "Devoto" }
+    ]
+  },
+  {
+    "nome": "Shinigami",
+    "custo": 1,
+    "poderes": [
+      "Eu voltarei!: quando morre, retorna na cena seguinte com recursos cheios. Só pode ser morto permanentemente por outro shinigami.",
+      "Guia dos mortos: conceda Ganho a qualquer teste de morte realizado em sua presença.",
+      "Inimigo espiritual: um espírito derrotado por você permanece assim até o fim da cena."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Imortal" },
+      { "tipo": "vantagem", "nome": "Inimigo (espíritos)" }
+    ]
+  },
+  {
+    "nome": "Superatleta",
+    "custo": 1,
+    "poderes": [
+      "Aquecimento: no início de cada cena, recupere PM igual ao seu maior atributo.",
+      "Espírito olímpico: sempre que você passar num teste, todos os seus aliados recebem +1 no teste seguinte deles.",
+      "Medalha de ouro: 1 vez/cena, use Esportes para substituir qualquer outra perícia. Custa 3 PM para usos adicionais."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Esportes" }
+    ]
+  },
+  {
+    "nome": "Super-Herói",
+    "custo": 1,
+    "poderes": [
+      "Sobrehumano: escolha uma de suas vantagens de exigência. Pague 1 PM para aumentar o bônus de atributo dela para +4.",
+      "Façanha épica: 1 vez/sessão, em um teste com um atributo sobre-humano, aumente o teste em uma escala.",
+      "Herói de ação: você tem 2 Pontos de Ação extras."
+    ],
+    "exigencias": [
+      { "tipo": "ou", "opcoes": [
+        { "tipo": "vantagem", "nome": "Ágil" },
+        { "tipo": "vantagem", "nome": "Carismático" },
+        { "tipo": "vantagem", "nome": "Forte" },
+        { "tipo": "vantagem", "nome": "Gênio" },
+        { "tipo": "vantagem", "nome": "Resoluto" },
+        { "tipo": "vantagem", "nome": "Vigoroso" }
+      ]},
+      { "tipo": "desvantagem", "nome": "Código dos Heróis" }
+    ]
+  },
+  {
+    "nome": "Tanque",
+    "custo": 1,
+    "poderes": [
+      "Hoje não!: 1 vez/cena, ignore completamente um dano que o levaria a 0 PV.",
+      "Defesa gratuita: 1 vez/cena, use uma Defesa Especial sem gastar PM.",
+      "Último bastião: quando está perto da derrota, todos os seus testes de defesa recebem Ganho."
+    ],
+    "exigencias": [
+      { "tipo": "atributo", "nome": "Resistência", "valor": 3 },
+      { "tipo": "vantagem", "nome": "Defesa Especial (Provocação)" }
+    ]
+  },
+  {
+    "nome": "Treinador de Monstros",
+    "custo": 1,
+    "poderes": [
+      "Amigo dos monstros: cada uso de seu Ajudante custa -1 PM (mínimo 1).",
+      "Eu escolho você!: se tiver mais de um Ajudante, pode usar a vantagem duas vezes por rodada.",
+      "Temos que pegar!: 1 vez/sessão, faça um teste de Animais (9) para conseguir um novo Ajudante temporário."
+    ],
+    "exigencias": [
+      { "tipo": "pericia", "nome": "Animais" },
+      { "tipo": "vantagem", "nome": "Ajudante (qualquer)" }
+    ]
+  },
+  {
+    "nome": "Vigilante Sombrio",
+    "custo": 1,
+    "poderes": [
+      "Forma sombria: gaste um movimento para ganhar Incorpóreo por 1 PM/turno. Se já o tiver, interaja com o mundo físico por 1 PM.",
+      "Terror da noite: ao causar dano, gaste 2 PM para forçar o alvo a um teste de R. Se ele falhar, sofre Perda na próxima defesa.",
+      "Sumir nas sombras: gaste 1 PM em vez de 3 para ficar Invisível."
+    ],
+    "exigencias": [
+      { "tipo": "vantagem", "nome": "Invisível" },
+      { "tipo": "vantagem", "nome": "Sentido (infravisão)" }
+    ]
+  }
+]
+
+
 export const moedas = [
     // Fantasia
     { nome: 'Moedas de Ouro', sigla: 'MO' },

@@ -15,9 +15,7 @@ export const Item = styled.div`
   cursor: pointer;
 
   &:hover {
-    background-color: ${({ theme }) =>
-      theme.mode === 'dark' ? '#2a2a33' : '#e9e9ef'};
-    border-left-color: ${({ theme }) => theme.secondary};
+    filter: brightness(.8);
   }
 `;
 
