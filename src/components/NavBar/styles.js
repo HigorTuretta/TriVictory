@@ -19,6 +19,15 @@ export const Logo = styled(Link)`
   font-weight: 900;
   color: ${({ theme }) => theme.primary};
   text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: .3rem;
+    margin-right: 1rem;
+  >img{
+    width: 64px;
+    height: 64px;
+  }
 `;
 
 export const NavLinks = styled.div`
