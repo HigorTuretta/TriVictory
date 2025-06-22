@@ -83,6 +83,16 @@ export const Form = styled.form`
   gap: 1.25rem;
 `;
 
+export const AuthBox = styled.div`
+  background-color: ${({ theme }) => theme.surface};
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+`;
+
 export const Input = styled.input`
   padding: 14px;
   font-size: 1rem;

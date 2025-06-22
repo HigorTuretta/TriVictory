@@ -29,10 +29,9 @@ import { GlobalStyle } from './styles/GlobalStyle';
 import { pericias, vantagens, desvantagens, arquetipos } from './data/gameData';
 
 // Componente Interno para gerenciar as rotas e os dados globais do usuário logado
-const AppRoutes = () => {
+const AppRoutes = ({ theme, toggleTheme }) => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
-
     // A lógica de dados agora vive aqui, dentro do escopo de um usuário logado
     // Usamos o UID do usuário na chave do localStorage para separar os dados de cada um
     const [customSkills, setCustomSkills] = useLocalStorage(`3det_custom_skills_${currentUser?.uid}`, []);
@@ -82,10 +81,10 @@ const AppRoutes = () => {
             <Route path="/invite/:roomId" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
 
             {/* Rotas Protegidas que exigem Login */}
-            <Route path="/" element={<ProtectedRoute><MainLayout><Rooms /></MainLayout></ProtectedRoute>} />
-            <Route path="/characters" element={<ProtectedRoute><MainLayout><CharacterSelect /></MainLayout></ProtectedRoute>} />
-            <Route path="/room/:roomId" element={<ProtectedRoute><MainLayout><GameRoom /></MainLayout></ProtectedRoute>} />
-            
+            <Route path="/" element={<ProtectedRoute><MainLayout theme={theme} toggleTheme={toggleTheme}><Rooms /></MainLayout></ProtectedRoute>} />
+            <Route path="/characters" element={<ProtectedRoute><MainLayout theme={theme} toggleTheme={toggleTheme}><CharacterSelect /></MainLayout></ProtectedRoute>} />
+            <Route path="/room/:roomId" element={<ProtectedRoute><MainLayout theme={theme} toggleTheme={toggleTheme}><GameRoom /></MainLayout></ProtectedRoute>} />
+
             <Route path="/sheet/:characterId" element={
                 <ProtectedRoute>
                     <CharacterSheet
@@ -112,7 +111,7 @@ const AppRoutes = () => {
                     </MainLayout>
                 </ProtectedRoute>
             } />
-            
+
             {/* Rota para redirecionar qualquer caminho não encontrado */}
             <Route path="*" element={<Navigate to="/" />} />
         </Routes>
@@ -120,7 +119,7 @@ const AppRoutes = () => {
 };
 
 function App() {
-    const [theme, setTheme] = useState('dark');
+    const [theme, setTheme] = useLocalStorage('3det_theme', 'dark');
     const currentTheme = theme === 'light' ? lightTheme : darkTheme;
 
     return (
@@ -139,7 +138,7 @@ function App() {
             />
             <BrowserRouter>
                 <AuthProvider>
-                    <AppRoutes />
+                    <AppRoutes theme={theme} toggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')} />
                 </AuthProvider>
             </BrowserRouter>
         </ThemeProvider>
