@@ -1,14 +1,13 @@
 import styled from 'styled-components';
 
-export const Header = styled.header`
-  min-width: 100%;
+export const Header = styled.div`
+  width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: stretch;
-  flex-direction: row;
-  margin-bottom: 2.5rem;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 1rem;
-  
+  margin-bottom: 2.5rem;
 `;
 
 export const CharacterNameInput = styled.input`
@@ -18,8 +17,8 @@ export const CharacterNameInput = styled.input`
   border: none;
   border-bottom: 2px solid ${({ theme }) => theme.border};
   color: ${({ theme }) => theme.textPrimary};
-  flex-grow: 1;
   padding: 0.5rem 0;
+  flex: 1 1 300px; /* permite crescer e quebrar com limite mínimo */
 
   &:disabled {
     border-bottom: 2px solid transparent;
