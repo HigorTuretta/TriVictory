@@ -33,6 +33,7 @@ export const SelectionGrid = ({
     onAddItem, 
     onRemoveItem, 
     listName,
+    isEditing,
     onAddCustomItem,
     onUpdateCustomItem,
     onDeleteCustomItem

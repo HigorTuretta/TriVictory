@@ -20,7 +20,9 @@ import { TechniqueSelectionGrid } from '../TechniqueSelectionGrid';
 export const SheetFooter = ({
   isEditing, character, lockedItems, itemCounts, gameData,
   addItem, removeItem,
-  onAddTechnique, onRemoveTechnique, checkTechniqueRequirements, isBackstoryVisible
+  onAddTechnique, onRemoveTechnique, checkTechniqueRequirements, isBackstoryVisible,
+  setIsBackstoryVisible,
+  handleUpdate
 }) => {
   return (
     <FooterPanel>
