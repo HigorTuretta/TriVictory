@@ -13,6 +13,10 @@ export const AuthContainer = styled.div`
   background-size: 200px;
   background-position: center;
   background-repeat: repeat;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 export const LeftPane = styled.div`
@@ -43,6 +47,23 @@ export const LeftPane = styled.div`
     opacity: 0.85;
   }
 
+  @media (max-width: 768px) {
+    padding: 2rem;
+
+    img {
+      width: 180px;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+    }
+
+    p {
+      font-size: 1rem;
+      max-width: 100%;
+    }
+  }
+
   @keyframes float {
     0% { transform: translateY(0); }
     50% { transform: translateY(-6px); }
@@ -61,6 +82,12 @@ export const RightPane = styled(motion.div)`
   display: flex;
   flex-direction: column;
   justify-content: center;
+
+  @media (max-width: 768px) {
+    border-left: none;
+    border-top: 1px solid ${({ theme }) => theme.border};
+    padding: 2rem 1.5rem;
+  }
 `;
 
 export const Title = styled.h2`
