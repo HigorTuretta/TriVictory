@@ -1,7 +1,9 @@
 import styled, { css } from 'styled-components';
 import { motion } from 'framer-motion';
 import { rgba } from 'polished';
+
 const withBaseOpacity = (hex) => rgba(hex, 0.25);
+
 // O Wrapper principal
 export const Wrapper = styled.div`
   position: relative;
@@ -13,11 +15,19 @@ export const Wrapper = styled.div`
   background-color: ${({ theme }) => theme.surfaceVariant};
   color: ${({ theme }) => theme.onPrimary};
   margin-bottom: 2rem;
+
   ${({ $dead }) =>
     $dead &&
     css`
       filter: grayscale(100%) opacity(0.6);
     `}
+  
+  /* Media Query para telas menores */
+  @media (max-width: 768px) {
+    height: 250px;
+    border-radius: 0; /* Ocupa a largura toda da tela */
+    margin-bottom: 1.5rem;
+  }
 `;
 
 // A imagem de fundo do banner. Agora usa a prop '$position'
@@ -25,12 +35,12 @@ export const BannerImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* ✅ A mágica acontece aqui: A posição Y é controlada pela prop */
   object-position: center ${({ $position }) => $position}%;
   position: absolute;
   top: 0;
   left: 0;
   z-index: 1;
+  border-radius: 20px;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 `;
 
@@ -39,10 +49,11 @@ export const BannerOverlay = styled.div`
   position: absolute;
   inset: 0;
   z-index: 2;
+  border-radius: 20px;
   background: linear-gradient(
     to top,
-    rgba(30, 30, 38, 0.9) 0%,
-    rgba(30, 30, 38, 0.6) 30%,
+    rgba(30, 30, 38, 0.95) 0%, /* Aumenta a opacidade para melhor leitura */
+    rgba(30, 30, 38, 0.7) 40%,
     transparent 80%
   );
   cursor: pointer;
@@ -61,11 +72,26 @@ export const Content = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  pointer-events: none; 
+  pointer-events: none;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    justify-content: flex-end; /* Garante alinhamento inferior */
+  }
 `;
+
+// ✅ Wrapper para a linha inferior, contendo Token e Info
+const BottomRow = styled.div`
+    display: flex;
+    align-items: flex-end; /* Alinha token e texto pela base */
+    gap: 1rem;
+    pointer-events: auto; /* Permite interação com o conteúdo */
+`;
+
 
 // Token
 export const TokenWrap = styled.div`
+  /* Estilo base para desktop com position absolute */
   width: 84px;
   height: 84px;
   padding: 4px;
@@ -74,6 +100,16 @@ export const TokenWrap = styled.div`
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   z-index: 4;
   pointer-events: auto;
+  flex-shrink: 0; /* Impede que o token encolha */
+
+  /* ✅ Lógica mobile: se torna um item flex normal dentro do BottomRow */
+  @media (max-width: 768px) {
+    position: relative; /* Reseta o posicionamento absoluto */
+    bottom: auto;
+    left: auto;
+    width: 70px;
+    height: 70px;
+  }
 `;
 
 export const Token = styled.img`
@@ -93,6 +129,7 @@ export const UploadBtn = styled.button`
   border: none;
   border-radius: 50%;
   display: flex;
+  align-items: center;
   justify-content: center;
   background: ${({ theme }) => theme.primary};
   color: ${({ theme }) => theme.onPrimary};
@@ -106,14 +143,31 @@ export const UploadBtn = styled.button`
     opacity: 1;
     transform: scale(1.1);
   }
+
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    top: 1rem;
+    right: 1rem;
+  }
 `;
 
 // Informações do personagem
 export const Info = styled.div`
+  /* Estilo Desktop */
   padding-left: calc(84px + 1.5rem);
   margin-top: auto;
   pointer-events: auto;
+
+  /* ✅ Lógica mobile: se torna um item flex e reseta o padding */
+  @media (max-width: 768px) {
+    padding-left: 0;
+    flex-grow: 1; /* Ocupa o espaço restante */
+  }
 `;
+
+// Re-exportando para usar no componente principal
+export { BottomRow };
 
 export const NameInput = styled.input`
   width: 100%;
@@ -140,12 +194,17 @@ export const NameInput = styled.input`
     opacity: 0.7;
     -webkit-text-fill-color: #FFFFFF;
   }
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem; /* Fonte um pouco menor para caber melhor */
+  }
 `;
 
 export const PointsRow = styled.div`
   display: flex;
-  gap: 0.65rem;
-  margin-top: 0.8rem;
+  flex-wrap: wrap; /* Permite que as pills quebrem a linha se necessário */
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 `;
 
 export const Pill = styled.span`
@@ -157,15 +216,11 @@ export const Pill = styled.span`
   background: ${({ theme, $variant }) => {
     switch ($variant) {
       case 'base':
-
         return withBaseOpacity(theme.surface);
-
       case 'disBonus':
         return withBaseOpacity(theme.textSecondary);
-
       case 'remain':
         return withBaseOpacity(theme.success);
-
       default:
         return withBaseOpacity(theme.primary);
     }
@@ -173,4 +228,9 @@ export const Pill = styled.span`
 
   color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.2);
+
+  @media (max-width: 768px) {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.7rem;
+  }
 `;

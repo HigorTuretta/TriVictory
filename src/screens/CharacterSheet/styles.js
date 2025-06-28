@@ -1,4 +1,3 @@
-//src\screens\CharacterSheet\styles.js
 import styled, { keyframes, css } from 'styled-components';
 
 const fadeIn = keyframes`
@@ -7,11 +6,11 @@ const fadeIn = keyframes`
 `;
 
 export const SheetContainer = styled.div`
-  background-color: transparent; // O fundo agora é controlado pelo tema geral
-  padding: 0 2rem 2rem 2rem; // Remove o padding do topo
+  background-color: transparent;
+  padding: 0 2rem 2rem 2rem;
   border-radius: 18px;
-  border: none; // O header agora tem a borda principal
-  box-shadow: none; // O header agora tem a sombra principal
+  border: none;
+  box-shadow: none;
   max-width: 1400px;
   margin: 2rem auto;
   animation: ${css`${fadeIn} 0.5s ease-in-out`};
@@ -19,11 +18,16 @@ export const SheetContainer = styled.div`
   transition: filter 0.5s ease-in-out;
   filter: ${({ $isDead }) => ($isDead ? 'grayscale(100%)' : 'none')};
   
-  // Adiciona um espaçamento entre o Header e o próximo conteúdo
-  & > *:nth-child(2) { // O próximo elemento após o Header
+  & > *:nth-child(2) {
     margin-top: 2rem;
   }
+
+  @media (max-width: 768px) {
+    padding: 0 1rem 1rem 1rem;
+    margin: 1rem auto;
+  }
 `;
+
 export const DeathAnimationOverlay = styled.div`
   position: absolute;
   inset: 0;
@@ -35,6 +39,10 @@ export const DeathAnimationOverlay = styled.div`
   border-radius: 12px;
   pointer-events: none;
   div { width: 300px; height: 300px; }
+
+  @media (max-width: 768px) {
+    div { width: 200px; height: 200px; }
+  }
 `;
 
 export const FloatingActionButton = styled.button`
@@ -55,6 +63,16 @@ export const FloatingActionButton = styled.button`
   z-index: 100;
   transition: all 0.3s ease;
   &:hover { transform: scale(1.1) rotate(15deg); }
+
+  /* ✅ CORREÇÃO APLICADA AQUI */
+  @media (max-width: 768px) {
+    width: 55px;
+    height: 55px;
+    font-size: 1.3rem;
+    right: 1rem;
+    /* Aumenta a distância da parte inferior para não sobrepor outros elementos */
+    bottom: 5.5rem; 
+  }
 `;
 
 export const BackButton = styled.button`
@@ -62,6 +80,12 @@ export const BackButton = styled.button`
   color: ${({ theme }) => theme.background};
   margin-bottom: 1.5rem;
   &:hover { background-color: #b0b0c0; }
+  
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    align-self: flex-start;
+    margin-left: 1rem;
+  }
 `;
 
 export const Section = styled.section``;
@@ -73,6 +97,11 @@ export const SectionTitle = styled.h2`
   margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid ${({ theme }) => theme.border};
+
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 export const HeaderPanel = styled.div`
@@ -80,19 +109,32 @@ export const HeaderPanel = styled.div`
   display: grid;
   grid-template-columns: 3fr;
   gap: 2rem;
-  padding: 2rem; // Adiciona um padding interno
-  background: ${({ theme }) => theme.surface}; // Dá um fundo próprio
-  border-radius: 18px; // Arredonda as bordas
+  padding: 2rem;
+  background: ${({ theme }) => theme.surface};
+  border-radius: 18px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   margin-bottom: 2rem;
-  @media (max-width: 900px) { grid-template-columns: 1fr; }
+
+  @media (max-width: 900px) { 
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
 `;
+
 export const SheetLayoutGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1.5fr;
   gap: 2rem;
   align-items: start;
-  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+
+  @media (max-width: 1024px) { 
+    grid-template-columns: 1fr; 
+    gap: 1.5rem;
+  }
 `;
 
 export const DeathButton = styled.button`
@@ -117,16 +159,4 @@ export const DeathButton = styled.button`
   }
 
   &:hover { transform: scale(1.05); }
-`;
-
-export const ChoiceButton = styled.button`
-  width: 100%;
-  background-color: ${({ theme }) => theme.primary};
-  color: white;
-  text-align: center;
-  padding: 12px;
-  font-size: 1rem;
-  margin-top: 0.5rem;
-
-  &:hover { background-color: #7b3ff1; }
 `;
