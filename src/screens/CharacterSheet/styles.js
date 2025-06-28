@@ -64,13 +64,11 @@ export const FloatingActionButton = styled.button`
   transition: all 0.3s ease;
   &:hover { transform: scale(1.1) rotate(15deg); }
 
-  /* ✅ CORREÇÃO APLICADA AQUI */
   @media (max-width: 768px) {
     width: 55px;
     height: 55px;
     font-size: 1.3rem;
     right: 1rem;
-    /* Aumenta a distância da parte inferior para não sobrepor outros elementos */
     bottom: 5.5rem; 
   }
 `;
@@ -159,4 +157,31 @@ export const DeathButton = styled.button`
   }
 
   &:hover { transform: scale(1.05); }
+`;
+
+// ✅ CORREÇÃO: Adicionando o estilo 'ChoiceButton' que estava faltando
+export const ChoiceButton = styled.button`
+  width: 100%;
+  background-color: ${({ theme }) => theme.primary};
+  color: white;
+  text-align: center;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+
+  &:hover:not(:disabled) { 
+    background-color: ${({ theme }) => theme.secondary};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+  }
 `;
