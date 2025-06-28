@@ -10,6 +10,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
 import deathCharAnimation from '../../assets/lotties/deathChar.json';
 
+// ✅ Importação da imagem de placeholder local
+import HeroPlaceholder from '../../assets/HeroPlaceholder.png'; 
+
 import { ConfirmModal } from '../../components/ConfirmModal';
 import {
     PageWrapper,
@@ -55,7 +58,7 @@ const ITEMS_PER_PAGE = 9;
 export const CharacterSelect = () => {
     const [characters, setCharacters] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [basePoints, setBasePoints] = useState(12);
+    const [basePoints, setBasePoints] = useState(10);
     const [showConfirmModal, setShowConfirmModal] = useState(null);
     const [hoveredCard, setHoveredCard] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -93,10 +96,11 @@ export const CharacterSelect = () => {
             basePoints: parseInt(basePoints, 10) || 12,
             level: 0,
             xp: { current: 0, target: 100, system: 'unit' },
-            portraitImage: '',
-            tokenImage: '',
-            bannerPosition: 50,
-            tokenBorderColor: '#7b3ff1',
+            // ✅ Imagens Padrão atualizadas para usar o recurso local
+            portraitImage: 'https://res.cloudinary.com/ddhx9gcct/image/upload/v1751141269/nxp9picc2ipcob0e4vnq.jpg',
+            tokenImage: 'https://res.cloudinary.com/ddhx9gcct/image/upload/v1751141269/sizepmrpwvfvpqmwugln.jpg', // Usando a mesma imagem para o token
+            bannerPosition: 13, // Posição padrão para o banner
+            tokenBorderColor: '#888888', // Cor de borda neutra para o placeholder
             attributes: { poder: 0, habilidade: 0, resistencia: 0 },
             pv_current: 1, pm_current: 1, pa_current: 1,
             skills: [], advantages: [], disadvantages: [], inventory: [],
@@ -129,9 +133,8 @@ export const CharacterSelect = () => {
         }
     };
 
-    // Filtra os personagens e reseta a paginação ao buscar
     const filteredCharacters = useMemo(() => {
-        setCurrentPage(1); // Reseta para a primeira página a cada nova busca
+        setCurrentPage(1);
         if (!searchTerm) {
             return characters;
         }
@@ -140,7 +143,6 @@ export const CharacterSelect = () => {
         );
     }, [characters, searchTerm]);
 
-    // Pagina os personagens filtrados
     const paginatedCharacters = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
         const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -210,16 +212,13 @@ export const CharacterSelect = () => {
                                 whileHover={{ scale: 1.05, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
                                 transition={{ duration: 0.2 }}
                             >
-                                {/* — imagem de fundo e overlay — */}
                                 <CardBackgroundImage
                                     src={char.portraitImage || char.bannerImage || ''}
                                     $isDead={char.isDead}
                                 />
                                 <CardGradientOverlay />
 
-                                {/* — TODA a lógica de elementos flutuantes fica neste AnimatePresence — */}
                                 <AnimatePresence>
-                                    {/* DeleteButton — visível no hover, vivo OU morto */}
                                     {hoveredCard === char.id && (
                                         <DeleteButton
                                             key="deleteBtn"
@@ -229,11 +228,10 @@ export const CharacterSelect = () => {
                                             onClick={(e) => handleDeleteClick(e, char)}
                                             title="Apagar personagem"
                                         >
-                                            <FaTrash />
+                                            <FaTrash size={26} />
                                         </DeleteButton>
                                     )}
 
-                                    {/* Elementos adicionais quando morto */}
                                     {char.isDead && (
                                         <>
                                             <DeathLottie
@@ -259,7 +257,6 @@ export const CharacterSelect = () => {
                                 </AnimatePresence>
 
 
-                                {/* — conteúdo inferior (nome, nível etc.) — */}
                                 <CardContent>
                                     <Info>
                                         <span>{char.name || 'Personagem sem nome'}</span>
