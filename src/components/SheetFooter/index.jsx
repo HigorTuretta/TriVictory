@@ -3,6 +3,10 @@ import React from 'react';
 // Componentes Filhos
 import { SelectionGrid } from '../SelectionGrid';
 import { FinalizedView } from '../FinalizedView';
+import { TechniqueSelectionGrid } from '../TechniqueSelectionGrid';
+
+// Dados
+import * as gameData from '../../data/gameData';
 
 // Ícones e Estilos
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -15,12 +19,18 @@ import {
   VisibilityButton,
   BackstoryTextarea
 } from './styles';
-import { TechniqueSelectionGrid } from '../TechniqueSelectionGrid';
 
 export const SheetFooter = ({
-  isEditing, character, lockedItems, itemCounts, gameData,
-  addItem, removeItem,
-  onAddTechnique, onRemoveTechnique, checkTechniqueRequirements, isBackstoryVisible,
+  isEditing, 
+  character, 
+  lockedItems, 
+  itemCounts,
+  addItem, 
+  removeItem,
+  onAddTechnique, 
+  onRemoveTechnique, 
+  checkTechniqueRequirements, 
+  isBackstoryVisible,
   setIsBackstoryVisible,
   handleUpdate
 }) => {
@@ -124,3 +134,4 @@ export const SheetFooter = ({
     </FooterPanel>
   );
 };
+

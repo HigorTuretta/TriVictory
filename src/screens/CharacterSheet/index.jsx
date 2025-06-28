@@ -1,11 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
-import _ from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
+import { CharacterProvider, useCharacter } from '../../contexts/CharacterContext';
 import toast from 'react-hot-toast';
 import { FaHeartbeat, FaPencilAlt, FaSave, FaSkull } from 'react-icons/fa';
 import Lottie from 'lottie-react';
@@ -35,296 +32,162 @@ import {
   ChoiceButton
 } from './styles';
 
-// Helpers
-const hasItem = (list = [], name) => list.some((i) => i.nome === name);
-const findAdv = (n) => gameData.vantagens.find((a) => a.nome === n);
-const itemMatches = (item, reqName) => {
-  if (item.nome === reqName) return true;
-  if (item.subOption) {
-    const full = `${item.nome} ${item.subOption}`.replace(/\s+/g, ' ').trim();
-    return full === reqName;
-  }
-  return false;
-};
-// CORREÇÃO APLICADA AQUI
-const hasReqItem = (arr, reqName) => (arr || []).some((i) => itemMatches(i, reqName));
-
-const checkReq = (char, req) => {
-  switch (req.tipo) {
-    case 'pericia': return hasReqItem(char.skills, req.nome);
-    case 'vantagem': return hasReqItem(char.advantages, req.nome);
-    case 'desvantagem': return hasReqItem(char.disadvantages, req.nome);
-    case 'ou': return req.opcoes.some((r) => checkReq(char, r));
-    default: return true;
-  }
-};
-const unmetReqsForClass = (char, kit) => {
-  const list = [];
-  const walk = (req) => {
-    if (checkReq(char, req)) return;
-    if (req.tipo === 'ou') req.opcoes.forEach(walk);
-    else list.push(req);
-  };
-  kit?.exigencias?.forEach(walk);
-  return list;
-};
-
-// Componente Principal
-const noop = () => { };
-
-export const CharacterSheet = ({
-  goToArchetypeCreator = noop,
-  goToClassCreator = noop,
-  onAddCustomItem = noop,
-  onUpdateCustomItem = noop,
-  onDeleteCustomItem = noop
+// Componente interno que usa o Context
+const CharacterSheetContent = ({
+  goToArchetypeCreator = () => {},
+  goToClassCreator = () => {},
+  onAddCustomItem = () => {},
+  onUpdateCustomItem = () => {},
+  onDeleteCustomItem = () => {}
 }) => {
-  const { characterId } = useParams();
-  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentUser } = useAuth();
+  
+  // Usando o Context
+  const {
+    character,
+    loading,
+    isEditing,
+    setIsEditing,
+    points,
+    resources,
+    lockedItems,
+    itemCounts,
+    unmetClassReqs,
+    setUnmetClassReqs,
+    updateCharacter,
+    handleAttributeChange,
+    handleResourceChange,
+    addItem,
+    removeItem,
+    handleArchetypeChange,
+    handleMakeChoice,
+    handleAddKit,
+    handleRemoveKit,
+    checkTechniqueRequirements,
+    handleAddTechnique,
+    handleRemoveTechnique,
+    handleConsume
+  } = useCharacter();
 
-  const [character, setCharacter] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(location.state?.isNew || false);
+  // Estados locais específicos da UI
   const [isBackstoryVisible, setIsBackstoryVisible] = useState(false);
-  const [points, setPoints] = useState({ total: 12, used: 0, remaining: 12 });
-  const [unmetClassReqs, setUnmetClassReqs] = useState([]);
   const [confirmDeathModal, setConfirmDeathModal] = useState(false);
   const [confirmResModal, setConfirmResModal] = useState(false);
   const [choiceModal, setChoiceModal] = useState(null);
 
-  const debouncedUpdate = useCallback(_.debounce((id, data) => { if (id) updateDoc(doc(db, 'characters', id), data); }, 800), []);
-
+  // Inicializar modo de edição se for novo personagem
   useEffect(() => {
-    setLoading(true);
-    const unsub = onSnapshot(doc(db, 'characters', characterId), (snap) => {
-      if (!snap.exists()) { toast.error('Ficha não encontrada.'); navigate('/'); return; }
-      const data = snap.data();
-      if (!data.viewers?.includes(currentUser.uid)) { toast.error('Sem permissão para ver esta ficha.'); navigate('/'); return; }
-      setCharacter({ id: snap.id, ...data });
-      setLoading(false);
-    });
-    return () => unsub();
-  }, [characterId, currentUser.uid, navigate]);
+    if (location.state?.isNew) {
+      setIsEditing(true);
+    }
+  }, [location.state?.isNew, setIsEditing]);
 
+  // Gerenciar modal de escolhas de arquétipo
   useEffect(() => {
     if (!character) return;
-    const { attributes = {}, skills = [], advantages = [], disadvantages = [], archetype, kits = [], basePoints = 12 } = character;
-    const attrCost = Object.values(attributes).reduce((s, v) => s + v, 0);
-    const skillCost = skills.reduce((s, p) => s + p.custo, 0);
-    const advCost = advantages.filter((v) => !v.fromArchetype && !v.fromClass).reduce((s, v) => s + v.custo, 0);
-    const disBonus = disadvantages.filter((d) => !d.fromArchetype && !d.fromClass).reduce((s, d) => s + d.custo, 0);
-    const kitCost = kits.reduce((total, kit, index) => total + (index + 1), 0);
-    const used = attrCost + skillCost + advCost + (archetype?.custo || 0) + kitCost;
-    const total = basePoints - disBonus;
-    setPoints({ total, used, remaining: total - used });
-  }, [character]);
-
-  const resources = useMemo(() => {
-    if (!character) return { pv: 1, pm: 1, pa: 1 };
-    const { poder = 0, habilidade = 0, resistencia = 0 } = character.attributes || {};
-    return {
-      pa: poder || 1,
-      pm: habilidade > 0 ? habilidade * 5 : 1,
-      pv: resistencia > 0 ? resistencia * 5 : 1
-    };
-  }, [character]);
-
-  const lockedItems = useMemo(() => {
-    if (!character) return new Set();
-    const locked = new Set();
-    (character.archetype?.vantagensGratuitas || []).forEach(name => locked.add(name));
-    (character.kits || []).forEach(kit => {
-      (kit.vantagensGratuitas || []).forEach(name => locked.add(name));
-      (kit.exigencias || []).forEach(req => {
-        if (['vantagem', 'pericia', 'desvantagem'].includes(req.tipo)) {
-          locked.add(req.nome);
-        } else if (req.tipo === 'ou') {
-          const foundOption = req.opcoes.find(opt => hasReqItem(character[opt.tipo === 'pericia' ? 'skills' : (opt.tipo === 'vantagem' ? 'advantages' : 'disadvantages')], opt.nome));
-          if (foundOption) {
-            locked.add(foundOption.nome);
-          }
-        }
-      });
-    });
-    return locked;
-  }, [character]);
-
-  const itemCounts = useMemo(() => {
-    if (!character) return {};
-    const counts = {};
-    const allItems = [
-      ...(character.skills || []),
-      ...(character.advantages || []),
-      ...(character.disadvantages || [])
-    ];
-    allItems.forEach(item => {
-      counts[item.nome] = (counts[item.nome] || 0) + 1;
-    });
-    return counts;
-  }, [character]);
-
-  const handleUpdate = (patch) => {
-    setCharacter((prev) => {
-      const next = { ...prev, ...patch };
-      debouncedUpdate(prev.id, patch);
-      return next;
-    });
-  };
-
-  const handleConsume = (itemName) => {
-    const inventory = [...(character.inventory || [])];
-    const itemIndex = inventory.findIndex(i => i.name === itemName && i.quantity > 0);
-    if (itemIndex === -1) {
-      toast.error(`Você não tem mais "${itemName}".`);
-      return;
-    }
-    const updates = {};
-    let toastMessage = `"${itemName}" consumido.`;
-    switch (itemName) {
-      case 'Cura menor':
-        updates.pv_current = Math.min(resources.pv, (character.pv_current || 0) + 5);
-        toastMessage += " +5 PV recuperados.";
-        break;
-      case 'Cura maior':
-        updates.pv_current = Math.min(resources.pv, (character.pv_current || 0) + 10);
-        toastMessage += " +10 PV recuperados.";
-        break;
-      case 'Energia menor':
-        updates.pm_current = Math.min(resources.pm, (character.pm_current || 0) + 5);
-        toastMessage += " +5 PM recuperados.";
-        break;
-      case 'Energia maior':
-        updates.pm_current = Math.min(resources.pm, (character.pm_current || 0) + 10);
-        toastMessage += " +10 PM recuperados.";
-        break;
-      case 'Adrenalina menor':
-        updates.pa_current = Math.min(resources.pa, (character.pa_current || 0) + 1);
-        toastMessage += " +1 PA recuperado.";
-        break;
-    }
-    inventory[itemIndex].quantity -= 1;
-    updates.inventory = inventory.filter(i => i.quantity > 0);
-    handleUpdate(updates);
-    toast.success(toastMessage);
-  };
-
-  const handleAttributeChange = (attr, val) => { handleUpdate({ attributes: { ...character.attributes, [attr]: Math.max(0, Math.min(5, val)) } }); };
-  const handleResourceChange = (key, val) => handleUpdate({ [key]: val });
-  const addItem = (list, item, sub = null) => { if (character[list]?.some((i) => i.nome === item.nome && !item.repetivel)) { toast.error(`${item.nome} já foi adicionado(a).`); return; } handleUpdate({ [list]: [...(character[list] || []), { ...item, id: uuidv4(), subOption: sub }] }); onAddCustomItem(item); };
-  const removeItem = (list, id) => {
-    const tgt = character[list].find((i) => i.id === id);
-    if (!tgt) return;
-
-    // 1. Nova verificação: Se o item veio de uma escolha de arquétipo, bloqueia a remoção.
-    if (tgt.fromArchetype) {
-      toast.error('Escolha obrigatória do Arquétipo não pode ser removida.');
-      return;
-    }
-
-    // 2. A verificação existente para itens de Kit continua válida.
-    if (lockedItems.has(tgt.nome)) {
-      toast.error('Item obrigatório por um Kit não pode ser removido.');
-      return;
-    }
-
-    handleUpdate({ [list]: character[list].filter((i) => i.id !== id) });
-    onDeleteCustomItem(tgt);
-  };
-  const handleArchetypeChange = (e) => { const nome = e.target.value; const novo = gameData.arquetipos.find((a) => a.nome === nome) || null; const adv = (character.advantages || []).filter((v) => !v.fromArchetype); novo?.vantagensGratuitas?.forEach((vNome) => { if (!hasItem(adv, vNome)) { const v = findAdv(vNome); if (v) adv.push({ ...v, id: uuidv4(), fromArchetype: true }); } }); handleUpdate({ archetype: novo, archetypeChoices: {}, advantages: adv }); if (!novo?.escolhas) setChoiceModal(null); };
-  useEffect(() => { if (!character) return; const archetype = character.archetype; if (isEditing && archetype && archetype.escolhas) { const hasPendingChoices = archetype.escolhas.some(choice => !(character.archetypeChoices && character.archetypeChoices[choice.id])); if (hasPendingChoices && !choiceModal) { const nextChoice = archetype.escolhas.find(choice => !(character.archetypeChoices && character.archetypeChoices[choice.id])); if (nextChoice) setChoiceModal(nextChoice); } } }, [character, isEditing, choiceModal]);
-  const handleMakeChoice = (choice, chosenItem, subOption = null) => { const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true }; const listToUpdate = choice.tipo === 'vantagem' ? 'advantages' : 'disadvantages'; const updates = { archetypeChoices: { ...character.archetypeChoices, [choice.id]: newItem }, [listToUpdate]: [...(character[listToUpdate] || []), newItem] }; handleUpdate(updates); toast.success(`${newItem.nome}${subOption ? ` (${subOption})` : ''} definido como escolha de arquétipo!`); setChoiceModal(null); };
-  const handleAddKit = (kitName) => { if (!kitName) return; const kit = gameData.classes.find((c) => c.nome === kitName); if (!kit) return; const unmet = unmetReqsForClass(character, kit); if (unmet.length > 0) { setUnmetClassReqs(unmet); toast.error('Kit indisponível — veja os requisitos pendentes.'); return; } const newAdvantages = [...(character.advantages || [])]; kit.vantagensGratuitas?.forEach((vNome) => { if (!hasItem(newAdvantages, vNome)) { const v = findAdv(vNome); if (v) newAdvantages.push({ ...v, id: uuidv4(), fromClass: true, fromKit: kit.nome }); } }); setUnmetClassReqs([]); handleUpdate({ kits: [...(character.kits || []), kit], advantages: newAdvantages }); toast.success(`Kit "${kit.nome}" adicionado!`); };
-  const handleRemoveKit = (kitName) => { const newKits = (character.kits || []).filter(k => k.nome !== kitName); const newAdvantages = (character.advantages || []).filter(adv => !(adv.fromKit === kitName)); handleUpdate({ kits: newKits, advantages: newAdvantages }); toast.success(`Kit "${kitName}" removido.`); };
-
-  const checkTechniqueRequirements = useCallback((technique) => {
-    if (!technique.requisito) return { meets: true, unmet: [] };
-
-    const requirements = technique.requisito.split(/, | e /);
-    const allCharItems = [
-      ...(character.skills || []),
-      ...(character.advantages || []),
-      ...(character.techniques || [])
-    ];
-
-    const unmetReqs = [];
-
-    requirements.forEach(req => {
-      const reqLower = req.toLowerCase();
-
-      // Verifica Atributo (Ex: "Habilidade 2")
-      const attrMatch = reqLower.match(/(poder|habilidade|resistencia) (\d+)/);
-      if (attrMatch) {
-        const [, attr, value] = attrMatch;
-        if ((character.attributes[attr] || 0) < parseInt(value, 10)) {
-          unmetReqs.push(req);
-        }
-        return;
+    const archetype = character.archetype;
+    if (isEditing && archetype && archetype.escolhas) {
+      const hasPendingChoices = archetype.escolhas.some(choice => 
+        !(character.archetypeChoices && character.archetypeChoices[choice.id])
+      );
+      if (hasPendingChoices && !choiceModal) {
+        const nextChoice = archetype.escolhas.find(choice => 
+          !(character.archetypeChoices && character.archetypeChoices[choice.id])
+        );
+        if (nextChoice) setChoiceModal(nextChoice);
       }
+    }
+  }, [character, isEditing, choiceModal]);
 
-      // Verifica Vantagem, Perícia ou Técnica
-      if (!allCharItems.some(item => item.nome.toLowerCase() === reqLower)) {
-        unmetReqs.push(req);
-      }
-    });
+  // Wrapper para handleMakeChoice que fecha o modal
+  const handleMakeChoiceAndClose = (choice, chosenItem, subOption = null) => {
+    handleMakeChoice(choice, chosenItem, subOption);
+    setChoiceModal(null);
+  };
 
-    return { meets: unmetReqs.length === 0, unmet: unmetReqs };
-  }, [character]);
-
-  const handleAddTechnique = (technique, variation) => {
-    const currentTechniques = character.techniques || [];
-    const variationName = variation ? variation.nome : null;
-
-    // VERIFICAÇÃO: Checa se a combinação de técnica + variação já existe
-    const isDuplicate = currentTechniques.some(
-      (t) => t.nome === technique.nome && t.subOption === variationName
+  if (loading || !character) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '5rem' }}>
+        Carregando ficha…
+      </div>
     );
+  }
 
-    if (isDuplicate) {
-      toast.error(`Você já possui a técnica "${technique.nome}${variationName ? `: ${variationName}` : ''}".`);
-      return; // Impede a adição
-    }
-
-    const techniqueData = {
-      ...technique,
-      id: uuidv4(),
-      subOption: variationName,
-      descricao: variation ? variation.descricao : technique.descricao,
-    };
-    delete techniqueData.variacoes;
-
-    const newTechniques = [...currentTechniques, techniqueData];
-    handleUpdate({ techniques: newTechniques });
-    toast.success(`Técnica "${technique.nome}" adicionada!`);
-  };
-
-  const handleRemoveTechnique = (techniqueId) => {
-    const newTechniques = (character.techniques || []).filter(t => t.id !== techniqueId);
-    handleUpdate({ techniques: newTechniques });
-  };
-
-  if (loading || !character) { return (<div style={{ textAlign: 'center', marginTop: '5rem' }}>Carregando ficha…</div>); }
   const isOwner = currentUser.uid === character.ownerId;
 
   return (
     <SheetContainer $isDead={character.isDead}>
-      <ConfirmModal isOpen={confirmDeathModal} onClose={() => setConfirmDeathModal(false)} onConfirm={() => { handleUpdate({ isDead: true, pv_current: 0 }); toast('Que seus feitos sejam lembrados.', { icon: '💀' }); setConfirmDeathModal(false); }} title='Confirmar Morte' message='Isso marcará o personagem como morto. Continuar?' />
-      <ConfirmModal isOpen={confirmResModal} onClose={() => setConfirmResModal(false)} onConfirm={() => { handleUpdate({ isDead: false, pv_current: resources.pv }); toast.success('Milagre! Personagem ressuscitado.'); setConfirmResModal(false); }} title='Ressuscitar Personagem' message='Deseja trazer o personagem de volta à vida?' confirmButtonClass='resurrect' />
-      {character.isDead && (<DeathAnimationOverlay><Lottie animationData={deathAnimation} loop /></DeathAnimationOverlay>)}
+      <ConfirmModal 
+        isOpen={confirmDeathModal} 
+        onClose={() => setConfirmDeathModal(false)} 
+        onConfirm={() => { 
+          updateCharacter({ isDead: true, pv_current: 0 }); 
+          toast('Que seus feitos sejam lembrados.', { icon: '💀' }); 
+          setConfirmDeathModal(false); 
+        }} 
+        title='Confirmar Morte' 
+        message='Isso marcará o personagem como morto. Continuar?' 
+      />
+      
+      <ConfirmModal 
+        isOpen={confirmResModal} 
+        onClose={() => setConfirmResModal(false)} 
+        onConfirm={() => { 
+          updateCharacter({ isDead: false, pv_current: resources.pv }); 
+          toast.success('Milagre! Personagem ressuscitado.'); 
+          setConfirmResModal(false); 
+        }} 
+        title='Ressuscitar Personagem' 
+        message='Deseja trazer o personagem de volta à vida?' 
+        confirmButtonClass='resurrect' 
+      />
+      
+      {character.isDead && (
+        <DeathAnimationOverlay>
+          <Lottie animationData={deathAnimation} loop />
+        </DeathAnimationOverlay>
+      )}
+      
       <BackButton onClick={() => navigate(-1)}>← Voltar</BackButton>
-      <CharacterSheetHeader isEditing={isEditing} isOwner={isOwner} characterName={character.name} onNameChange={(e) => handleUpdate({ name: e.target.value })} points={points} basePoints={character.basePoints || 12} isDead={character.isDead} />
+      
+      <CharacterSheetHeader 
+        isEditing={isEditing} 
+        isOwner={isOwner} 
+        characterName={character.name} 
+        onNameChange={(e) => updateCharacter({ name: e.target.value })} 
+        points={points} 
+        basePoints={character.basePoints || 12} 
+        isDead={character.isDead} 
+      />
+      
       <HeaderPanel>
         <Section>
           <SectionTitle>Atributos e Recursos</SectionTitle>
-          <AttributeDisplay attributes={character.attributes} resources={resources} currentResources={{ pv_current: character.pv_current, pm_current: character.pm_current, pa_current: character.pa_current }} onAttributeChange={handleAttributeChange} onResourceChange={handleResourceChange} isEditing={isEditing} isDead={character.isDead} />
+          <AttributeDisplay 
+            attributes={character.attributes} 
+            resources={resources} 
+            currentResources={{ 
+              pv_current: character.pv_current, 
+              pm_current: character.pm_current, 
+              pa_current: character.pa_current 
+            }} 
+            onAttributeChange={handleAttributeChange} 
+            onResourceChange={handleResourceChange} 
+            isEditing={isEditing} 
+            isDead={character.isDead}
+            points={points}
+          />
         </Section>
       </HeaderPanel>
+      
       <SheetLayoutGrid>
-        <SheetLeftColumn
+        <SheetLeftColumn 
           character={character}
           isEditing={isEditing}
-          handleUpdate={handleUpdate}
+          isOwner={isOwner}
+          handleUpdate={updateCharacter}
           handleArchetypeChange={handleArchetypeChange}
           goToArchetypeCreator={goToArchetypeCreator}
           onAddKit={handleAddKit}
@@ -332,32 +195,112 @@ export const CharacterSheet = ({
           goToClassCreator={goToClassCreator}
           unmetClassReqs={unmetClassReqs}
         />
-        <SheetRightColumn
+        
+        <SheetRightColumn 
           character={character}
           isEditing={isEditing}
-          handleUpdate={handleUpdate}
+          isOwner={isOwner}
+          resources={resources}
+          handleUpdate={updateCharacter}
           onConsume={handleConsume}
+          isBackstoryVisible={isBackstoryVisible}
+          setIsBackstoryVisible={setIsBackstoryVisible}
         />
       </SheetLayoutGrid>
-      <SheetFooter
-        isEditing={isEditing}
+      
+      <SheetFooter 
         character={character}
+        isEditing={isEditing}
+        isOwner={isOwner}
         lockedItems={lockedItems}
         itemCounts={itemCounts}
-        gameData={gameData}
         addItem={addItem}
         removeItem={removeItem}
-
         onAddTechnique={handleAddTechnique}
         onRemoveTechnique={handleRemoveTechnique}
         checkTechniqueRequirements={checkTechniqueRequirements}
-
         isBackstoryVisible={isBackstoryVisible}
         setIsBackstoryVisible={setIsBackstoryVisible}
-        handleUpdate={handleUpdate}
+        handleUpdate={updateCharacter}
       />
-      {isOwner && (<> <FloatingActionButton title={isEditing ? 'Salvar' : 'Editar'} onClick={() => setIsEditing((e) => !e)} disabled={character.isDead}> {isEditing ? <FaSave /> : <FaPencilAlt />} </FloatingActionButton> {!isEditing && (character.isDead ? (<DeathButton className='resurrect' onClick={() => setConfirmResModal(true)}> <FaHeartbeat /> Ressuscitar </DeathButton>) : (<DeathButton onClick={() => setConfirmDeathModal(true)}> <FaSkull /> Declarar Morte </DeathButton>))} </>)}
-      {choiceModal && (<Modal isOpen={!!choiceModal} onClose={() => setChoiceModal(null)}><h3>{choiceModal.mensagem}</h3><div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>{(() => { const sourceList = choiceModal.tipo === 'desvantagem' ? gameData.desvantagens : gameData.vantagens; const itemsToShow = sourceList.filter(item => (choiceModal.listaFiltro && choiceModal.listaFiltro.includes(item.nome)) || (choiceModal.nomeFiltro && choiceModal.nomeFiltro === item.nome)); return itemsToShow.map(item => { if (item.opcoes) { return item.opcoes.map(opt => (<ChoiceButton key={opt} onClick={() => handleMakeChoice(choiceModal, item, opt)}>{item.nome}: {opt}</ChoiceButton>)); } return (<ChoiceButton key={item.nome} onClick={() => handleMakeChoice(choiceModal, item)}>Escolher {item.nome}</ChoiceButton>); }); })()}</div></Modal>)}
+
+      {/* Modal de Escolhas de Arquétipo */}
+      {choiceModal && (
+        <Modal 
+          isOpen={true} 
+          onClose={() => setChoiceModal(null)} 
+          title={`Escolha: ${choiceModal.titulo}`}
+        >
+          <div style={{ padding: '1rem' }}>
+            <p style={{ marginBottom: '1rem', color: 'var(--color-text-secondary)' }}>
+              {choiceModal.descricao}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {choiceModal.opcoes.map((opcao, index) => {
+                const item = gameData[choiceModal.tipo === 'vantagem' ? 'vantagens' : 'desvantagens']
+                  .find(i => i.nome === opcao.nome);
+                
+                return (
+                  <div key={index}>
+                    <ChoiceButton 
+                      onClick={() => handleMakeChoiceAndClose(choiceModal, item, opcao.subOption)}
+                    >
+                      {opcao.nome} {opcao.subOption && `(${opcao.subOption})`}
+                    </ChoiceButton>
+                    {item && (
+                      <p style={{ 
+                        fontSize: '0.8rem', 
+                        color: 'var(--color-text-secondary)', 
+                        marginTop: '0.25rem',
+                        marginLeft: '1rem'
+                      }}>
+                        {item.descricao}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Botões Flutuantes */}
+      {isOwner && (
+        <>
+          <FloatingActionButton 
+            onClick={() => setIsEditing(!isEditing)} 
+            style={{ bottom: '5rem', right: '2rem' }}
+            title={isEditing ? 'Sair do Modo Edição' : 'Entrar no Modo Edição'}
+          >
+            {isEditing ? <FaSave /> : <FaPencilAlt />}
+          </FloatingActionButton>
+          
+          {!isEditing && (
+            <>
+              <DeathButton 
+                onClick={() => character.isDead ? setConfirmResModal(true) : setConfirmDeathModal(true)}
+                $isDead={character.isDead}
+                title={character.isDead ? 'Ressuscitar Personagem' : 'Marcar como Morto'}
+              >
+                {character.isDead ? <FaHeartbeat /> : <FaSkull />}
+              </DeathButton>
+            </>
+          )}
+        </>
+      )}
     </SheetContainer>
   );
 };
+
+// Componente Principal com Provider
+export const CharacterSheet = (props) => {
+  const { characterId } = useParams();
+
+  return (
+    <CharacterProvider characterId={characterId}>
+      <CharacterSheetContent {...props} />
+    </CharacterProvider>
+  );
+};
+
