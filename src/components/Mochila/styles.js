@@ -8,6 +8,7 @@ export const MochilaContainer = styled.div`
   border: 1px solid ${({ theme }) => theme.border};
   border-radius: 8px;
   background-color: ${({ theme }) => theme.background};
+
 `;
 
 export const InventoryHeader = styled.div`
@@ -57,8 +58,8 @@ export const ItemList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 250px;
-  min-height: 100px;
+  min-height: 250px;
+  max-height: 1000px;
   overflow-y: auto;
   padding-right: 8px;
   border-bottom: 1px solid ${({ theme }) => theme.border};

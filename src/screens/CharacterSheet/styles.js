@@ -1,3 +1,4 @@
+//src\screens\CharacterSheet\styles.js
 import styled, { keyframes, css } from 'styled-components';
 
 const fadeIn = keyframes`
@@ -6,19 +7,23 @@ const fadeIn = keyframes`
 `;
 
 export const SheetContainer = styled.div`
-  background-color: ${({ theme }) => theme.surface};
-  padding: 2rem;
-  border-radius: 12px;
-  border: 1px solid ${({ theme }) => theme.border};
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background-color: transparent; // O fundo agora é controlado pelo tema geral
+  padding: 0 2rem 2rem 2rem; // Remove o padding do topo
+  border-radius: 18px;
+  border: none; // O header agora tem a borda principal
+  box-shadow: none; // O header agora tem a sombra principal
   max-width: 1400px;
   margin: 2rem auto;
   animation: ${css`${fadeIn} 0.5s ease-in-out`};
   position: relative;
   transition: filter 0.5s ease-in-out;
   filter: ${({ $isDead }) => ($isDead ? 'grayscale(100%)' : 'none')};
+  
+  // Adiciona um espaçamento entre o Header e o próximo conteúdo
+  & > *:nth-child(2) { // O próximo elemento após o Header
+    margin-top: 2rem;
+  }
 `;
-
 export const DeathAnimationOverlay = styled.div`
   position: absolute;
   inset: 0;
@@ -71,16 +76,16 @@ export const SectionTitle = styled.h2`
 `;
 
 export const HeaderPanel = styled.div`
-width: 100%;
+  width: 100%;
   display: grid;
   grid-template-columns: 3fr;
   gap: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid ${({ theme }) => theme.border};
-  margin-bottom: 2rem;
+  padding: 2rem; // Adiciona um padding interno
+  background: ${({ theme }) => theme.surface}; // Dá um fundo próprio
+  border-radius: 18px; // Arredonda as bordas
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   @media (max-width: 900px) { grid-template-columns: 1fr; }
 `;
-
 export const SheetLayoutGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1.5fr;
