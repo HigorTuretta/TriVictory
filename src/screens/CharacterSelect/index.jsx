@@ -1,17 +1,31 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import {
+    collection,
+    query,
+    where,
+    onSnapshot,
+    addDoc,
+    deleteDoc,
+    doc
+} from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { moedas } from '../../data/gameData';
 import toast from 'react-hot-toast';
-import { FaTrash, FaPlus, FaSearch, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import {
+    FaTrash,
+    FaPlus,
+    FaSearch,
+    FaArrowLeft,
+    FaArrowRight
+} from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
 import deathCharAnimation from '../../assets/lotties/deathChar.json';
 
-// ✅ Importação da imagem de placeholder local
-import HeroPlaceholder from '../../assets/HeroPlaceholder.png'; 
+// ✅ Imagem padrão local
+import HeroPlaceholder from '../../assets/HeroPlaceholder.png';
 
 import { ConfirmModal } from '../../components/ConfirmModal';
 import {
@@ -39,7 +53,7 @@ import {
     DeathLottie
 } from './styles';
 
-// --- Animações ---
+/* ------------------ Animações ------------------ */
 const gridVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -50,7 +64,12 @@ const gridVariants = {
 
 const cardVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.98 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+    }
 };
 
 const ITEMS_PER_PAGE = 9;
@@ -67,26 +86,37 @@ export const CharacterSelect = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
+    /* ----------- Carregar fichas do Firestore ----------- */
     useEffect(() => {
         if (!currentUser) return;
         setLoading(true);
-        const q = query(collection(db, "characters"), where("ownerId", "==", currentUser.uid));
 
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const charactersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setCharacters(charactersData);
-            setLoading(false);
-        }, (error) => {
-            console.error("Erro ao buscar fichas: ", error);
-            toast.error("Não foi possível carregar as suas fichas.");
-            setLoading(false);
-        });
+        const q = query(
+            collection(db, 'characters'),
+            where('ownerId', '==', currentUser.uid)
+        );
+
+        const unsubscribe = onSnapshot(
+            q,
+            (snapshot) => {
+                const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+                setCharacters(data);
+                setLoading(false);
+            },
+            (err) => {
+                console.error('Erro ao buscar fichas: ', err);
+                toast.error('Não foi possível carregar as suas fichas.');
+                setLoading(false);
+            }
+        );
 
         return () => unsubscribe();
     }, [currentUser]);
 
+    /* -------------- Criar nova ficha -------------- */
     const handleNewCharacter = async (e) => {
         e.preventDefault();
+
         const newChar = {
             ownerId: currentUser.uid,
             viewers: [currentUser.uid],
@@ -96,67 +126,101 @@ export const CharacterSelect = () => {
             basePoints: parseInt(basePoints, 10) || 12,
             level: 0,
             xp: { current: 0, target: 100, system: 'unit' },
-            // ✅ Imagens Padrão atualizadas para usar o recurso local
-            portraitImage: 'https://res.cloudinary.com/ddhx9gcct/image/upload/v1751141269/nxp9picc2ipcob0e4vnq.jpg',
-            tokenImage: 'https://res.cloudinary.com/ddhx9gcct/image/upload/v1751141269/sizepmrpwvfvpqmwugln.jpg', // Usando a mesma imagem para o token
-            bannerPosition: 13, // Posição padrão para o banner
-            tokenBorderColor: '#888888', // Cor de borda neutra para o placeholder
+            portraitImage:
+                'https://res.cloudinary.com/ddhx9gcct/image/upload/v1751141269/nxp9picc2ipcob0e4vnq.jpg',
+            tokenImage:
+                'https://res.cloudinary.com/ddhx9gcct/image/upload/v1751141269/sizepmrpwvfvpqmwugln.jpg',
+            bannerPosition: 13,
+            tokenBorderColor: '#888888',
             attributes: { poder: 0, habilidade: 0, resistencia: 0 },
-            pv_current: 1, pm_current: 1, pa_current: 1,
-            skills: [], advantages: [], disadvantages: [], inventory: [],
+            pv_current: 1,
+            pm_current: 1,
+            pa_current: 1,
+            skills: [],
+            advantages: [],
+            disadvantages: [],
+            inventory: []
         };
 
         try {
-            const docRef = await addDoc(collection(db, "characters"), newChar);
-            toast.success("Nova ficha forjada com bravura!");
+            const docRef = await addDoc(collection(db, 'characters'), newChar);
+            toast.success('Nova ficha forjada com bravura!');
             navigate(`/sheet/${docRef.id}`);
-        } catch (error) {
-            toast.error("Erro ao forjar a nova ficha.");
-            console.error("Erro ao criar personagem: ", error);
+        } catch (err) {
+            console.error('Erro ao criar personagem: ', err);
+            toast.error('Erro ao forjar a nova ficha.');
         }
     };
 
+    /* -------------- Excluir ficha -------------- */
     const handleDeleteClick = (e, char) => {
         e.stopPropagation();
         setShowConfirmModal(char);
     };
 
     const confirmDeletion = async () => {
-        if (showConfirmModal) {
-            try {
-                await deleteDoc(doc(db, "characters", showConfirmModal.id));
-                toast.success(`Ficha de "${showConfirmModal.name}" enviada para o além...`);
-                setShowConfirmModal(null);
-            } catch (error) {
-                toast.error("O além se recusou a receber a ficha. Tente novamente.");
-            }
+        if (!showConfirmModal) return;
+        try {
+            await deleteDoc(doc(db, 'characters', showConfirmModal.id));
+            toast.success(`Ficha de "${showConfirmModal.name}" enviada para o além...`);
+            setShowConfirmModal(null);
+        } catch {
+            toast.error('O além se recusou a receber a ficha. Tente novamente.');
         }
     };
 
+    /* -------------- Filtrar, ordenar e resetar página -------------- */
     const filteredCharacters = useMemo(() => {
         setCurrentPage(1);
-        if (!searchTerm) {
-            return characters;
+
+        /* Filtra pelo termo de busca (se houver) */
+        let list = characters;
+        if (searchTerm.trim()) {
+            const t = searchTerm.toLowerCase();
+            list = list.filter((c) => c.name.toLowerCase().includes(t));
         }
-        return characters.filter(char =>
-            char.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+
+        /* Ordena: vivos em A-Z, depois mortos em A-Z */
+        return [...list].sort((a, b) => {
+            if (a.isDead === b.isDead) {
+                return a.name
+                    .toLocaleLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .localeCompare(
+                        b.name
+                            .toLocaleLowerCase()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, ''),
+                        'pt-BR',
+                        { sensitivity: 'base' }
+                    );
+            }
+            return a.isDead ? 1 : -1; // vivos primeiro
+        });
     }, [characters, searchTerm]);
 
+    /* -------------- Paginação -------------- */
     const paginatedCharacters = useMemo(() => {
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        const endIndex = startIndex + ITEMS_PER_PAGE;
-        return filteredCharacters.slice(startIndex, endIndex);
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredCharacters.slice(start, start + ITEMS_PER_PAGE);
     }, [filteredCharacters, currentPage]);
 
     const totalPages = Math.ceil(filteredCharacters.length / ITEMS_PER_PAGE);
 
+    /* -------------- Loading -------------- */
     if (loading) {
-        return <PageWrapper><Title>A procurar as suas Lendas...</Title></PageWrapper>;
+        return (
+            <PageWrapper>
+                <Title>A procurar as suas Lendas...</Title>
+            </PageWrapper>
+        );
     }
 
+    /* --------------------- JSX --------------------- */
     return (
         <>
+            {/* Modal de confirmação de exclusão */}
             <ConfirmModal
                 isOpen={!!showConfirmModal}
                 onClose={() => setShowConfirmModal(null)}
@@ -164,15 +228,17 @@ export const CharacterSelect = () => {
                 title="Confirmar Eliminação"
                 message={`Tem a certeza que deseja apagar permanentemente a ficha de "${showConfirmModal?.name}"?`}
             />
+
             <PageWrapper>
                 <HeaderContainer>
                     <Title>As Minhas Lendas</Title>
+
+                    {/* Campo de busca */}
                     <SearchWrapper>
                         <SearchIcon>
                             <FaSearch size={14} />
                         </SearchIcon>
                         <SearchInput
-                            type="text"
                             placeholder="Buscar por nome..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -180,12 +246,20 @@ export const CharacterSelect = () => {
                     </SearchWrapper>
                 </HeaderContainer>
 
+                {/* Grade de personagens */}
                 <CharacterGrid variants={gridVariants} initial="hidden" animate="visible">
-                    <NewCharacterCard as={motion.form} variants={cardVariants} layout onSubmit={handleNewCharacter}>
-                        <FaPlus size={40} style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }} />
-                        <FormTitle htmlFor="points">
-                            Pontos Iniciais
-                        </FormTitle>
+                    {/* Card para criar nova ficha */}
+                    <NewCharacterCard
+                        as={motion.form}
+                        variants={cardVariants}
+                        layout
+                        onSubmit={handleNewCharacter}
+                    >
+                        <FaPlus
+                            size={40}
+                            style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}
+                        />
+                        <FormTitle htmlFor="points">Pontos Iniciais</FormTitle>
                         <PointsInput
                             id="points"
                             type="number"
@@ -193,10 +267,10 @@ export const CharacterSelect = () => {
                             onChange={(e) => setBasePoints(e.target.value)}
                             min="0"
                         />
-                        <NewCharacterButton type="submit">
-                            Criar Nova Ficha
-                        </NewCharacterButton>
+                        <NewCharacterButton type="submit">Criar Nova Ficha</NewCharacterButton>
                     </NewCharacterCard>
+
+                    {/* Cards das fichas existentes */}
                     <AnimatePresence>
                         {paginatedCharacters.map((char) => (
                             <CardWrapper
@@ -213,11 +287,12 @@ export const CharacterSelect = () => {
                                 transition={{ duration: 0.2 }}
                             >
                                 <CardBackgroundImage
-                                    src={char.portraitImage || char.bannerImage || ''}
+                                    src={char.portraitImage || char.bannerImage || HeroPlaceholder}
                                     $isDead={char.isDead}
                                 />
                                 <CardGradientOverlay />
 
+                                {/* Botão excluir + lottie de morto */}
                                 <AnimatePresence>
                                     {hoveredCard === char.id && (
                                         <DeleteButton
@@ -243,7 +318,6 @@ export const CharacterSelect = () => {
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.8 }}
                                             />
-
                                             <StatusPill
                                                 key="statusMorto"
                                                 initial={{ opacity: 0, y: -10 }}
@@ -256,7 +330,7 @@ export const CharacterSelect = () => {
                                     )}
                                 </AnimatePresence>
 
-
+                                {/* Informações do personagem */}
                                 <CardContent>
                                     <Info>
                                         <span>{char.name || 'Personagem sem nome'}</span>
@@ -271,18 +345,25 @@ export const CharacterSelect = () => {
                     </AnimatePresence>
                 </CharacterGrid>
 
+                {/* Paginação */}
                 {totalPages > 1 && (
                     <PaginationContainer>
-                        <PageButton onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>
-                            <FaArrowLeft size={12} />
-                            &nbsp; Anterior
+                        <PageButton
+                            onClick={() => setCurrentPage((p) => p - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <FaArrowLeft size={12} /> &nbsp; Anterior
                         </PageButton>
+
                         <PageIndicator>
                             Página {currentPage} de {totalPages}
                         </PageIndicator>
-                        <PageButton onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages}>
-                            Próxima &nbsp;
-                            <FaArrowRight size={12} />
+
+                        <PageButton
+                            onClick={() => setCurrentPage((p) => p + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            Próxima &nbsp; <FaArrowRight size={12} />
                         </PageButton>
                     </PaginationContainer>
                 )}
