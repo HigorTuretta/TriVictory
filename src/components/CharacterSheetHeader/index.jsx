@@ -82,10 +82,10 @@ export const CharacterSheetHeader = ({
             onChange={(e) => onNameChange(e.target.value)}
           />
           <PointsRow>
-            <Pill $variant="base">Base&nbsp;{total}</Pill>
-            <Pill>Gastos&nbsp;{used}</Pill>
-            <Pill $variant="disBonus">Desvantagens&nbsp;{disBonus}</Pill>
-            <Pill $variant="remain">Rest.&nbsp;{remaining}</Pill>
+            <Pill $variant="base">Base • &nbsp;{total}</Pill>
+            <Pill>Gastos • &nbsp;{used}</Pill>
+            <Pill $variant="disBonus">Desvantagens • &nbsp;{disBonus}</Pill>
+            <Pill $variant="remain">Disponível • &nbsp;{remaining}</Pill>
           </PointsRow>
         </Info>
       </Content>
