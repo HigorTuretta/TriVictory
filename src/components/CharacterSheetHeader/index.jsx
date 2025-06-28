@@ -1,15 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FaCamera } from 'react-icons/fa';
+import { FaCamera, FaExpandArrowsAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import {
   Wrapper,
   BannerImage,
   BannerOverlay,
   Content,
+  BottomRow,
   TokenWrap,
   Token,
   UploadBtn,
+  ExpandButton,
   Info,
   NameInput,
   PointsRow,
@@ -27,10 +29,7 @@ export const CharacterSheetHeader = ({
   onOpenImageManager,
   onBannerClick,
 }) => {
-  // ✅ CORREÇÃO APLICADA AQUI:
-  // Procura primeiro por 'portraitImage' (novo) e depois por 'bannerImage' (antigo).
   const bannerUrl = character?.portraitImage || character?.bannerImage || '';
-  console.log(points)
   const bannerPosition = character?.bannerPosition || 50;
   const tokenUrl = character?.tokenImage || '';
   const borderColor = character?.tokenBorderColor || '#7b3ff1';
@@ -58,36 +57,42 @@ export const CharacterSheetHeader = ({
         />
       )}
 
-      <BannerOverlay onClick={handleBannerClick} />
+      <BannerOverlay />
 
       {isOwner && isEditing && (
         <UploadBtn type="button" onClick={onOpenImageManager} title="Gerenciar Imagens">
-          <FaCamera size={18} />
+          <FaCamera size={22} />
         </UploadBtn>
       )}
 
+      {bannerUrl && (
+        <ExpandButton onClick={handleBannerClick} title="Ampliar Imagem">
+          <FaExpandArrowsAlt size={16} />
+        </ExpandButton>
+      )}
+
       <Content>
-
-
-        <Info>
+        <BottomRow>
           {tokenUrl && (
             <TokenWrap $border={borderColor}>
               <Token src={tokenUrl} alt="Token" />
             </TokenWrap>
           )}
-          <NameInput
-            value={characterName}
-            placeholder="Nome do personagem"
-            disabled={!isEditing || isDead}
-            onChange={(e) => onNameChange(e.target.value)}
-          />
-          <PointsRow>
-            <Pill $variant="base">Base • &nbsp;{total}</Pill>
-            <Pill>Gastos • &nbsp;{used}</Pill>
-            <Pill $variant="disBonus">Desvantagens • &nbsp;{disBonus}</Pill>
-            <Pill $variant="remain">Disponível • &nbsp;{remaining}</Pill>
-          </PointsRow>
-        </Info>
+          <Info>
+            <NameInput
+              value={characterName}
+              placeholder="Nome do personagem"
+              disabled={!isEditing || isDead}
+              onChange={(e) => onNameChange(e.target.value)}
+            />
+            <PointsRow>
+              <Pill $variant="base">Base • &nbsp;{total}</Pill>
+              <Pill>Gastos • &nbsp;{used}</Pill>
+              <Pill $variant="disBonus">Desvantagens • &nbsp;{disBonus}</Pill>
+              <Pill $variant="remain">Disponível • &nbsp;{remaining}</Pill>
+            </PointsRow>
+          </Info>
+        </BottomRow>
       </Content>
     </Wrapper>
   );
@@ -101,6 +106,7 @@ CharacterSheetHeader.propTypes = {
     total: PropTypes.number,
     used: PropTypes.number,
     remaining: PropTypes.number,
+    disBonus: PropTypes.number,
   }),
   isOwner: PropTypes.bool,
   isEditing: PropTypes.bool,

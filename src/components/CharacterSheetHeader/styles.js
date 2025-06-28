@@ -22,15 +22,14 @@ export const Wrapper = styled.div`
       filter: grayscale(100%) opacity(0.6);
     `}
   
-  /* Media Query para telas menores */
   @media (max-width: 768px) {
     height: 250px;
-    border-radius: 0; /* Ocupa a largura toda da tela */
+    border-radius: 0;
     margin-bottom: 1.5rem;
   }
 `;
 
-// A imagem de fundo do banner. Agora usa a prop '$position'
+// A imagem de fundo do banner
 export const BannerImage = styled.img`
   width: 100%;
   height: 100%;
@@ -40,7 +39,6 @@ export const BannerImage = styled.img`
   top: 0;
   left: 0;
   z-index: 1;
-  border-radius: 20px;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 `;
 
@@ -49,16 +47,14 @@ export const BannerOverlay = styled.div`
   position: absolute;
   inset: 0;
   z-index: 2;
-  border-radius: 20px;
   background: linear-gradient(
     to top,
-    rgba(30, 30, 38, 0.95) 0%, /* Aumenta a opacidade para melhor leitura */
+    rgba(30, 30, 38, 0.95) 0%,
     rgba(30, 30, 38, 0.7) 40%,
     transparent 80%
   );
-  cursor: pointer;
-
-  &:hover + ${BannerImage} {
+  
+  ${Wrapper}:hover & + ${BannerImage} {
       transform: scale(1.05);
   }
 `;
@@ -76,22 +72,20 @@ export const Content = styled.div`
 
   @media (max-width: 768px) {
     padding: 1rem;
-    justify-content: flex-end; /* Garante alinhamento inferior */
+    justify-content: flex-end;
   }
 `;
 
-// ✅ Wrapper para a linha inferior, contendo Token e Info
-const BottomRow = styled.div`
+// Wrapper para a linha inferior
+export const BottomRow = styled.div`
     display: flex;
-    align-items: flex-end; /* Alinha token e texto pela base */
+    align-items: flex-end;
     gap: 1rem;
-    pointer-events: auto; /* Permite interação com o conteúdo */
+    pointer-events: auto;
 `;
-
 
 // Token
 export const TokenWrap = styled.div`
-  /* Estilo base para desktop com position absolute */
   width: 84px;
   height: 84px;
   padding: 4px;
@@ -100,13 +94,9 @@ export const TokenWrap = styled.div`
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   z-index: 4;
   pointer-events: auto;
-  flex-shrink: 0; /* Impede que o token encolha */
+  flex-shrink: 0;
 
-  /* ✅ Lógica mobile: se torna um item flex normal dentro do BottomRow */
   @media (max-width: 768px) {
-    position: relative; /* Reseta o posicionamento absoluto */
-    bottom: auto;
-    left: auto;
     width: 70px;
     height: 70px;
   }
@@ -152,22 +142,47 @@ export const UploadBtn = styled.button`
   }
 `;
 
-// Informações do personagem
-export const Info = styled.div`
-  /* Estilo Desktop */
-  padding-left: calc(84px + 1.5rem);
-  margin-top: auto;
+// ✅ Botão para ampliar a imagem
+export const ExpandButton = styled.button`
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ theme }) => rgba(theme.surface, 0.7)};
+  backdrop-filter: blur(4px);
+  color: ${({ theme }) => theme.textPrimary};
+  cursor: pointer;
+  z-index: 5;
+  opacity: 0.7;
+  transition: all 0.2s;
   pointer-events: auto;
 
-  /* ✅ Lógica mobile: se torna um item flex e reseta o padding */
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    background: ${({ theme }) => theme.primary};
+    color: ${({ theme }) => theme.onPrimary};
+  }
+
   @media (max-width: 768px) {
-    padding-left: 0;
-    flex-grow: 1; /* Ocupa o espaço restante */
+    width: 36px;
+    height: 36px;
+    bottom: 1rem;
+    right: 1rem;
   }
 `;
 
-// Re-exportando para usar no componente principal
-export { BottomRow };
+// Informações do personagem
+export const Info = styled.div`
+  flex-grow: 1;
+  pointer-events: auto;
+`;
 
 export const NameInput = styled.input`
   width: 100%;
@@ -182,27 +197,21 @@ export const NameInput = styled.input`
   transition: border-color 0.2s;
   padding-bottom: 0.5rem;
 
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  &:focus {
-    border-color: ${({ theme }) => theme.primary};
-  }
-
+  &::placeholder { color: rgba(255, 255, 255, 0.7); }
+  &:focus { border-color: ${({ theme }) => theme.primary}; }
   &:disabled {
     opacity: 0.7;
     -webkit-text-fill-color: #FFFFFF;
   }
 
   @media (max-width: 768px) {
-    font-size: 1.5rem; /* Fonte um pouco menor para caber melhor */
+    font-size: 1.5rem;
   }
 `;
 
 export const PointsRow = styled.div`
   display: flex;
-  flex-wrap: wrap; /* Permite que as pills quebrem a linha se necessário */
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.5rem;
 `;
@@ -215,14 +224,10 @@ export const Pill = styled.span`
   backdrop-filter: blur(5px);
   background: ${({ theme, $variant }) => {
     switch ($variant) {
-      case 'base':
-        return withBaseOpacity(theme.surface);
-      case 'disBonus':
-        return withBaseOpacity(theme.textSecondary);
-      case 'remain':
-        return withBaseOpacity(theme.success);
-      default:
-        return withBaseOpacity(theme.primary);
+      case 'base': return withBaseOpacity(theme.surface);
+      case 'disBonus': return withBaseOpacity(theme.textSecondary);
+      case 'remain': return withBaseOpacity(theme.success);
+      default: return withBaseOpacity(theme.primary);
     }
   }};
 
