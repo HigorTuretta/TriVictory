@@ -29,16 +29,16 @@ export const CharacterSheetHeader = ({
   onOpenImageManager,
   onBannerClick,
 }) => {
-  const bannerUrl = character?.portraitImage || character?.bannerImage || '';
+  const bannerUrl      = character?.portraitImage || character?.bannerImage || '';
   const bannerPosition = character?.bannerPosition || 50;
-  const tokenUrl = character?.tokenImage || '';
+
+  const tokenUrl    = character?.tokenImage || '';
   const borderColor = character?.tokenBorderColor || '#7b3ff1';
+
   const { total = 0, used = 0, remaining = 0, disBonus = 0 } = points;
 
   const handleBannerClick = () => {
-    if (bannerUrl && onBannerClick) {
-      onBannerClick(bannerUrl);
-    }
+    if (bannerUrl && onBannerClick) onBannerClick(bannerUrl);
   };
 
   return (
@@ -52,7 +52,7 @@ export const CharacterSheetHeader = ({
       {bannerUrl && (
         <BannerImage
           src={bannerUrl}
-          alt="Banner do Personagem"
+          alt="Banner do personagem"
           $position={bannerPosition}
         />
       )}
@@ -60,36 +60,38 @@ export const CharacterSheetHeader = ({
       <BannerOverlay />
 
       {isOwner && isEditing && (
-        <UploadBtn type="button" onClick={onOpenImageManager} title="Gerenciar Imagens">
-          <FaCamera size={22} />
+        <UploadBtn title="Gerenciar imagens" onClick={onOpenImageManager}>
+          <FaCamera />
         </UploadBtn>
       )}
 
       {bannerUrl && (
-        <ExpandButton onClick={handleBannerClick} title="Ampliar Imagem">
-          <FaExpandArrowsAlt size={16} />
+        <ExpandButton title="Ampliar imagem" onClick={handleBannerClick}>
+          <FaExpandArrowsAlt />
         </ExpandButton>
       )}
 
       <Content>
         <BottomRow>
-          {tokenUrl && (
-            <TokenWrap $border={borderColor}>
-              <Token src={tokenUrl} alt="Token" />
-            </TokenWrap>
-          )}
           <Info>
+            {tokenUrl && (
+              <TokenWrap $border={borderColor}>
+                <Token src={tokenUrl} alt="Token" />
+              </TokenWrap>
+            )}
+
             <NameInput
               value={characterName}
               placeholder="Nome do personagem"
               disabled={!isEditing || isDead}
               onChange={(e) => onNameChange(e.target.value)}
             />
+
             <PointsRow>
-              <Pill $variant="base">Base • &nbsp;{total}</Pill>
-              <Pill>Gastos • &nbsp;{used}</Pill>
-              <Pill $variant="disBonus">Desvantagens • &nbsp;{disBonus}</Pill>
-              <Pill $variant="remain">Disponível • &nbsp;{remaining}</Pill>
+              <Pill $variant="base">Base •&nbsp;{total}</Pill>
+              <Pill>Gastos •&nbsp;{used}</Pill>
+              <Pill $variant="disBonus">Desvantagens •&nbsp;{disBonus}</Pill>
+              <Pill $variant="remain">Disponível •&nbsp;{remaining}</Pill>
             </PointsRow>
           </Info>
         </BottomRow>
@@ -99,18 +101,18 @@ export const CharacterSheetHeader = ({
 };
 
 CharacterSheetHeader.propTypes = {
-  character: PropTypes.object.isRequired,
-  characterName: PropTypes.string,
-  onNameChange: PropTypes.func,
-  points: PropTypes.shape({
-    total: PropTypes.number,
-    used: PropTypes.number,
+  character:       PropTypes.object.isRequired,
+  characterName:   PropTypes.string,
+  onNameChange:    PropTypes.func,
+  points:          PropTypes.shape({
+    total:     PropTypes.number,
+    used:      PropTypes.number,
     remaining: PropTypes.number,
-    disBonus: PropTypes.number,
+    disBonus:  PropTypes.number,
   }),
-  isOwner: PropTypes.bool,
-  isEditing: PropTypes.bool,
-  isDead: PropTypes.bool,
+  isOwner:            PropTypes.bool,
+  isEditing:          PropTypes.bool,
+  isDead:             PropTypes.bool,
   onOpenImageManager: PropTypes.func,
-  onBannerClick: PropTypes.func,
+  onBannerClick:      PropTypes.func,
 };

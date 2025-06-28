@@ -1,10 +1,12 @@
+// /components/CharacterSheetHeader/styles.js
 import styled, { css } from 'styled-components';
-import { motion } from 'framer-motion';
 import { rgba } from 'polished';
 
+/* helpers */
 const withBaseOpacity = (hex) => rgba(hex, 0.25);
+const fallback        = (v, def) => (v ? v : def);
 
-// O Wrapper principal
+/* container */
 export const Wrapper = styled.div`
   position: relative;
   height: 350px;
@@ -12,8 +14,7 @@ export const Wrapper = styled.div`
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-  background-color: ${({ theme }) => theme.surfaceVariant};
-  color: ${({ theme }) => theme.onPrimary};
+  background: ${({ theme }) => fallback(theme.surface, '#1e1e26')};
   margin-bottom: 2rem;
 
   ${({ $dead }) =>
@@ -21,7 +22,7 @@ export const Wrapper = styled.div`
     css`
       filter: grayscale(100%) opacity(0.6);
     `}
-  
+
   @media (max-width: 768px) {
     height: 250px;
     border-radius: 0;
@@ -29,20 +30,18 @@ export const Wrapper = styled.div`
   }
 `;
 
-// A imagem de fundo do banner
+/* banner */
 export const BannerImage = styled.img`
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center ${({ $position }) => $position}%;
-  position: absolute;
-  top: 0;
-  left: 0;
   z-index: 1;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 `;
 
-// Overlay com gradiente
 export const BannerOverlay = styled.div`
   position: absolute;
   inset: 0;
@@ -53,13 +52,13 @@ export const BannerOverlay = styled.div`
     rgba(30, 30, 38, 0.7) 40%,
     transparent 80%
   );
-  
+
   ${Wrapper}:hover & + ${BannerImage} {
-      transform: scale(1.05);
+    transform: scale(1.05);
   }
 `;
 
-// Conteúdo sobre a imagem
+/* conteúdo */
 export const Content = styled.div`
   position: relative;
   z-index: 3;
@@ -72,28 +71,24 @@ export const Content = styled.div`
 
   @media (max-width: 768px) {
     padding: 1rem;
-    justify-content: flex-end;
   }
 `;
 
-// Wrapper para a linha inferior
 export const BottomRow = styled.div`
-    display: flex;
-    align-items: flex-end;
-    gap: 1rem;
-    pointer-events: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  pointer-events: auto;
 `;
 
-// Token
+/* token */
 export const TokenWrap = styled.div`
   width: 84px;
   height: 84px;
   padding: 4px;
   border-radius: 50%;
-  background: ${({ $border }) => $border};
+  background: ${({ $border }) => fallback($border, '#8a4fff')};
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-  z-index: 4;
-  pointer-events: auto;
   flex-shrink: 0;
 
   @media (max-width: 768px) {
@@ -109,76 +104,65 @@ export const Token = styled.img`
   object-fit: cover;
 `;
 
-// Botão de upload
-export const UploadBtn = styled.button`
+/* mix-in de botões circulares */
+const IconBtn = css`
   position: absolute;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  display: flex;              /* alinhamento real */
+  align-items: center;
+  justify-content: center;
+  line-height: 0;             /* remove “cauda” de baseline */
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: auto;
+  z-index: 4;
+
+  & svg {
+    flex-shrink: 0;           /* não deforma */
+    fill: currentColor;
+  }
+
+  &:hover { transform: scale(1.1); }
+
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+  }
+`;
+
+/* upload */
+export const UploadBtn = styled.button`
+  ${IconBtn};
   top: 16px;
   right: 16px;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${({ theme }) => theme.primary};
-  color: ${({ theme }) => theme.onPrimary};
-  cursor: pointer;
-  z-index: 5;
-  opacity: 0.8;
-  transition: all 0.2s;
-  pointer-events: auto;
+  background: ${({ theme }) => fallback(theme.primary, '#8a4fff')};
+  color: ${({ theme }) => fallback(theme.onPrimary, '#fff')};
+  opacity: 0.9;
 
-  &:hover {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-
-  @media (max-width: 768px) {
-    width: 36px;
-    height: 36px;
-    top: 1rem;
-    right: 1rem;
-  }
+  &:hover { opacity: 1; }
 `;
 
-// ✅ Botão para ampliar a imagem
+/* expandir */
 export const ExpandButton = styled.button`
-  position: absolute;
+  ${IconBtn};
   bottom: 16px;
   right: 16px;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${({ theme }) => rgba(theme.surface, 0.7)};
+  background: ${({ theme }) => rgba(fallback(theme.surface, '#1e1e26'), 0.7)};
   backdrop-filter: blur(4px);
-  color: ${({ theme }) => theme.textPrimary};
-  cursor: pointer;
-  z-index: 5;
-  opacity: 0.7;
-  transition: all 0.2s;
-  pointer-events: auto;
+  color: ${({ theme }) => fallback(theme.textPrimary, '#fff')};
+  opacity: 0.8;
 
   &:hover {
+    background: ${({ theme }) => fallback(theme.primary, '#8a4fff')};
+    color: #fff;
     opacity: 1;
-    transform: scale(1.1);
-    background: ${({ theme }) => theme.primary};
-    color: ${({ theme }) => theme.onPrimary};
-  }
-
-  @media (max-width: 768px) {
-    width: 36px;
-    height: 36px;
-    bottom: 1rem;
-    right: 1rem;
   }
 `;
 
-// Informações do personagem
+/* info */
 export const Info = styled.div`
   flex-grow: 1;
   pointer-events: auto;
@@ -188,25 +172,19 @@ export const NameInput = styled.input`
   width: 100%;
   font-size: 2.5rem;
   font-weight: 900;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
   background: transparent;
-  color: #FFFFFF;
+  color: #fff;
   border: none;
-  outline: none;
   border-bottom: 2px solid transparent;
-  transition: border-color 0.2s;
   padding-bottom: 0.5rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  transition: border-color 0.2s;
 
   &::placeholder { color: rgba(255, 255, 255, 0.7); }
-  &:focus { border-color: ${({ theme }) => theme.primary}; }
-  &:disabled {
-    opacity: 0.7;
-    -webkit-text-fill-color: #FFFFFF;
-  }
+  &:focus         { border-color: ${({ theme }) => fallback(theme.primary, '#8a4fff')}; }
+  &:disabled      { opacity: 0.7; -webkit-text-fill-color: #fff; }
 
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-  }
+  @media (max-width: 768px) { font-size: 1.5rem; }
 `;
 
 export const PointsRow = styled.div`
@@ -222,17 +200,17 @@ export const Pill = styled.span`
   font-size: 0.8rem;
   font-weight: 700;
   backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+
   background: ${({ theme, $variant }) => {
     switch ($variant) {
-      case 'base': return withBaseOpacity(theme.surface);
-      case 'disBonus': return withBaseOpacity(theme.textSecondary);
-      case 'remain': return withBaseOpacity(theme.success);
-      default: return withBaseOpacity(theme.primary);
+      case 'base':      return withBaseOpacity(fallback(theme.surface, '#1e1e26'));
+      case 'disBonus':  return withBaseOpacity(fallback(theme.textSecondary, '#a0a0b0'));
+      case 'remain':    return withBaseOpacity(fallback(theme.success, '#4caf50'));
+      default:          return withBaseOpacity(fallback(theme.primary, '#8a4fff'));
     }
   }};
-
-  color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 
   @media (max-width: 768px) {
     padding: 0.3rem 0.7rem;
