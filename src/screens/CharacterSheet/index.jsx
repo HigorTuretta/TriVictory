@@ -34,7 +34,15 @@ import {
 
 /* --------------------- Conteúdo interno da tela ------------------------- */
 const CharacterSheetContent = () => {
-  const { character, loading, updateCharacter, resources, points } = useCharacter();
+  const { 
+    character, 
+    loading, 
+    updateCharacter, 
+    resources, 
+    points,
+    handleAttributeChange, 
+    handleResourceChange   
+  } = useCharacter();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -122,18 +130,18 @@ const CharacterSheetContent = () => {
 
       {/* cabeçalho */}
      <CharacterSheetHeader
-            isEditing={isEditing}
-            isOwner={isOwner}
-            characterName={character.name}
-            onNameChange={(value) => updateCharacter({ name: value })} // Corrigido para passar o valor
-            points={points}
-            isDead={character.isDead}
-            character={character}
-            onOpenImageManager={() => setImageModalOpen(true)}
-        />
-
+          isEditing={isEditing}
+          isOwner={isOwner}
+          characterName={character.name}
+          onNameChange={(value) => updateCharacter({ name: value })}
+          points={points}
+          isDead={character.isDead}
+          character={character}
+          onOpenImageManager={() => setImageModalOpen(true)}
+      />
+ 
       {/* atributos / recursos */}
-      <HeaderPanel>
+     <HeaderPanel>
         <Section>
           <SectionTitle>Atributos e Recursos</SectionTitle>
           <AttributeDisplay
@@ -144,8 +152,9 @@ const CharacterSheetContent = () => {
               pm_current: character.pm_current,
               pa_current: character.pa_current
             }}
-            onAttributeChange={(attrs) => updateCharacter({ attributes: attrs })}
-            onResourceChange={(res) => updateCharacter(res)}
+            // ✅ PASSO 2: Passe as funções corretas diretamente para as props
+            onAttributeChange={handleAttributeChange}
+            onResourceChange={handleResourceChange}
             isEditing={isEditing}
             isDead={character.isDead}
             points={points}

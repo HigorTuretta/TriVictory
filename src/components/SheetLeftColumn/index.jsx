@@ -21,6 +21,21 @@ export const SheetLeftColumn = ({
   goToClassCreator,
   unmetClassReqs,
 }) => {
+  // Função wrapper para sanitizar os dados do LevelXPTracker antes de atualizar
+  const handleXpTrackerUpdate = (updates) => {
+    const sanitizedUpdates = {
+      ...updates,
+      level: Number(updates.level) || 0,
+      basePoints: Number(updates.basePoints) || 12,
+      xp: {
+        ...updates.xp,
+        current: Number(updates.xp.current) || 0,
+        target: Number(updates.xp.target) || 100,
+      }
+    };
+    handleUpdate(sanitizedUpdates);
+  };
+  
   return (
     <LeftColumn>
       <Section>
@@ -36,10 +51,13 @@ export const SheetLeftColumn = ({
       <Section>
         <SectionTitle>Nível & XP</SectionTitle>
         <LevelXPTracker
-          level={character.level}
-          xp={character.xp}
-          onUpdate={handleUpdate}
+          level={character.level || 0}
+          xp={character.xp || { current: 0, target: 100, system: 'unit' }}
+          // Passando os pontos base atuais para o componente de XP
+          basePoints={character.basePoints || 12}
           isEditing={isEditing}
+          // ✅ CORREÇÃO: Usando a nova função que garante que os dados são números
+          onUpdate={handleXpTrackerUpdate}
           isDead={character.isDead}
         />
       </Section>
@@ -55,8 +73,8 @@ export const SheetLeftColumn = ({
         character={character}
         classes={gameData.classes}
         isEditing={isEditing}
-        onAddKit={onAddKit} 
-        onRemoveKit={onRemoveKit} 
+        onAddKit={onAddKit}
+        onRemoveKit={onRemoveKit}
         goToClassCreator={goToClassCreator}
         unmetReqs={unmetClassReqs}
       />

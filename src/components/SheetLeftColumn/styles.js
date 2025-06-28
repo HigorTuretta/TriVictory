@@ -1,3 +1,4 @@
+//src\components\SheetLeftColumn\styles.js
 import styled from 'styled-components';
 
 export const LeftColumn = styled.div`

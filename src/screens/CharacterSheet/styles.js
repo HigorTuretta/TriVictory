@@ -84,6 +84,7 @@ export const HeaderPanel = styled.div`
   background: ${({ theme }) => theme.surface}; // Dá um fundo próprio
   border-radius: 18px; // Arredonda as bordas
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  margin-bottom: 2rem;
   @media (max-width: 900px) { grid-template-columns: 1fr; }
 `;
 export const SheetLayoutGrid = styled.div`

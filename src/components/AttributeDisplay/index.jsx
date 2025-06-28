@@ -336,5 +336,5 @@ export const AttributeDisplay = ({
             </CompactCard>
         </CompactWrapper>
     );
-};
+}; 
 

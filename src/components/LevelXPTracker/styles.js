@@ -1,161 +1,230 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
+import { motion } from 'framer-motion';
 
-export const XPContainer = styled.div`
+// O container principal, agora mais integrado ao tema
+export const Wrapper = styled.div`
+  background: ${({ theme }) => theme.surface};
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  background-color: ${({ theme }) => theme.background};
-  padding: 0.75rem;
-  border-radius: 8px;
-  height: 100%;
+  gap: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid ${({ theme }) => theme.border};
+  min-height: 80px;
+
+  ${({ $isEditing }) => $isEditing && css`
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.2rem;
+  `}
 `;
 
+// -- MODO VISUALIZAÇÃO --
+
+// Círculo estiloso para o nível
 export const LevelDisplay = styled.div`
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: ${({ theme }) => theme.secondary};
-  white-space: nowrap;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  background: ${({ theme }) => theme.background};
+  border-radius: 50%;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   align-items: center;
+  justify-content: center;
+  border: 2px solid ${({ theme }) => theme.primary};
+  box-shadow: 0 0 15px ${({ theme }) => theme.primary}40;
+  
+  span:first-child {
+    font-size: 0.7rem;
+    color: ${({ theme }) => theme.textSecondary};
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  span:last-child {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: ${({ theme }) => theme.primary};
+    line-height: 1.1;
+  }
+`;
+
+// A nova barra de XP
+export const BarContainer = styled.div`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+`;
+
+export const BarInfo = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.textSecondary};
+  font-weight: 500;
+`;
+
+// Estilo para os botões de reset
+export const ResetActions = styled.div`
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+        background: transparent;
+        border: none;
+        color: ${({ theme }) => theme.textSecondary};
+        padding: 0.2rem;
+        cursor: pointer;
+        transition: color 0.2s, transform 0.2s;
+        display: flex;
+        align-items: center;
+
+        &:hover:not(:disabled) {
+            color: ${({ theme }) => theme.primary};
+            transform: scale(1.1);
+        }
+
+        &.danger:hover:not(:disabled) {
+            color: ${({ theme }) => theme.error};
+        }
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
 `;
 
 export const XPBar = styled.div`
-  flex-grow: 1;
-  height: 25px;
-  background-color: #101014;
-  border-radius: 25px;
-  position: relative;
+  width: 100%;
+  height: 18px;
+  background-color: ${({ theme }) => theme.background};
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid ${({ theme }) => theme.border};
 `;
 
-export const XPProgress = styled.div`
+// A barra de progresso com animação framer-motion
+export const XPProgress = styled(motion.div)`
   height: 100%;
-  width: ${props => props.$progress}%;
   background: linear-gradient(90deg, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
-  border-radius: 25px;
-  transition: width 0.5s ease-in-out;
+  border-radius: 18px;
 `;
 
-export const XPText = styled.span`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-weight: 500;
-  font-size: 0.8rem;
-  text-shadow: 1px 1px 2px black;
+// Botões de Ação (+ e -)
+export const Actions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
 `;
 
-export const ActionButtonsWrapper = styled.div`
-    display: flex;
-    gap: 0.5rem;
-    
-    button {
-        background-color: ${({ theme }) => theme.border};
-        color: ${({ theme }) => theme.textSecondary};
-        border-radius: 4px;
-        padding: 4px;
-        line-height: 0;
-        
-        &:hover {
-            color: ${({ theme }) => theme.textPrimary};
-        }
+export const ActionButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.border};
+  background: ${({ theme }) => theme.surfaceVariant || theme.background};
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-        &:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            color: ${({ theme }) => theme.textSecondary};
-        }
-    }
-`;
-
-export const AddXPButton = styled.button`
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: ${({ theme }) => theme.success};
+  &:not(:disabled):hover {
+    background: ${({ theme }) => theme.primary};
     color: white;
-    font-size: 1rem;
-    line-height: 1;
-    padding: 0;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-color: ${({ theme }) => theme.primary};
+    transform: translateY(-2px);
+  }
 
-    &:disabled {
-        background-color: ${({ theme }) => theme.border};
-        cursor: not-allowed;
-    }
+  &.remove:not(:disabled):hover {
+    background: ${({ theme }) => theme.error};
+    border-color: ${({ theme }) => theme.error};
+  }
 
-    &.remove {
-        background-color: ${({ theme }) => theme.error};
-    }
-
-    &:hover:not(:disabled) {
-        transform: scale(1.1);
-        box-shadow: 0 0 10px ${({ theme }) => theme.success};
-    }
-
-    &.remove:hover:not(:disabled) {
-        box-shadow: 0 0 10px ${({ theme }) => theme.error};
-    }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
+// Form inline para adicionar XP
 export const AddXpForm = styled.form`
     display: flex;
+    align-items: center;
     gap: 0.5rem;
+    flex-shrink: 0;
 `;
 
 export const AddXpInput = styled.input`
-    width: 60px;
-    padding: 5px;
+    width: 70px;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid ${({ theme }) => theme.border};
+    background: ${({ theme }) => theme.background};
+    color: ${({ theme }) => theme.textPrimary};
     text-align: center;
+    font-size: 1rem;
+
+    &:focus {
+        outline: none;
+        border-color: ${({ theme }) => theme.primary};
+        box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}40;
+    }
 `;
 
-export const EditContainer = styled.div`
-    background-color: ${({ theme }) => theme.background};
-    padding: 1rem;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    height: 100%;
-    justify-content: center;
+
+// -- MODO EDIÇÃO --
+// Estilos aprimorados para o formulário de edição
+
+export const EditGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
 `;
 
-export const EditForm = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-`;
+export const EditField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 
-export const EditLabel = styled.label`
-    color: ${({ theme }) => theme.textSecondary};
+  label {
+    font-size: 0.8rem;
     font-weight: 500;
-    flex-basis: 150px;
-    white-space: nowrap;
-`;
+    color: ${({ theme }) => theme.textSecondary};
+  }
 
-export const EditInput = styled.input`
-    flex-grow: 1;
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 6px;
+    border: 1px solid ${({ theme }) => theme.border};
+    background: ${({ theme }) => theme.background};
+    color: ${({ theme }) => theme.textPrimary};
+    
+    &:focus {
+        outline: none;
+        border-color: ${({ theme }) => theme.primary};
+        box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}40;
+    }
+  }
 `;
 
 export const RadioGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding-top: 0.5rem;
+
+  label {
     display: flex;
-    gap: 1rem;
     align-items: center;
-    
-    label {
-        margin-right: 10px;
-        cursor: pointer;
-    }
-    input[type="radio"] {
-        width: auto;
-        cursor: pointer;
-    }
+    gap: 0.4rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
 `;
