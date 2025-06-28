@@ -17,6 +17,7 @@ import { SheetLeftColumn } from '../../components/SheetLeftColumn';
 import { SheetRightColumn } from '../../components/SheetRightColumn';
 import { SheetFooter } from '../../components/SheetFooter';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { ImageLightbox } from '../../components/ImageLightbox';
 
 import deathAnimation from '../../assets/lotties/deathAnimation.json';
 
@@ -34,14 +35,14 @@ import {
 
 /* --------------------- Conteúdo interno da tela ------------------------- */
 const CharacterSheetContent = () => {
-  const { 
-    character, 
-    loading, 
-    updateCharacter, 
-    resources, 
+  const {
+    character,
+    loading,
+    updateCharacter,
+    resources,
     points,
-    handleAttributeChange, 
-    handleResourceChange   
+    handleAttributeChange,
+    handleResourceChange
   } = useCharacter();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -51,12 +52,12 @@ const CharacterSheetContent = () => {
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [confirmDeathModal, setConfirmDeathModal] = useState(false);
   const [confirmResModal, setConfirmResModal] = useState(false);
-
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   /* verifica se o usuário logado é o dono */
   const isOwner = character && currentUser.uid === character.ownerId;
 
   /* --------------------- upload de retrato / token ----------------------- */
- const handleImagesDone = useCallback(
+  const handleImagesDone = useCallback(
     // Recebe bannerUrl no lugar de portraitUrl
     async ({ bannerUrl, tokenUrl, tokenBorderColor }) => {
       if (!character?.id) return;
@@ -129,19 +130,20 @@ const CharacterSheetContent = () => {
       <BackButton onClick={() => navigate(-1)}>← Voltar</BackButton>
 
       {/* cabeçalho */}
-     <CharacterSheetHeader
-          isEditing={isEditing}
-          isOwner={isOwner}
-          characterName={character.name}
-          onNameChange={(value) => updateCharacter({ name: value })}
-          points={points}
-          isDead={character.isDead}
-          character={character}
-          onOpenImageManager={() => setImageModalOpen(true)}
+      <CharacterSheetHeader
+        isEditing={isEditing}
+        isOwner={isOwner}
+        characterName={character.name}
+        onNameChange={(value) => updateCharacter({ name: value })}
+        points={points}
+        isDead={character.isDead}
+        character={character}
+        onOpenImageManager={() => setImageModalOpen(true)}
+        onBannerClick={() => setLightboxOpen(true)}
       />
- 
+
       {/* atributos / recursos */}
-     <HeaderPanel>
+      <HeaderPanel>
         <Section>
           <SectionTitle>Atributos e Recursos</SectionTitle>
           <AttributeDisplay
@@ -221,6 +223,11 @@ const CharacterSheetContent = () => {
         open={imageModalOpen}
         onClose={() => setImageModalOpen(false)}
         onDone={handleImagesDone}
+      />
+      <ImageLightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        imageUrl={character?.bannerImage}
       />
     </SheetContainer>
   );

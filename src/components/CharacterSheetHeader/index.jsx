@@ -25,8 +25,8 @@ export const CharacterSheetHeader = ({
   isEditing = false,
   isDead = false,
   onOpenImageManager,
+  onBannerClick, // <-- Nova prop para o clique no banner
 }) => {
-  // ATENÇÃO: Usaremos 'bannerImage' como a nova propriedade
   const bannerUrl = character?.bannerImage || '';
   const tokenUrl = character?.tokenImage || '';
   const borderColor = character?.tokenBorderColor || '#7b3ff1';
@@ -40,34 +40,37 @@ export const CharacterSheetHeader = ({
       transition={{ duration: 0.5, ease: 'easeOut' }}
       $dead={isDead}
     >
-      {bannerUrl && <BannerImage src={bannerUrl} alt="Banner do Personagem" />}
-      <BannerOverlay />
+      {bannerUrl && (
+          <BannerImage src={bannerUrl} alt="Banner do Personagem" />
+      )}
+      
+      {/* O Overlay agora tem o onClick */}
+      <BannerOverlay onClick={onBannerClick} />
 
       {isOwner && isEditing && (
         <UploadBtn type="button" onClick={onOpenImageManager} title="Gerenciar Imagens">
-          <FaCamera />
+          <FaCamera size={18} />
         </UploadBtn>
       )}
 
       <Content>
-
+        {tokenUrl && (
+          <TokenWrap $border={borderColor}>
+            <Token src={tokenUrl} alt="Token" />
+          </TokenWrap>
+        )}
 
         <Info>
-          {tokenUrl && (
-            <TokenWrap $border={borderColor}>
-              <Token src={tokenUrl} alt="Token" />
-            </TokenWrap>
-          )}
           <NameInput
             value={characterName}
             placeholder="Nome do personagem"
             disabled={!isEditing || isDead}
-            onChange={(e) => onNameChange?.(e.target.value)}
+            onChange={(e) => onNameChange(e.target.value)}
           />
           <PointsRow>
             <Pill $variant="base">Base&nbsp;{total}</Pill>
             <Pill>Gastos&nbsp;{used}</Pill>
-            <Pill $variant="remain">Restantes&nbsp;{remaining}</Pill>
+            <Pill $variant="remain">Rest.&nbsp;{remaining}</Pill>
           </PointsRow>
         </Info>
       </Content>
@@ -88,4 +91,5 @@ CharacterSheetHeader.propTypes = {
   isEditing: PropTypes.bool,
   isDead: PropTypes.bool,
   onOpenImageManager: PropTypes.func,
+  onBannerClick: PropTypes.func, // <-- Nova prop
 };

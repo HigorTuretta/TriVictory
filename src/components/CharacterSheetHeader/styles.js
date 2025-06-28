@@ -11,7 +11,7 @@ export const Wrapper = styled.div`
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
   background-color: ${({ theme }) => theme.surfaceVariant};
   color: ${({ theme }) => theme.onPrimary}; // Cor padrão do texto sobre a imagem
-  margin-bottom: 1.5rem;
+
   ${({ $dead }) =>
     $dead &&
     css`
@@ -29,6 +29,7 @@ export const BannerImage = styled.img`
   top: 0;
   left: 0;
   z-index: 1;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 `;
 
 // Gradiente para garantir a legibilidade do texto sobre a imagem
@@ -42,6 +43,14 @@ export const BannerOverlay = styled.div`
     rgba(30, 30, 38, 0.6) 30%,
     transparent 80%
   );
+  
+  // ✅ Adicionado cursor para indicar que é clicável
+  cursor: pointer;
+
+  // Efeito de hover
+  &:hover + ${BannerImage} {
+      transform: scale(1.05);
+  }
 `;
 
 
@@ -54,10 +63,15 @@ export const Content = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end; // Alinha tudo na parte de baixo
+  // Impede que o conteúdo capture o clique do banner
+  pointer-events: none; 
 `;
 
 // Reposicionando o token
 export const TokenWrap = styled.div`
+  position: absolute;
+  bottom: -20px; // Metade para fora do banner
+  left: 2rem;
   width: 84px;
   height: 84px;
   padding: 4px; // Espaço para a borda
@@ -65,6 +79,7 @@ export const TokenWrap = styled.div`
   background: ${({ $border }) => $border};
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   z-index: 4;
+  pointer-events: auto; // Permite cliques no token
 `;
 
 export const Token = styled.img`
@@ -84,15 +99,14 @@ export const UploadBtn = styled.button`
   border: none;
   border-radius: 50%;
   display: grid;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  place-items: center;
   background: ${({ theme }) => theme.primary};
   color: ${({ theme }) => theme.onPrimary};
   cursor: pointer;
   z-index: 5; // Fica acima de tudo
   opacity: 0.8;
   transition: all 0.2s;
+  pointer-events: auto; // Permite cliques no botão
 
   &:hover {
     opacity: 1;
@@ -104,6 +118,7 @@ export const UploadBtn = styled.button`
 export const Info = styled.div`
   padding-left: calc(84px + 1.5rem); // Espaço para não ficar atrás do token
   margin-top: auto; // Garante que fique na parte de baixo do flex container
+  pointer-events: auto; // Permite cliques e seleção de texto
 `;
 
 export const NameInput = styled.input`
