@@ -1,17 +1,18 @@
 import styled, { css } from 'styled-components';
-
-// O Wrapper agora é o container principal do cabeçalho.
-// Ele terá a imagem de fundo e um gradiente.
+import { motion } from 'framer-motion';
+import { rgba } from 'polished';
+const withBaseOpacity = (hex) => rgba(hex, 0.25);
+// O Wrapper principal
 export const Wrapper = styled.div`
   position: relative;
-  height: 350px; // Altura do nosso banner
+  height: 350px;
   width: 100%;
   border-radius: 18px;
-  overflow: hidden; // Garante que a imagem não vaze
+  overflow: hidden;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
   background-color: ${({ theme }) => theme.surfaceVariant};
-  color: ${({ theme }) => theme.onPrimary}; // Cor padrão do texto sobre a imagem
-
+  color: ${({ theme }) => theme.onPrimary};
+  margin-bottom: 2rem;
   ${({ $dead }) =>
     $dead &&
     css`
@@ -19,12 +20,13 @@ export const Wrapper = styled.div`
     `}
 `;
 
-// Novo componente para a imagem de fundo do banner
+// A imagem de fundo do banner. Agora usa a prop '$position'
 export const BannerImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 25%; // Foca um pouco mais para cima da imagem
+  /* ✅ A mágica acontece aqui: A posição Y é controlada pela prop */
+  object-position: center ${({ $position }) => $position}%;
   position: absolute;
   top: 0;
   left: 0;
@@ -32,29 +34,25 @@ export const BannerImage = styled.img`
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 `;
 
-// Gradiente para garantir a legibilidade do texto sobre a imagem
+// Overlay com gradiente
 export const BannerOverlay = styled.div`
   position: absolute;
   inset: 0;
   z-index: 2;
   background: linear-gradient(
     to top,
-    rgba(30, 30, 38, 0.9) 0%, // Cor base do tema dark.surface
+    rgba(30, 30, 38, 0.9) 0%,
     rgba(30, 30, 38, 0.6) 30%,
     transparent 80%
   );
-  
-  // ✅ Adicionado cursor para indicar que é clicável
   cursor: pointer;
 
-  // Efeito de hover
   &:hover + ${BannerImage} {
       transform: scale(1.05);
   }
 `;
 
-
-// Container para o conteúdo (nome, pontos, token) que ficará sobre a imagem
+// Conteúdo sobre a imagem
 export const Content = styled.div`
   position: relative;
   z-index: 3;
@@ -62,24 +60,20 @@ export const Content = styled.div`
   padding: 1.8rem 2rem;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; // Alinha tudo na parte de baixo
-  // Impede que o conteúdo capture o clique do banner
+  justify-content: flex-end;
   pointer-events: none; 
 `;
 
-// Reposicionando o token
+// Token
 export const TokenWrap = styled.div`
-  position: absolute;
-  bottom: -20px; // Metade para fora do banner
-  left: 2rem;
   width: 84px;
   height: 84px;
-  padding: 4px; // Espaço para a borda
+  padding: 4px;
   border-radius: 50%;
   background: ${({ $border }) => $border};
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   z-index: 4;
-  pointer-events: auto; // Permite cliques no token
+  pointer-events: auto;
 `;
 
 export const Token = styled.img`
@@ -89,7 +83,7 @@ export const Token = styled.img`
   object-fit: cover;
 `;
 
-// Ajustando o botão de upload
+// Botão de upload
 export const UploadBtn = styled.button`
   position: absolute;
   top: 16px;
@@ -98,15 +92,15 @@ export const UploadBtn = styled.button`
   height: 40px;
   border: none;
   border-radius: 50%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
   background: ${({ theme }) => theme.primary};
   color: ${({ theme }) => theme.onPrimary};
   cursor: pointer;
-  z-index: 5; // Fica acima de tudo
+  z-index: 5;
   opacity: 0.8;
   transition: all 0.2s;
-  pointer-events: auto; // Permite cliques no botão
+  pointer-events: auto;
 
   &:hover {
     opacity: 1;
@@ -114,20 +108,20 @@ export const UploadBtn = styled.button`
   }
 `;
 
-// A área de informações (nome e pontos) agora fica dentro do Content
+// Informações do personagem
 export const Info = styled.div`
-  padding-left: calc(84px + 1.5rem); // Espaço para não ficar atrás do token
-  margin-top: auto; // Garante que fique na parte de baixo do flex container
-  pointer-events: auto; // Permite cliques e seleção de texto
+  padding-left: calc(84px + 1.5rem);
+  margin-top: auto;
+  pointer-events: auto;
 `;
 
 export const NameInput = styled.input`
   width: 100%;
-  font-size: 2.5rem; // Nome maior e mais destacado
+  font-size: 2.5rem;
   font-weight: 900;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
   background: transparent;
-  color: #FFFFFF; // Forçar branco para contraste
+  color: #FFFFFF;
   border: none;
   outline: none;
   border-bottom: 2px solid transparent;
@@ -144,7 +138,7 @@ export const NameInput = styled.input`
 
   &:disabled {
     opacity: 0.7;
-    -webkit-text-fill-color: #FFFFFF; // Mantém a cor no Safari
+    -webkit-text-fill-color: #FFFFFF;
   }
 `;
 
@@ -159,13 +153,24 @@ export const Pill = styled.span`
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 700;
-  backdrop-filter: blur(5px); // Efeito de vidro fosco para modernidade
-  background: ${({ theme, $variant }) =>
-    $variant === 'base'
-      ? 'rgba(255, 255, 255, 0.15)'
-      : $variant === 'remain'
-      ? theme.success
-      : theme.primary};
-  color: #FFFFFF; // Sempre branco para contraste
+  backdrop-filter: blur(5px);
+  background: ${({ theme, $variant }) => {
+    switch ($variant) {
+      case 'base':
+
+        return withBaseOpacity(theme.surface);
+
+      case 'disBonus':
+        return withBaseOpacity(theme.textSecondary);
+
+      case 'remain':
+        return withBaseOpacity(theme.success);
+
+      default:
+        return withBaseOpacity(theme.primary);
+    }
+  }};
+
+  color: #FFFFFF;
   border: 1px solid rgba(255, 255, 255, 0.2);
 `;

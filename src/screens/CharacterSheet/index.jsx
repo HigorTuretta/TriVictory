@@ -12,12 +12,12 @@ import { CharacterProvider, useCharacter } from '../../contexts/CharacterContext
 
 import { CharacterSheetHeader } from '../../components/CharacterSheetHeader';
 import { ImageCropperModal } from '../../components/ImageCropperModal';
+import { ImageLightbox } from '../../components/ImageLightbox';
 import { AttributeDisplay } from '../../components/AttributeDisplay';
 import { SheetLeftColumn } from '../../components/SheetLeftColumn';
 import { SheetRightColumn } from '../../components/SheetRightColumn';
 import { SheetFooter } from '../../components/SheetFooter';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { ImageLightbox } from '../../components/ImageLightbox';
 
 import deathAnimation from '../../assets/lotties/deathAnimation.json';
 
@@ -53,29 +53,33 @@ const CharacterSheetContent = () => {
   const [confirmDeathModal, setConfirmDeathModal] = useState(false);
   const [confirmResModal, setConfirmResModal] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImageUrl, setLightboxImageUrl] = useState('');
+
   /* verifica se o usuário logado é o dono */
   const isOwner = character && currentUser.uid === character.ownerId;
 
   /* --------------------- upload de retrato / token ----------------------- */
   const handleImagesDone = useCallback(
-    // Recebe bannerUrl no lugar de portraitUrl
-    async ({ bannerUrl, tokenUrl, tokenBorderColor }) => {
+    async ({ portraitImage, tokenImage, bannerPosition, tokenBorderColor }) => {
       if (!character?.id) return;
-
       const updatedData = {
-        bannerImage: bannerUrl, // Salva no campo 'bannerImage'
-        tokenImage: tokenUrl,
-        tokenBorderColor,
+        portraitImage,
+        tokenImage,
+        bannerPosition,
+        tokenBorderColor
       };
-
-      /* 1. salva no Firestore */
       await updateDoc(doc(db, 'characters', character.id), updatedData);
-
-      /* 2. atualiza contexto local */
       updateCharacter(updatedData);
     },
     [character, updateCharacter]
   );
+
+  const handleBannerClick = (imageUrl) => {
+    if (imageUrl) {
+      setLightboxImageUrl(imageUrl);
+      setLightboxOpen(true);
+    }
+  };
 
   /* ---------------------------------------------------------------------- */
   useEffect(() => {
@@ -139,7 +143,9 @@ const CharacterSheetContent = () => {
         isDead={character.isDead}
         character={character}
         onOpenImageManager={() => setImageModalOpen(true)}
-        onBannerClick={() => setLightboxOpen(true)}
+        onBannerClick={() =>
+          handleBannerClick(character.portraitImage || character.bannerImage)
+        }
       />
 
       {/* atributos / recursos */}
@@ -154,7 +160,6 @@ const CharacterSheetContent = () => {
               pm_current: character.pm_current,
               pa_current: character.pa_current
             }}
-            // ✅ PASSO 2: Passe as funções corretas diretamente para as props
             onAttributeChange={handleAttributeChange}
             onResourceChange={handleResourceChange}
             isEditing={isEditing}
@@ -187,6 +192,7 @@ const CharacterSheetContent = () => {
         isEditing={isEditing}
         isOwner={isOwner}
         points={points}
+        handleUpdate={updateCharacter}
       />
 
       {/* botões flutuantes */}
@@ -195,7 +201,9 @@ const CharacterSheetContent = () => {
           <FloatingActionButton
             onClick={() => setIsEditing((p) => !p)}
             style={{ bottom: '5rem', right: '2rem' }}
-            title={isEditing ? 'Sair do Modo Edição' : 'Entrar no Modo Edição'}
+            title={
+              isEditing ? 'Sair do Modo Edição' : 'Entrar no Modo Edição'
+            }
           >
             {isEditing ? <FaSave /> : <FaPencilAlt />}
           </FloatingActionButton>
@@ -209,7 +217,9 @@ const CharacterSheetContent = () => {
               }
               $isDead={character.isDead}
               title={
-                character.isDead ? 'Ressuscitar Personagem' : 'Marcar como Morto'
+                character.isDead
+                  ? 'Ressuscitar Personagem'
+                  : 'Marcar como Morto'
               }
             >
               {character.isDead ? <FaHeartbeat /> : <FaSkull />}
@@ -223,11 +233,14 @@ const CharacterSheetContent = () => {
         open={imageModalOpen}
         onClose={() => setImageModalOpen(false)}
         onDone={handleImagesDone}
+        characterImage={character?.portraitImage || character?.bannerImage}
       />
+
+      {/* lightbox */}
       <ImageLightbox
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
-        imageUrl={character?.bannerImage}
+        imageUrl={lightboxImageUrl}
       />
     </SheetContainer>
   );
@@ -242,3 +255,4 @@ export const CharacterSheet = (props) => {
     </CharacterProvider>
   );
 };
+

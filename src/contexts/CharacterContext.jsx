@@ -85,9 +85,9 @@ export const CharacterProvider = ({ children, characterId }) => {
     const advCost = advantages.filter((v) => !v.fromArchetype && !v.fromClass).reduce((s, v) => s + v.custo, 0);
     const disBonus = disadvantages.filter((d) => !d.fromArchetype && !d.fromClass).reduce((s, d) => s + d.custo, 0);
     const kitCost = kits.reduce((total, kit, index) => total + (index + 1), 0);
-    const used = attrCost + skillCost + advCost + (archetype?.custo || 0) + kitCost;
+    const used = (attrCost + skillCost + advCost + (archetype?.custo || 0) + kitCost) + disBonus;
     const total = basePoints - disBonus;
-    setPoints({ total, used, remaining: total - used });
+    setPoints({ total, used, remaining: total - used ,disBonus: disBonus});
   }, [character]);
 
   // Recursos calculados

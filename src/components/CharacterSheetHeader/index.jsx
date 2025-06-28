@@ -25,12 +25,22 @@ export const CharacterSheetHeader = ({
   isEditing = false,
   isDead = false,
   onOpenImageManager,
-  onBannerClick, // <-- Nova prop para o clique no banner
+  onBannerClick,
 }) => {
-  const bannerUrl = character?.bannerImage || '';
+  // ✅ CORREÇÃO APLICADA AQUI:
+  // Procura primeiro por 'portraitImage' (novo) e depois por 'bannerImage' (antigo).
+  const bannerUrl = character?.portraitImage || character?.bannerImage || '';
+  console.log(points)
+  const bannerPosition = character?.bannerPosition || 50;
   const tokenUrl = character?.tokenImage || '';
   const borderColor = character?.tokenBorderColor || '#7b3ff1';
-  const { total = 0, used = 0, remaining = 0 } = points;
+  const { total = 0, used = 0, remaining = 0, disBonus = 0 } = points;
+
+  const handleBannerClick = () => {
+    if (bannerUrl && onBannerClick) {
+      onBannerClick(bannerUrl);
+    }
+  };
 
   return (
     <Wrapper
@@ -41,11 +51,14 @@ export const CharacterSheetHeader = ({
       $dead={isDead}
     >
       {bannerUrl && (
-          <BannerImage src={bannerUrl} alt="Banner do Personagem" />
+        <BannerImage
+          src={bannerUrl}
+          alt="Banner do Personagem"
+          $position={bannerPosition}
+        />
       )}
-      
-      {/* O Overlay agora tem o onClick */}
-      <BannerOverlay onClick={onBannerClick} />
+
+      <BannerOverlay onClick={handleBannerClick} />
 
       {isOwner && isEditing && (
         <UploadBtn type="button" onClick={onOpenImageManager} title="Gerenciar Imagens">
@@ -54,13 +67,14 @@ export const CharacterSheetHeader = ({
       )}
 
       <Content>
-        {tokenUrl && (
-          <TokenWrap $border={borderColor}>
-            <Token src={tokenUrl} alt="Token" />
-          </TokenWrap>
-        )}
+
 
         <Info>
+          {tokenUrl && (
+            <TokenWrap $border={borderColor}>
+              <Token src={tokenUrl} alt="Token" />
+            </TokenWrap>
+          )}
           <NameInput
             value={characterName}
             placeholder="Nome do personagem"
@@ -70,6 +84,7 @@ export const CharacterSheetHeader = ({
           <PointsRow>
             <Pill $variant="base">Base&nbsp;{total}</Pill>
             <Pill>Gastos&nbsp;{used}</Pill>
+            <Pill $variant="disBonus">Desvantagens&nbsp;{disBonus}</Pill>
             <Pill $variant="remain">Rest.&nbsp;{remaining}</Pill>
           </PointsRow>
         </Info>
@@ -91,5 +106,5 @@ CharacterSheetHeader.propTypes = {
   isEditing: PropTypes.bool,
   isDead: PropTypes.bool,
   onOpenImageManager: PropTypes.func,
-  onBannerClick: PropTypes.func, // <-- Nova prop
+  onBannerClick: PropTypes.func,
 };
