@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-
+const BTN_SIZE = 44; 
+import Lottie from 'lottie-react';
 export const PageWrapper = styled.div`
   max-width: 1400px;
   margin: 2rem auto;
@@ -87,13 +88,20 @@ export const CardBackgroundImage = styled.div`
   background-image: url(${({ src }) => src});
   background-size: cover;
   background-position: center 25%;
-  transition: transform 0.4s ease;
+  transition: transform 0.4s ease, filter 0.3s ease;
 
-  ${CardWrapper}:hover & {
-    transform: scale(1.1);
-  }
+  /* O hover ainda aproxima, mas usamos filter p/ mortos */
+  ${({ $isDead }) =>
+    $isDead
+      ? `
+    filter: blur(3px) brightness(0.7) grayscale(30%);
+  `
+      : `
+    ${CardWrapper}:hover & {
+      transform: scale(1.1);
+    }
+  `}
 `;
-
 export const CardGradientOverlay = styled.div`
   position: absolute;
   inset: 0;
@@ -148,39 +156,53 @@ export const StatusPill = styled(motion.div)`
   color: ${({ theme }) => theme.onError || '#fff'};
   z-index: 3;
 `;
+export const DeathLottie = styled(Lottie)`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 60%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: none;     /* não bloqueia clique */
+`;
 
 export const DeleteButton = styled(motion.button)`
+  /* Posição no card */
   position: absolute;
   top: 1rem;
   left: 1rem;
 
-  /* área de clique recomendada (≈44 px) */
-  width: 44px;
-  height: 44px;
+  /* Dimensões do círculo */
+  width: ${BTN_SIZE}px;
+  height: ${BTN_SIZE}px;
   border-radius: 50%;
 
+  /* Estilo visual */
   background: ${({ theme }) => theme.surfaceElevated ?? 'rgba(255,255,255,0.08)'};
   border: 2px solid transparent;
   color: ${({ theme }) => theme.textPrimary};
-font-size: 1.6rem;
-line-height: 0; 
+
+  /* Layout interno */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 3;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  /* Ícone cresce proporcionalmente ao botão */
+  font-size: ${BTN_SIZE * 0.6}px; /* 60 % do círculo  → ~26 px */
+  line-height: 0;                 /* evita espaço extra */
 
   &:hover {
     background: ${({ theme }) => theme.error};
     color: ${({ theme }) => theme.onError ?? '#fff'};
-    border-color: ${({ theme }) => theme.error};
     transform: scale(1.06);
   }
 
-  /* qualquer SVG dentro do botão ocupa ~60 % do círculo */
   & > svg {
-    pointer-events: none;   /* não intercepta o hover */
+    pointer-events: none; /* ícone não “rouba” o hover */
   }
 `;
 // --- New Character Card ---
@@ -242,4 +264,39 @@ export const NewCharacterButton = styled.button`
     transform: scale(1.03);
     box-shadow: 0 4px 15px ${({ theme }) => theme.primary}40;
   }
+`;
+
+// --- ESTILOS DE PAGINAÇÃO ---
+export const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+`;
+
+export const PageButton = styled.button`
+  background: ${({ theme, $active }) => $active ? theme.primary : theme.surface};
+  color: ${({ theme, $active }) => $active ? theme.onPrimary : theme.textPrimary};
+  border: 1px solid ${({ theme }) => theme.border};
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: ${({ theme }) => theme.primary};
+    color: ${({ theme }) => theme.primary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+export const PageIndicator = styled.span`
+    color: ${({ theme }) => theme.textSecondary};
+    font-weight: 500;
 `;

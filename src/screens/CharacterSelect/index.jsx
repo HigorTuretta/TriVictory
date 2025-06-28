@@ -5,8 +5,10 @@ import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import { moedas } from '../../data/gameData';
 import toast from 'react-hot-toast';
-import { FaTrash, FaPlus, FaSearch } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaSearch, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import Lottie from 'lottie-react';
+import deathCharAnimation from '../../assets/lotties/deathChar.json';
 
 import { ConfirmModal } from '../../components/ConfirmModal';
 import {
@@ -28,6 +30,10 @@ import {
     FormTitle,
     PointsInput,
     NewCharacterButton,
+    PaginationContainer,
+    PageButton,
+    PageIndicator,
+    DeathLottie
 } from './styles';
 
 // --- Animações ---
@@ -44,6 +50,8 @@ const cardVariants = {
     visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
 };
 
+const ITEMS_PER_PAGE = 9;
+
 export const CharacterSelect = () => {
     const [characters, setCharacters] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -51,6 +59,7 @@ export const CharacterSelect = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(null);
     const [hoveredCard, setHoveredCard] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -59,7 +68,7 @@ export const CharacterSelect = () => {
         if (!currentUser) return;
         setLoading(true);
         const q = query(collection(db, "characters"), where("ownerId", "==", currentUser.uid));
-        
+
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const charactersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setCharacters(charactersData);
@@ -79,7 +88,7 @@ export const CharacterSelect = () => {
             ownerId: currentUser.uid,
             viewers: [currentUser.uid],
             name: 'Novo Herói',
-            isDead: false, 
+            isDead: false,
             money: { amount: 0, type: moedas[0] },
             basePoints: parseInt(basePoints, 10) || 12,
             level: 0,
@@ -120,14 +129,25 @@ export const CharacterSelect = () => {
         }
     };
 
+    // Filtra os personagens e reseta a paginação ao buscar
     const filteredCharacters = useMemo(() => {
+        setCurrentPage(1); // Reseta para a primeira página a cada nova busca
         if (!searchTerm) {
             return characters;
         }
-        return characters.filter(char => 
+        return characters.filter(char =>
             char.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [characters, searchTerm]);
+
+    // Pagina os personagens filtrados
+    const paginatedCharacters = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return filteredCharacters.slice(startIndex, endIndex);
+    }, [filteredCharacters, currentPage]);
+
+    const totalPages = Math.ceil(filteredCharacters.length / ITEMS_PER_PAGE);
 
     if (loading) {
         return <PageWrapper><Title>A procurar as suas Lendas...</Title></PageWrapper>;
@@ -135,12 +155,12 @@ export const CharacterSelect = () => {
 
     return (
         <>
-            <ConfirmModal 
-                isOpen={!!showConfirmModal} 
-                onClose={() => setShowConfirmModal(null)} 
-                onConfirm={confirmDeletion} 
-                title="Confirmar Eliminação" 
-                message={`Tem a certeza que deseja apagar permanentemente a ficha de "${showConfirmModal?.name}"?`} 
+            <ConfirmModal
+                isOpen={!!showConfirmModal}
+                onClose={() => setShowConfirmModal(null)}
+                onConfirm={confirmDeletion}
+                title="Confirmar Eliminação"
+                message={`Tem a certeza que deseja apagar permanentemente a ficha de "${showConfirmModal?.name}"?`}
             />
             <PageWrapper>
                 <HeaderContainer>
@@ -149,7 +169,7 @@ export const CharacterSelect = () => {
                         <SearchIcon>
                             <FaSearch size={14} />
                         </SearchIcon>
-                        <SearchInput 
+                        <SearchInput
                             type="text"
                             placeholder="Buscar por nome..."
                             value={searchTerm}
@@ -164,7 +184,7 @@ export const CharacterSelect = () => {
                         <FormTitle htmlFor="points">
                             Pontos Iniciais
                         </FormTitle>
-                        <PointsInput 
+                        <PointsInput
                             id="points"
                             type="number"
                             value={basePoints}
@@ -176,7 +196,7 @@ export const CharacterSelect = () => {
                         </NewCharacterButton>
                     </NewCharacterCard>
                     <AnimatePresence>
-                        {filteredCharacters.map((char) => (
+                        {paginatedCharacters.map((char) => (
                             <CardWrapper
                                 key={char.id}
                                 variants={cardVariants}
@@ -190,40 +210,85 @@ export const CharacterSelect = () => {
                                 whileHover={{ scale: 1.05, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
                                 transition={{ duration: 0.2 }}
                             >
-                                <CardBackgroundImage src={char.portraitImage || char.bannerImage || ''} />
+                                {/* — imagem de fundo e overlay — */}
+                                <CardBackgroundImage
+                                    src={char.portraitImage || char.bannerImage || ''}
+                                    $isDead={char.isDead}
+                                />
                                 <CardGradientOverlay />
+
+                                {/* — TODA a lógica de elementos flutuantes fica neste AnimatePresence — */}
                                 <AnimatePresence>
-                                    {char.isDead && (
-                                        <StatusPill initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}}>
-                                            Morto
-                                        </StatusPill>
-                                    )}
-                                </AnimatePresence>
-                                <AnimatePresence>
+                                    {/* DeleteButton — visível no hover, vivo OU morto */}
                                     {hoveredCard === char.id && (
                                         <DeleteButton
+                                            key="deleteBtn"
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.8 }}
-                                            onClick={(e) => handleDeleteClick(e, char)} 
+                                            onClick={(e) => handleDeleteClick(e, char)}
                                             title="Apagar personagem"
                                         >
                                             <FaTrash />
                                         </DeleteButton>
                                     )}
+
+                                    {/* Elementos adicionais quando morto */}
+                                    {char.isDead && (
+                                        <>
+                                            <DeathLottie
+                                                key="deathAnim"
+                                                animationData={deathCharAnimation}
+                                                loop
+                                                autoplay
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                            />
+
+                                            <StatusPill
+                                                key="statusMorto"
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                            >
+                                                Morto
+                                            </StatusPill>
+                                        </>
+                                    )}
                                 </AnimatePresence>
+
+
+                                {/* — conteúdo inferior (nome, nível etc.) — */}
                                 <CardContent>
                                     <Info>
                                         <span>{char.name || 'Personagem sem nome'}</span>
-                                        <small>Nível {char.level || 0} {char.archetype ? `• ${char.archetype.nome}` : ''}</small>
+                                        <small>
+                                            Nível {char.level || 0}
+                                            {char.archetype ? ` • ${char.archetype.nome}` : ''}
+                                        </small>
                                     </Info>
                                 </CardContent>
                             </CardWrapper>
                         ))}
                     </AnimatePresence>
-
-                    
                 </CharacterGrid>
+
+                {totalPages > 1 && (
+                    <PaginationContainer>
+                        <PageButton onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>
+                            <FaArrowLeft size={12} />
+                            &nbsp; Anterior
+                        </PageButton>
+                        <PageIndicator>
+                            Página {currentPage} de {totalPages}
+                        </PageIndicator>
+                        <PageButton onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages}>
+                            Próxima &nbsp;
+                            <FaArrowRight size={12} />
+                        </PageButton>
+                    </PaginationContainer>
+                )}
             </PageWrapper>
         </>
     );
