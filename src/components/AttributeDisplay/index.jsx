@@ -95,7 +95,7 @@ export const AttributeDisplay = ({
                     {points && (
                         <div style={{ 
                             fontSize: '0.7rem', 
-                            color: points.remaining <= 0 ? 'var(--color-error)' : 'var(--color-text-secondary)',
+                            color: points.remaining <= 0 ? '#F44336' : '#888',
                             marginTop: '0.25rem',
                             textAlign: 'center'
                         }}>
@@ -131,7 +131,7 @@ export const AttributeDisplay = ({
                     {points && (
                         <div style={{ 
                             fontSize: '0.7rem', 
-                            color: points.remaining <= 0 ? 'var(--color-error)' : 'var(--color-text-secondary)',
+                            color: points.remaining <= 0 ? '#F44336' : '#888',
                             marginTop: '0.25rem',
                             textAlign: 'center'
                         }}>
@@ -167,7 +167,7 @@ export const AttributeDisplay = ({
                     {points && (
                         <div style={{ 
                             fontSize: '0.7rem', 
-                            color: points.remaining <= 0 ? 'var(--color-error)' : 'var(--color-text-secondary)',
+                            color: points.remaining <= 0 ? '#F44336' : '#888',
                             marginTop: '0.25rem',
                             textAlign: 'center'
                         }}>
@@ -185,7 +185,7 @@ export const AttributeDisplay = ({
             <CompactCard>
                 <FaHeart color="#F44336" title="Pontos de Vida" />
                 <ResourceBar>
-                    <ResourceProgress $progress={(currentResources.pv_current / resources.pv) * 100} $color="var(--color-error)" />
+                    <ResourceProgress $progress={(currentResources.pv_current / resources.pv) * 100} $color="#F44336" />
                     <ResourceText>{currentResources.pv_current} / {resources.pv}</ResourceText>
                 </ResourceBar>
                 <ResourceControls>
@@ -236,7 +236,7 @@ export const AttributeDisplay = ({
             <CompactCard>
                 <FaBolt color="#00BCD4" title="Pontos de Mana" />
                 <ResourceBar>
-                    <ResourceProgress $progress={(currentResources.pm_current / resources.pm) * 100} $color="var(--color-secondary)" />
+                    <ResourceProgress $progress={(currentResources.pm_current / resources.pm) * 100} $color="#00BCD4" />
                     <ResourceText>{currentResources.pm_current} / {resources.pm}</ResourceText>
                 </ResourceBar>
                 <ResourceControls>

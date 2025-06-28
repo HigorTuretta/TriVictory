@@ -167,9 +167,19 @@ export const CharacterProvider = ({ children, characterId }) => {
       toast.error(`${item.nome} já foi adicionado(a).`);
       return;
     }
+    
     updateCharacter({
       [list]: [...(character[list] || []), { ...item, id: uuidv4(), subOption: sub }]
     });
+    
+    // Toast de sucesso
+    const itemName = sub ? `${item.nome} (${sub})` : item.nome;
+    const listNames = {
+      skills: 'Perícia',
+      advantages: 'Vantagem',
+      disadvantages: 'Desvantagem'
+    };
+    toast.success(`${listNames[list]} "${itemName}" adicionada!`);
   };
 
   // Remover item
@@ -190,6 +200,15 @@ export const CharacterProvider = ({ children, characterId }) => {
     updateCharacter({ 
       [list]: character[list].filter((i) => i.id !== id) 
     });
+    
+    // Toast de sucesso
+    const itemName = tgt.subOption ? `${tgt.nome} (${tgt.subOption})` : tgt.nome;
+    const listNames = {
+      skills: 'Perícia',
+      advantages: 'Vantagem',
+      disadvantages: 'Desvantagem'
+    };
+    toast.success(`${listNames[list]} "${itemName}" removida!`);
   };
 
   // Mudança de arquétipo
@@ -210,6 +229,13 @@ export const CharacterProvider = ({ children, characterId }) => {
       archetypeChoices: {},
       advantages: adv
     });
+    
+    // Toast de sucesso
+    if (novo) {
+      toast.success(`Arquétipo "${novo.nome}" selecionado!`);
+    } else {
+      toast.success('Arquétipo removido!');
+    }
   };
 
   // Fazer escolha de arquétipo
@@ -321,13 +347,23 @@ export const CharacterProvider = ({ children, characterId }) => {
 
     const newTechniques = [...currentTechniques, techniqueData];
     updateCharacter({ techniques: newTechniques });
-    toast.success(`Técnica "${technique.nome}" adicionada!`);
+    
+    // Toast de sucesso
+    const techName = variationName ? `${technique.nome}: ${variationName}` : technique.nome;
+    toast.success(`Técnica "${techName}" adicionada!`);
   };
 
   // Remover técnica
   const handleRemoveTechnique = (techniqueId) => {
+    const technique = (character.techniques || []).find(t => t.id === techniqueId);
     const newTechniques = (character.techniques || []).filter(t => t.id !== techniqueId);
     updateCharacter({ techniques: newTechniques });
+    
+    // Toast de sucesso
+    if (technique) {
+      const techName = technique.subOption ? `${technique.nome}: ${technique.subOption}` : technique.nome;
+      toast.success(`Técnica "${techName}" removida!`);
+    }
   };
 
   // Consumir item

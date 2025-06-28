@@ -15,13 +15,13 @@ export const AttributeGrid = styled.div`
 export const AttributeCard = styled.div`
   background: linear-gradient(
     145deg,
-    ${({ theme }) => theme.surface},
-    ${({ theme }) => theme.background}
+    ${({ theme }) => theme?.surface || '#2a2a2a'},
+    ${({ theme }) => theme?.background || '#1a1a1a'}
   );
   padding: 1.5rem;
   border-radius: 10px;
   text-align: center;
-  border: 1px solid ${({ theme }) => theme.border};
+  border: 1px solid ${({ theme }) => theme?.border || '#444'};
   box-shadow: 5px 5px 15px #0d0d10, -5px -5px 15px #17171e;
   display: flex;
   flex-direction: column;
@@ -32,7 +32,7 @@ export const AttributeCard = styled.div`
 export const CardValue = styled.h3`
   font-size: 3rem;
   font-weight: 900;
-  color: ${({ theme }) => theme.primary};
+  color: ${({ theme }) => theme?.primary || '#7b3ff1'};
   transition: color 0.3s ease;
 `;
 
@@ -44,11 +44,12 @@ export const CardLabel = styled.p`
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  color: ${({ theme }) => theme?.textPrimary || '#ffffff'};
 `;
 
 export const CardResource = styled.p`
   font-size: 1rem;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme?.secondary || '#7b3ff1'};
   margin-bottom: 1rem;
   min-height: 24px;
   display: flex;
@@ -68,17 +69,17 @@ export const ControlButton = styled.button`
   width: 35px;
   height: 35px;
   border-radius: 50%;
-  background-color: ${({ theme, disabled }) => disabled ? theme.border : theme.secondary};
-  color: ${({ disabled }) => disabled ? '#666' : '#ffffff'};
+  background-color: ${({ disabled }) => disabled ? '#666' : '#7b3ff1'};
+  color: ${({ disabled }) => disabled ? '#999' : '#ffffff'};
   font-size: 1.5rem;
   line-height: 1;
   padding: 0;
-  border: 2px solid ${({ theme, disabled }) => disabled ? theme.border : theme.surface};
+  border: 2px solid ${({ disabled }) => disabled ? '#666' : '#9c5ff7'};
   transition: all 0.2s ease;
   cursor: ${({ disabled }) => disabled ? 'not-allowed' : 'pointer'};
 
   &:hover:not(:disabled) {
-    background-color: #7b3ff1;
+    background-color: #9c5ff7;
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(123, 63, 241, 0.3);
   }
@@ -107,8 +108,8 @@ export const CompactWrapper = styled.div`
 `;
 
 export const CompactCard = styled.div`
-  background-color: ${({ theme }) => theme.surface};
-  border: 1px solid ${({ theme }) => theme.border};
+  background-color: ${({ theme }) => theme?.surface || '#2a2a2a'};
+  border: 1px solid ${({ theme }) => theme?.border || '#444'};
   border-radius: 8px;
   padding: 0.75rem 1rem;
   display: grid;
@@ -118,7 +119,7 @@ export const CompactCard = styled.div`
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: ${({ theme }) => theme.primary};
+    border-color: #7b3ff1;
     box-shadow: 0 2px 8px rgba(123, 63, 241, 0.2);
   }
 `;
@@ -126,7 +127,7 @@ export const CompactCard = styled.div`
 export const ResourceBar = styled.div`
   flex-grow: 1;
   height: 28px;
-  background-color: ${({ theme }) => theme.border};
+  background-color: ${({ theme }) => theme?.border || '#444'};
   border-radius: 6px;
   position: relative;
   overflow: hidden;
@@ -136,7 +137,7 @@ export const ResourceBar = styled.div`
 export const ResourceProgress = styled.div`
   height: 100%;
   width: ${({ $progress }) => Math.max(0, Math.min(100, $progress))}%;
-  background: linear-gradient(90deg, ${({ $color, theme }) => $color || theme.primary}, ${({ $color, theme }) => $color ? `${$color}dd` : `${theme.primary}dd`});
+  background: linear-gradient(90deg, ${({ $color }) => $color || '#7b3ff1'}, ${({ $color }) => $color ? `${$color}dd` : '#7b3ff1dd'});
   transition: width 0.3s ease-in-out;
   position: relative;
 
@@ -181,8 +182,8 @@ export const ResourceButton = styled.button`
   padding: 0;
   font-size: 1rem;
   font-weight: bold;
-  background-color: ${({ theme, disabled }) => disabled ? theme.border : theme.secondary};
-  color: ${({ theme, disabled }) => disabled ? '#666' : theme.textPrimary};
+  background-color: ${({ disabled }) => disabled ? '#666' : '#7b3ff1'};
+  color: ${({ disabled }) => disabled ? '#999' : '#ffffff'};
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -190,16 +191,17 @@ export const ResourceButton = styled.button`
   transition: all 0.2s ease;
   cursor: ${({ disabled }) => disabled ? 'not-allowed' : 'pointer'};
   user-select: none;
+  border: none;
 
   &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.primary};
+    background-color: #9c5ff7;
     transform: scale(1.05);
     box-shadow: 0 2px 4px rgba(123, 63, 241, 0.3);
   }
 
   &:active:not(:disabled) {
     transform: scale(0.95);
-    background-color: #7b3ff1;
+    background-color: #8a4ff3;
   }
 
   /* Estados para segurar botão */
@@ -222,7 +224,7 @@ export const ResourceButton = styled.button`
   /* Feedback visual para touch devices */
   @media (hover: none) {
     &:active:not(:disabled) {
-      background-color: #7b3ff1;
+      background-color: #8a4ff3;
       transform: scale(0.9);
     }
   }
