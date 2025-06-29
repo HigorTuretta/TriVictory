@@ -55,6 +55,7 @@ import {
   OptionCheckbox,
   ActionGrid
 } from './styles';
+import { RPGLoader } from '../../components/RPGLoader';
 
 export const GameRoom = () => {
   const { roomId } = useParams();
@@ -343,9 +344,7 @@ export const GameRoom = () => {
   if (loading || !room) {
     return (
       <GameRoomContainer>
-        <Header>
-          <RoomTitle>Carregando sala…</RoomTitle>
-        </Header>
+        <RPGLoader />
       </GameRoomContainer>
     );
   }

@@ -32,6 +32,7 @@ import {
   FloatingActionButton,
   DeathButton
 } from './styles';
+import { RPGLoader } from '../../components/RPGLoader';
 
 /* --------------------- Conteúdo interno da tela ------------------------- */
 const CharacterSheetContent = () => {
@@ -86,13 +87,9 @@ const CharacterSheetContent = () => {
     if (!loading && character?.isDead) setIsEditing(false);
   }, [loading, character]);
 
-  if (loading || !character) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '5rem' }}>
-        Carregando ficha…
-      </div>
-    );
-  }
+ if (loading || !character) {
+  return <RPGLoader  />;
+}
 
   /* ------------------------------- JSX ---------------------------------- */
   return (

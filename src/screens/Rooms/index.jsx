@@ -11,6 +11,7 @@ import {
     RoomsContainer, Header, Title, CreateRoomButton, RoomGrid,
     RoomCard, RoomName, RoomRole, Form, Input, Button
 } from './styles';
+import { RPGLoader } from '../../components/RPGLoader';
 
 export const Rooms = () => {
     const [myRooms, setMyRooms] = useState([]); // Salas que eu mestro
@@ -76,7 +77,7 @@ export const Rooms = () => {
     };
 
     if (loading) {
-        return <RoomsContainer><Title>Buscando suas aventuras...</Title></RoomsContainer>;
+        return <RoomsContainer><RPGLoader/></RoomsContainer>;
     }
 
     return (

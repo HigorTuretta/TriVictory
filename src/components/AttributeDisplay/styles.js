@@ -22,7 +22,7 @@ export const AttributeCard = styled.div`
   border-radius: 10px;
   text-align: center;
   border: 1px solid ${({ theme }) => theme?.border || '#444'};
-  box-shadow: 5px 5px 15px #0d0d10, -5px -5px 15px #17171e;
+  box-shadow: 5px 5px 15px #0D0D1028, -5px -5px 15px #17171E27;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

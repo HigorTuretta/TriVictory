@@ -23,7 +23,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
 import deathCharAnimation from '../../assets/lotties/deathChar.json';
-
+import { RPGLoader } from '../../components/RPGLoader';
 // ✅ Imagem padrão local
 import HeroPlaceholder from '../../assets/HeroPlaceholder.png';
 
@@ -212,7 +212,7 @@ export const CharacterSelect = () => {
     if (loading) {
         return (
             <PageWrapper>
-                <Title>A procurar as suas Lendas...</Title>
+              <RPGLoader/>
             </PageWrapper>
         );
     }
