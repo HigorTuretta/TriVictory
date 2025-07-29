@@ -116,13 +116,13 @@ export const SelectButton = styled.button`
   font-weight: bold;
   font-size: 0.9rem;
   background-color: ${({ theme, disabled }) => disabled ? theme.border : theme.success};
-  color: ${({ disabled }) => disabled ? 'grey' : 'white'};
+  color: ${({ disabled, theme }) => disabled ? theme.textSecondary : 'white'};
   border: none;
   border-radius: 4px;
   cursor: ${({ disabled }) => disabled ? 'not-allowed' : 'pointer'};
   transition: background-color 0.2s;
 
   &:hover:not(:disabled) {
-    background-color: #2e7d32;
+    background-color: #2fa94e;
   }
 `;

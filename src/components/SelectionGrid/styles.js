@@ -5,6 +5,7 @@ export const GridHeader = styled.div`
   gap: 1rem;
   margin-bottom: 1.5rem;
   align-items: center;
+  flex-wrap: wrap;
 `;
 
 export const SearchBar = styled.input`
@@ -33,6 +34,7 @@ export const AddCustomButton = styled.button`
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.2s;
 
   &:hover {
     background-color: #2fa94e;
@@ -62,7 +64,7 @@ export const ItemCard = styled.div`
   transition: all 0.2s ease-in-out;
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
   position: relative;
- border-left: 3px solid ${({ $isCustom, $isLocked, theme }) => 
+  border-left: 3px solid ${({ $isCustom, $isLocked, theme }) => 
     $isLocked ? theme.primary : ($isCustom ? theme.success : 'transparent')};
 
   &:hover {
@@ -84,6 +86,7 @@ export const ItemName = styled.h4`
 export const ItemCost = styled.p`
   font-size: 0.9rem;
   color: ${({ theme }) => theme.secondary};
+  margin: 0;
 `;
 
 export const SelectedItemsContainer = styled.div`
@@ -97,11 +100,7 @@ export const SelectedItemsContainer = styled.div`
 `;
 
 export const SelectedItem = styled.div`
-  background-color: ${({ $fromArchetype, $isLocked, theme }) => {
-    if ($isLocked) return theme.primary;
-    if ($fromArchetype) return theme.secondary;
-    return '#555'; 
-  }};
+  background-color: ${({ theme, $isLocked }) => $isLocked ? theme.primary : '#555'};
   color: white;
   padding: 5px 10px;
   border-radius: 15px;
@@ -137,7 +136,12 @@ export const RemoveButton = styled.button`
   padding: 0;
   line-height: 20px;
   font-weight: bold;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+
+  &:hover {
+    background-color: ${({ disabled }) => (disabled ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.4)')};
+  }
 `;
 
 export const HintText = styled.p`
@@ -179,10 +183,6 @@ export const CustomItemControls = styled.div`
   button:hover {
     background: ${({ theme }) => theme.primary};
     color: white;
-  }
-
-  button.delete:hover {
-    background: ${({ theme }) => theme.error};
   }
 `;
 export const SpecializationModalContent = styled.div`

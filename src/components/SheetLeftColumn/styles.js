@@ -20,18 +20,32 @@ export const SectionTitle = styled.h2`
 
 const BaseTextarea = styled.textarea`
   width: 100%;
-  min-height: 150px;
+  padding: 1rem;
+  border-radius: 8px;
   resize: vertical;
   font-size: 1rem;
   line-height: 1.6;
   background-color: ${({ theme }) => theme.background};
   border: 1px solid ${({ theme }) => theme.border};
   white-space: pre-wrap;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
+  }
+
   &:read-only { 
     border-color: transparent; 
+    background-color: transparent;
     color: ${({ theme }) => theme.textSecondary}; 
   }
-  &:disabled { opacity: 0.7; }
+  
+  &:disabled { 
+      opacity: 0.7; 
+      cursor: not-allowed;
+  }
 `;
 
 export const NotesTextarea = styled(BaseTextarea)`

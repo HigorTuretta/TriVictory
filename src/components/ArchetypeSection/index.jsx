@@ -20,6 +20,7 @@ export const ArchetypeSection = ({
     <SectionTitle>Arquétipo</SectionTitle>
     {isEditing ? (
       <>
+        {/* CORREÇÃO: Adicionada a prop 'onChange' que estava faltando. */}
         <ArchetypeSelect
           value={character.archetype?.nome || ''}
           onChange={handleArchetypeChange}

@@ -6,10 +6,21 @@ export const CardContainer = styled.div`
     border-radius: 8px;
     padding: 1rem;
     border: 1px solid ${({ theme }) => theme.border};
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+        border-color: ${({ theme }) => theme.primary};
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 `;
 
 export const CardHeader = styled.div`
     margin-bottom: 1rem;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem; /* Substitui o margin-left */
 `;
 
 export const CharacterName = styled(Link)`
@@ -26,7 +37,6 @@ export const CharacterName = styled(Link)`
 export const PlayerNickname = styled.span`
     font-size: 0.8rem;
     color: ${({ theme }) => theme.textSecondary};
-    margin-left: 0.5rem;
     font-style: italic;
 `;
 
@@ -39,12 +49,13 @@ export const ResourceGrid = styled.div`
 export const Resource = styled.div`
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
+    gap: 0.75rem; /* Aumentado para melhor espaçamento */
 `;
 
 export const ResourceIcon = styled.div`
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
 `;
 
 export const ResourceBar = styled.div`
@@ -53,6 +64,7 @@ export const ResourceBar = styled.div`
     background-color: ${({ theme }) => theme.background};
     border-radius: 12px;
     overflow: hidden;
+    border: 1px solid ${({ theme }) => theme.border};
 `;
 
 export const ResourceProgress = styled.div`
@@ -60,5 +72,15 @@ export const ResourceProgress = styled.div`
     width: ${props => props.$progress}%;
     background-color: ${props => props.$color};
     border-radius: 12px;
-    transition: width 0.3s ease-in-out;
+    transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+`;
+
+// Novo componente para alinhar os valores de recursos.
+export const ResourceValues = styled.span`
+    font-family: monospace;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: ${({ theme }) => theme.textSecondary};
+    min-width: 45px;
+    text-align: right;
 `;

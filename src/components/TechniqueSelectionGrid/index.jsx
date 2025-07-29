@@ -1,47 +1,82 @@
 import React, { useState } from 'react';
 import { TechniqueDetailsModal } from '../TechniqueDetailsModal';
-import { 
-  Grid, TechniqueCard, TechniqueName, CategoryBadge,
+import {
+  GridContainer, Grid, TechniqueCard, TechniqueName, CategoryBadge,
   SelectedItemsContainer, SelectedItem, RemoveButton
 } from './styles';
 
-export const TechniqueSelectionGrid = ({ techniques, selectedTechniques = [], onAddTechnique, onRemoveTechnique, checkRequirements }) => {
+// --- Subcomponente para a Lista de Técnicas Selecionadas ---
+const SelectedTechniquesList = ({ techniques, onRemove }) => {
+  if (!techniques || techniques.length === 0) {
+    return null;
+  }
+
+  return (
+    <SelectedItemsContainer>
+      {techniques.map((tech) => (
+        <SelectedItem key={tech.id}>
+          {tech.subOption ? `${tech.nome}: ${tech.subOption}` : tech.nome}
+          <RemoveButton onClick={() => onRemove(tech.id)} title="Remover Técnica">
+            ×
+          </RemoveButton>
+        </SelectedItem>
+      ))}
+    </SelectedItemsContainer>
+  );
+};
+
+// --- Subcomponente para a Grade de Técnicas Disponíveis ---
+const TechniqueGrid = ({ techniques, onCardClick }) => (
+  <GridContainer>
+    <Grid>
+      {techniques.map(tech => (
+        <TechniqueCard
+          key={tech.nome}
+          onClick={() => onCardClick(tech)}
+          category={tech.categoria}
+        >
+          <TechniqueName>{tech.nome}</TechniqueName>
+          <CategoryBadge category={tech.categoria}>{tech.categoria}</CategoryBadge>
+        </TechniqueCard>
+      ))}
+    </Grid>
+  </GridContainer>
+);
+
+// --- Componente Principal ---
+export const TechniqueSelectionGrid = ({
+  techniques,
+  selectedTechniques = [],
+  onAddTechnique,
+  onRemoveTechnique,
+  checkRequirements
+}) => {
   const [selectedTechnique, setSelectedTechnique] = useState(null);
 
-  const handleSelect = (technique, variation) => {
+  const handleSelectTechnique = (technique, variation) => {
     onAddTechnique(technique, variation);
-    setSelectedTechnique(null);
+    setSelectedTechnique(null); // Fecha o modal após a seleção
   };
 
   return (
     <>
-      {selectedTechniques.length > 0 && (
-        <SelectedItemsContainer>
-          {selectedTechniques.map((tech) => (
-            <SelectedItem key={tech.id}>
-              {tech.subOption ? `${tech.nome}: ${tech.subOption}` : tech.nome}
-              <RemoveButton onClick={() => onRemoveTechnique(tech.id)} title="Remover Técnica">&times;</RemoveButton>
-            </SelectedItem>
-          ))}
-        </SelectedItemsContainer>
-      )}
+      <SelectedTechniquesList
+        techniques={selectedTechniques}
+        onRemove={onRemoveTechnique}
+      />
 
-      <Grid>
-        {techniques.map(tech => (
-          <TechniqueCard key={tech.nome} onClick={() => setSelectedTechnique(tech)} category={tech.categoria}>
-            <TechniqueName>{tech.nome}</TechniqueName>
-            <CategoryBadge category={tech.categoria}>{tech.categoria}</CategoryBadge>
-          </TechniqueCard>
-        ))}
-      </Grid>
+      <TechniqueGrid
+        techniques={techniques}
+        onCardClick={setSelectedTechnique}
+      />
 
       <TechniqueDetailsModal
         isOpen={!!selectedTechnique}
         onClose={() => setSelectedTechnique(null)}
         technique={selectedTechnique}
-        onSelect={handleSelect}
+        onSelect={handleSelectTechnique}
         checkRequirements={checkRequirements}
-        selectedTechniques={selectedTechniques} // Passa a lista para o modal
+        selectedTechniques={selectedTechniques}
       />
     </>
   );

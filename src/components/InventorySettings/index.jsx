@@ -1,78 +1,87 @@
 import React from 'react';
-import { SettingsContainer, FormRow, RadioGroup } from './styles';
+import {
+  SettingsContainer,
+  Title,
+  FormRow,
+  Label,
+  Input,
+  Select,
+  Unit,
+} from './styles';
 
 export const InventorySettings = ({ settings, onUpdate }) => {
+  const { system, attribute, multiplier, fixedMax } = settings;
 
-    const handleSystemChange = (e) => {
-        onUpdate({ ...settings, system: e.target.value });
-    };
+  // Manipulador de eventos unificado que atualiza o estado
+  // com base no nome do campo do formulário.
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+    const updatedValue = type === 'number' ? parseInt(value, 10) || 0 : value;
 
-    const handleAttributeChange = (e) => {
-        onUpdate({ ...settings, attribute: e.target.value });
-    };
+    onUpdate({
+      ...settings,
+      [name]: updatedValue,
+    });
+  };
 
-    const handleValueChange = (e) => {
-        const { name, value } = e.target;
-        onUpdate({ ...settings, [name]: parseInt(value, 10) });
-    };
+  return (
+    <SettingsContainer>
+      <Title>Regra de Carga da Mochila</Title>
 
-    return (
-        <SettingsContainer>
-            <h4>Regra de Carga da Mochila</h4>
-            <FormRow>
-                <RadioGroup>
-                    <input
-                        type="radio"
-                        id="systemAttribute"
-                        name="inventorySystem"
-                        value="attribute"
-                        checked={settings.system === 'attribute'}
-                        onChange={handleSystemChange}
-                    />
-                    <label htmlFor="systemAttribute">Baseada em Atributo</label>
-                </RadioGroup>
-                <RadioGroup>
-                    <input
-                        type="radio"
-                        id="systemFixed"
-                        name="inventorySystem"
-                        value="fixed"
-                        checked={settings.system === 'fixed'}
-                        onChange={handleSystemChange}
-                    />
-                    <label htmlFor="systemFixed">Valor Fixo</label>
-                </RadioGroup>
-            </FormRow>
+      <FormRow>
+        <Label>
+          <input
+            type="radio"
+            name="system"
+            value="attribute"
+            checked={system === 'attribute'}
+            onChange={handleChange}
+          />
+          Baseada em Atributo
+        </Label>
+        <Label>
+          <input
+            type="radio"
+            name="system"
+            value="fixed"
+            checked={system === 'fixed'}
+            onChange={handleChange}
+          />
+          Valor Fixo
+        </Label>
+      </FormRow>
 
-            {settings.system === 'attribute' && (
-                <FormRow>
-                    <select value={settings.attribute} onChange={handleAttributeChange}>
-                        <option value="poder">Poder</option>
-                        <option value="habilidade">Habilidade</option>
-                        <option value="resistencia">Resistência</option>
-                    </select>
-                    <span>X</span>
-                    <input
-                        type="number"
-                        name="multiplier"
-                        value={settings.multiplier}
-                        onChange={handleValueChange}
-                    />
-                    <span>kg</span>
-                </FormRow>
-            )}
+      {/* Painel de configuração para o sistema "Baseado em Atributo" */}
+      {system === 'attribute' && (
+        <FormRow>
+          <Select name="attribute" value={attribute} onChange={handleChange}>
+            <option value="poder">Poder</option>
+            <option value="habilidade">Habilidade</option>
+            <option value="resistencia">Resistência</option>
+          </Select>
+          <Unit>X</Unit>
+          <Input
+            type="number"
+            name="multiplier"
+            value={multiplier}
+            onChange={handleChange}
+          />
+          <Unit>kg</Unit>
+        </FormRow>
+      )}
 
-            {settings.system === 'fixed' && (
-                <FormRow>
-                    <input
-                        type="number"
-                        name="fixedMax"
-                        value={settings.fixedMax}
-                        onChange={handleValueChange}
-                    />
-                    <span>kg</span>
-                </FormRow>
-            )}
-        </SettingsContainer>
-    );
+      {/* Painel de configuração para o sistema "Valor Fixo" */}
+      {system === 'fixed' && (
+        <FormRow>
+          <Input
+            type="number"
+            name="fixedMax"
+            value={fixedMax}
+            onChange={handleChange}
+          />
+          <Unit>kg</Unit>
+        </FormRow>
+      )}
+    </SettingsContainer>
+  );
 };

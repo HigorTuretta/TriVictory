@@ -22,23 +22,40 @@ export const CharacterSheetHeader = ({
   character,
   characterName,
   onNameChange,
-  points = { total: 0, used: 0, remaining: 0 },
+  points,
   isOwner = false,
   isEditing = false,
   isDead = false,
   onOpenImageManager,
   onBannerClick,
 }) => {
-  const bannerUrl      = character?.portraitImage || character?.bannerImage || '';
-  const bannerPosition = character?.bannerPosition || 50;
+  // --- Destruturação e Valores Padrão ---
+  const {
+    portraitImage,
+    bannerImage,
+    bannerPosition = 50,
+    tokenImage,
+    tokenBorderColor = '#7b3ff1',
+  } = character || {};
 
-  const tokenUrl    = character?.tokenImage || '';
-  const borderColor = character?.tokenBorderColor || '#7b3ff1';
+  const { total = 0, used = 0, remaining = 0, disBonus = 0 } = points || {};
 
-  const { total = 0, used = 0, remaining = 0, disBonus = 0 } = points;
+  const bannerUrl = portraitImage || bannerImage || '';
+  const tokenUrl = tokenImage || '';
+
+  // --- Array de configuração para os "Pills" de Pontos ---
+  // Torna a renderização dinâmica e mais fácil de manter.
+  const pointPills = [
+    { label: 'Base', value: total, variant: 'base' },
+    { label: 'Gastos', value: used, variant: 'default' },
+    { label: 'Desvantagens', value: disBonus, variant: 'disBonus' },
+    { label: 'Disponível', value: remaining, variant: 'remain' },
+  ];
 
   const handleBannerClick = () => {
-    if (bannerUrl && onBannerClick) onBannerClick(bannerUrl);
+    if (bannerUrl && onBannerClick) {
+      onBannerClick(bannerUrl);
+    }
   };
 
   return (
@@ -73,13 +90,13 @@ export const CharacterSheetHeader = ({
 
       <Content>
         <BottomRow>
-          <Info>
-            {tokenUrl && (
-              <TokenWrap $border={borderColor}>
-                <Token src={tokenUrl} alt="Token" />
-              </TokenWrap>
-            )}
+          {tokenUrl && (
+            <TokenWrap $border={tokenBorderColor}>
+              <Token src={tokenUrl} alt="Token" />
+            </TokenWrap>
+          )}
 
+          <Info>
             <NameInput
               value={characterName}
               placeholder="Nome do personagem"
@@ -88,10 +105,11 @@ export const CharacterSheetHeader = ({
             />
 
             <PointsRow>
-              <Pill $variant="base">Base •&nbsp;{total}</Pill>
-              <Pill>Gastos •&nbsp;{used}</Pill>
-              <Pill $variant="disBonus">Desvantagens •&nbsp;{disBonus}</Pill>
-              <Pill $variant="remain">Disponível •&nbsp;{remaining}</Pill>
+              {pointPills.map((pill) => (
+                <Pill key={pill.label} $variant={pill.variant}>
+                  {pill.label} • {pill.value}
+                </Pill>
+              ))}
             </PointsRow>
           </Info>
         </BottomRow>
@@ -101,18 +119,18 @@ export const CharacterSheetHeader = ({
 };
 
 CharacterSheetHeader.propTypes = {
-  character:       PropTypes.object.isRequired,
-  characterName:   PropTypes.string,
-  onNameChange:    PropTypes.func,
-  points:          PropTypes.shape({
-    total:     PropTypes.number,
-    used:      PropTypes.number,
+  character: PropTypes.object.isRequired,
+  characterName: PropTypes.string,
+  onNameChange: PropTypes.func,
+  points: PropTypes.shape({
+    total: PropTypes.number,
+    used: PropTypes.number,
     remaining: PropTypes.number,
-    disBonus:  PropTypes.number,
+    disBonus: PropTypes.number,
   }),
-  isOwner:            PropTypes.bool,
-  isEditing:          PropTypes.bool,
-  isDead:             PropTypes.bool,
+  isOwner: PropTypes.bool,
+  isEditing: PropTypes.bool,
+  isDead: PropTypes.bool,
   onOpenImageManager: PropTypes.func,
-  onBannerClick:      PropTypes.func,
+  onBannerClick: PropTypes.func,
 };

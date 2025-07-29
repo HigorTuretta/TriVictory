@@ -2,8 +2,7 @@ import styled from 'styled-components';
 
 export const RightColumn = styled.div`
   height: 100%;
-  /* CORREÇÃO: Removido 'position: sticky' e 'top: 2rem' */
-
+  
   @media (max-width: 1024px) {
     position: static;
   }

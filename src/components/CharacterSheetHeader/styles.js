@@ -1,12 +1,13 @@
-// /components/CharacterSheetHeader/styles.js
 import styled, { css } from 'styled-components';
 import { rgba } from 'polished';
 
-/* helpers */
+// --- Funções Helper ---
+// Adiciona opacidade a uma cor hexadecimal.
 const withBaseOpacity = (hex) => rgba(hex, 0.25);
-const fallback        = (v, def) => (v ? v : def);
+// Retorna um valor padrão caso o valor do tema não esteja disponível.
+const fallback = (themeValue, defaultValue) => (themeValue || defaultValue);
 
-/* container */
+// --- Contêiner Principal ---
 export const Wrapper = styled.div`
   position: relative;
   height: 350px;
@@ -30,7 +31,7 @@ export const Wrapper = styled.div`
   }
 `;
 
-/* banner */
+// --- Imagem de Banner ---
 export const BannerImage = styled.img`
   position: absolute;
   inset: 0;
@@ -58,7 +59,7 @@ export const BannerOverlay = styled.div`
   }
 `;
 
-/* conteúdo */
+// --- Conteúdo sobre o Banner ---
 export const Content = styled.div`
   position: relative;
   z-index: 3;
@@ -81,13 +82,13 @@ export const BottomRow = styled.div`
   pointer-events: auto;
 `;
 
-/* token */
+// --- Token do Personagem ---
 export const TokenWrap = styled.div`
   width: 84px;
   height: 84px;
   padding: 4px;
   border-radius: 50%;
-  background: ${({ $border }) => fallback($border, '#8a4fff')};
+  background: ${({ $border, theme }) => fallback($border, theme.primary)};
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
 
@@ -104,25 +105,26 @@ export const Token = styled.img`
   object-fit: cover;
 `;
 
-/* mix-in de botões circulares */
+// --- Mixin de Estilo para Botões de Ícone ---
 const IconBtn = css`
   position: absolute;
   width: 42px;
   height: 42px;
   border: 0;
   border-radius: 50%;
-  display: flex;              /* alinhamento real */
+  display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 0;             /* remove “cauda” de baseline */
   cursor: pointer;
   transition: opacity 0.2s, transform 0.2s;
   pointer-events: auto;
   z-index: 4;
 
   & svg {
-    flex-shrink: 0;           /* não deforma */
+    flex-shrink: 0;
     fill: currentColor;
+    width: 50%;
+    height: 50%;
   }
 
   &:hover { transform: scale(1.1); }
@@ -133,7 +135,7 @@ const IconBtn = css`
   }
 `;
 
-/* upload */
+// --- Botões Específicos ---
 export const UploadBtn = styled.button`
   ${IconBtn};
   top: 16px;
@@ -141,11 +143,9 @@ export const UploadBtn = styled.button`
   background: ${({ theme }) => fallback(theme.primary, '#8a4fff')};
   color: ${({ theme }) => fallback(theme.onPrimary, '#fff')};
   opacity: 0.9;
-
   &:hover { opacity: 1; }
 `;
 
-/* expandir */
 export const ExpandButton = styled.button`
   ${IconBtn};
   bottom: 16px;
@@ -157,15 +157,16 @@ export const ExpandButton = styled.button`
 
   &:hover {
     background: ${({ theme }) => fallback(theme.primary, '#8a4fff')};
-    color: #fff;
+    color: ${({ theme }) => fallback(theme.onPrimary, '#fff')};
     opacity: 1;
   }
 `;
 
-/* info */
+// --- Informações (Nome e Pontos) ---
 export const Info = styled.div`
   flex-grow: 1;
   pointer-events: auto;
+  min-width: 0; // Previne overflow em flexbox
 `;
 
 export const NameInput = styled.input`
@@ -181,8 +182,15 @@ export const NameInput = styled.input`
   transition: border-color 0.2s;
 
   &::placeholder { color: rgba(255, 255, 255, 0.7); }
-  &:focus         { border-color: ${({ theme }) => fallback(theme.primary, '#8a4fff')}; }
-  &:disabled      { opacity: 0.7; -webkit-text-fill-color: #fff; }
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => fallback(theme.primary, '#8a4fff')};
+  }
+  &:disabled {
+    opacity: 1;
+    cursor: default;
+    -webkit-text-fill-color: #fff; /* Para Chrome/Safari */
+  }
 
   @media (max-width: 768px) { font-size: 1.5rem; }
 `;
@@ -202,13 +210,16 @@ export const Pill = styled.span`
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
+  white-space: nowrap; // Evita quebra de linha no texto
 
   background: ${({ theme, $variant }) => {
     switch ($variant) {
-      case 'base':      return withBaseOpacity(fallback(theme.surface, '#1e1e26'));
-      case 'disBonus':  return withBaseOpacity(fallback(theme.textSecondary, '#a0a0b0'));
-      case 'remain':    return withBaseOpacity(fallback(theme.success, '#4caf50'));
-      default:          return withBaseOpacity(fallback(theme.primary, '#8a4fff'));
+      case 'base': return withBaseOpacity(fallback(theme.surface, '#1e1e26'));
+      case 'disBonus': return withBaseOpacity(fallback(theme.textSecondary, '#a0a0b0'));
+      case 'remain': return withBaseOpacity(fallback(theme.success, '#4caf50'));
+      case 'default':
+      default:
+        return withBaseOpacity(fallback(theme.primary, '#8a4fff'));
     }
   }};
 

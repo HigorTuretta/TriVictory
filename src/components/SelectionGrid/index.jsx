@@ -5,105 +5,154 @@ import { CustomItemModal } from '../CustomItemModal';
 import { ConfirmModal } from '../ConfirmModal';
 import { FaPen, FaTrash } from 'react-icons/fa';
 import { 
-    Grid, 
-    ItemCard, 
-    ItemName, 
-    ItemCost, 
-    SearchBar, 
-    GridContainer, 
-    SelectedItemsContainer, 
-    SelectedItem, 
-    RemoveButton, 
-    GridHeader, 
-    AddCustomButton, 
-    HintText, 
-    CustomItemControls,
-    SpecializationModalContent, 
-    SpecializationInput,
-    DisclaimerText,
-    CounterBadge
+    Grid, ItemCard, ItemName, ItemCost, SearchBar, GridContainer, 
+    SelectedItemsContainer, SelectedItem, RemoveButton, GridHeader, 
+    AddCustomButton, HintText, CustomItemControls, SpecializationModalContent, 
+    SpecializationInput, DisclaimerText, CounterBadge
 } from './styles';
-import { ChoiceButton } from '../../screens/CharacterSheet/styles'// Usando o botão já estilizado
+import { ChoiceButton } from '../../screens/CharacterSheet/styles';
 
-export const SelectionGrid = ({ 
-    items, 
-    selectedItems = [], 
-    lockedItems = new Set(), 
-    itemCounts = {},
-    onAddItem, 
-    onRemoveItem, 
-    listName,
-    isEditing,
-    onAddCustomItem,
-    onUpdateCustomItem,
-    onDeleteCustomItem
-}) => {
-    const [modalContent, setModalContent] = useState(null);
-    const [subOptionModalItem, setSubOptionModalItem] = useState(null);
-    const [customItemModalOpen, setCustomItemModalOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState(null);
-    const [deletingItem, setDeletingItem] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [specializationModalItem, setSpecializationModalItem] = useState(null);
-    const [specializationName, setSpecializationName] = useState('');
+// --- Subcomponente: Item da Grade ---
+const GridItem = ({ item, count, isDisabled, isLocked, onClick, onContextMenu, onEdit, onDelete, isEditing }) => (
+    <ItemCard
+        onClick={() => !isDisabled && onClick(item)}
+        onContextMenu={(e) => { e.preventDefault(); onContextMenu(item); }}
+        disabled={isDisabled}
+        $isCustom={item.isCustom}
+        $isLocked={isLocked}
+    >
+        <ItemName>{item.nome}</ItemName>
+        <ItemCost>{item.custo > 0 ? `+${item.custo}` : item.custo}pt</ItemCost>
+        
+        {item.repetivel && count > 0 && <CounterBadge>{count}</CounterBadge>}
+        
+        {item.isCustom && isEditing && (
+            <CustomItemControls>
+                <button onClick={(e) => { e.stopPropagation(); onEdit(item); }} title="Editar"><FaPen /></button>
+                <button onClick={(e) => { e.stopPropagation(); onDelete(item); }} title="Deletar"><FaTrash /></button>
+            </CustomItemControls>
+        )}
+    </ItemCard>
+);
 
-    const filteredItems = items.filter(item =>
-        item.nome.toLowerCase().includes(searchTerm.toLowerCase())
+// --- Subcomponentes de Modal ---
+const ItemDetailsModal = ({ item, onClose }) => {
+    // CORREÇÃO: Adicionada verificação para prevenir erro quando 'item' é nulo.
+    if (!item) return null;
+
+    return (
+        <Modal isOpen={!!item} onClose={onClose}>
+            <h3>{item.nome}</h3>
+            <p><strong>Custo:</strong> {item.custo > 0 ? `+${item.custo}` : item.custo}pt</p>
+            <p style={{marginTop: '1rem', whiteSpace: 'pre-wrap'}}>{item.descricao}</p>
+        </Modal>
     );
+};
+
+const SubOptionModal = ({ item, onSelect, onClose }) => {
+    // CORREÇÃO: Adicionada verificação de segurança.
+    if (!item) return null;
+
+    return (
+        <Modal isOpen={!!item} onClose={onClose}>
+            <h3>Escolha uma opção para: {item.nome}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+                {item.opcoes.map(opt => (
+                    <ChoiceButton key={opt} onClick={() => onSelect(item, opt)}>
+                        {opt}
+                    </ChoiceButton>
+                ))}
+            </div>
+        </Modal>
+    );
+};
+
+const SpecializationModal = ({ item, onConfirm, onClose }) => {
+    const [name, setName] = useState('');
+
+    // CORREÇÃO: Adicionada verificação de segurança.
+    if (!item) return null;
+
+    const handleConfirm = (isSpecialization) => {
+        if (isSpecialization && !name.trim()) {
+            toast.error('Por favor, defina um nome para a especialização.');
+            return;
+        }
+        onConfirm(item, isSpecialization, name.trim());
+        onClose();
+    };
+
+    return (
+        <Modal isOpen={!!item} onClose={onClose}>
+            <SpecializationModalContent>
+                <h3>{item.nome}</h3>
+                <p>Deseja adquirir a perícia completa ou uma especialização?</p>
+                <ChoiceButton onClick={() => handleConfirm(false)}>Perícia Completa (+1 Ponto)</ChoiceButton>
+                <hr />
+                <p>Uma especialização concede acerto crítico com 5 ou 6, mas apenas em uma área específica da perícia.</p>
+                <SpecializationInput type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Escalar, Lábia, Parkour..."/>
+                <ChoiceButton onClick={() => handleConfirm(true)} disabled={!name.trim()}>Especialização (+1 Ponto)</ChoiceButton>
+                <DisclaimerText>"Lembre-se, tudo isto deve ser aprovado pelo mestre."<span>3DeT Victory - Livro Básico, pág. 168</span></DisclaimerText>
+            </SpecializationModalContent>
+        </Modal>
+    );
+};
+
+// --- Componente Principal ---
+export const SelectionGrid = ({
+    items, selectedItems = [], lockedItems = new Set(), itemCounts = {},
+    onAddItem, onRemoveItem, listName, isEditing,
+    onAddCustomItem, onUpdateCustomItem, onDeleteCustomItem
+}) => {
+    const [activeModal, setActiveModal] = useState({ type: null, data: null });
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredItems = items.filter(item => item.nome.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const closeModal = () => setActiveModal({ type: null, data: null });
 
     const handleItemClick = (item) => {
         if (listName === 'Perícias') {
-            setSpecializationModalItem(item);
-            return;
-        }
-
-        if (item.opcoes) {
-            setSubOptionModalItem(item);
+            setActiveModal({ type: 'specialization', data: item });
+        } else if (item.opcoes) {
+            setActiveModal({ type: 'subOption', data: item });
         } else {
             onAddItem(item, null);
         }
     };
 
-    const handleConfirmSpecialization = (pericia, isSpecialization) => {
-        if (isSpecialization) {
-            if (!specializationName.trim()) {
-                toast.error('Por favor, defina um nome para a especialização.');
-                return;
-            }
-            onAddItem({ ...pericia, isSpecialization: true }, specializationName.trim());
-        } else {
-            onAddItem(pericia, null);
-        }
-        setSpecializationModalItem(null);
-        setSpecializationName('');
-    };
-    
-    const handleSaveCustom = (customItemData) => {
-        if (editingItem) {
-            onUpdateCustomItem({ ...editingItem, ...customItemData });
-            setEditingItem(null);
-        } else {
-            onAddCustomItem(customItemData);
+    const handleSelectSubOption = (item, option) => {
+        onAddItem(item, option);
+        if (!item.repetivel) {
+            closeModal();
         }
     };
 
+    const handleConfirmSpecialization = (pericia, isSpecialization, specializationName) => {
+        onAddItem({ ...pericia, isSpecialization }, specializationName);
+    };
+
+    const handleSaveCustom = (customItemData) => {
+        if (activeModal.type === 'customEdit') {
+            onUpdateCustomItem({ ...activeModal.data, ...customItemData });
+        } else {
+            onAddCustomItem(customItemData);
+        }
+        closeModal();
+    };
+
     const handleDeleteCustom = () => {
-        if (deletingItem) {
-            onDeleteCustomItem(deletingItem);
-            setDeletingItem(null);
+        if (activeModal.type === 'customDelete') {
+            onDeleteCustomItem(activeModal.data);
+            closeModal();
         }
     };
 
     return (
         <>
             <GridHeader>
-                <SearchBar
-                    type="text"
-                    placeholder={`Buscar em ${listName}...`}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <AddCustomButton onClick={() => { setEditingItem(null); setCustomItemModalOpen(true); }}>
+                <SearchBar placeholder={`Buscar em ${listName}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <AddCustomButton onClick={() => setActiveModal({ type: 'customAdd', data: null })}>
                     + Criar {listName.slice(0, -1)} Customizada
                 </AddCustomButton>
             </GridHeader>
@@ -111,15 +160,9 @@ export const SelectionGrid = ({
             {selectedItems?.length > 0 && (
                 <SelectedItemsContainer>
                     {selectedItems.map((item) => (
-                        <SelectedItem 
-                            key={item.id} 
-                            $fromArchetype={item.fromArchetype}
-                            $isLocked={lockedItems.has(item.nome)}
-                        >
+                        <SelectedItem key={item.id} $isLocked={lockedItems.has(item.nome)}>
                             {item.isSpecialization ? `${item.nome} (Especialização: ${item.subOption})` : (item.subOption ? `${item.nome}: ${item.subOption}` : item.nome)}
-                            <RemoveButton onClick={() => onRemoveItem(item.id)} title={lockedItems.has(item.nome) ? "Item bloqueado por Arquétipo ou Kit" : "Remover"}>
-                                &times;
-                            </RemoveButton>
+                            <RemoveButton onClick={() => onRemoveItem(item.id)} title={lockedItems.has(item.nome) ? "Item bloqueado" : "Remover"} disabled={lockedItems.has(item.nome)}>×</RemoveButton>
                         </SelectedItem>
                     ))}
                 </SelectedItemsContainer>
@@ -127,114 +170,43 @@ export const SelectionGrid = ({
 
             <GridContainer>
                 <Grid>
-                    {filteredItems.map(item => {
-                        const count = itemCounts[item.nome] || 0;
-                        const isSelected = count > 0;
-                        const isDisabled = lockedItems.has(item.nome) || (isSelected && !item.repetivel);
-
-                        return (
-                            <ItemCard
-                                key={item.nome}
-                                onClick={() => !isDisabled && handleItemClick(item)}
-                                onContextMenu={(e) => { e.preventDefault(); setModalContent(item); }}
-                                disabled={isDisabled}
-                                $isCustom={item.isCustom}
-                                $isLocked={lockedItems.has(item.nome)}
-                            >
-                                <ItemName>{item.nome}</ItemName>
-                                <ItemCost>{item.custo > 0 ? `+${item.custo}` : item.custo}pt</ItemCost>
-                                
-                                {item.repetivel && count > 0 && (
-                                    <CounterBadge>{count}</CounterBadge>
-                                )}
-                                
-                                {item.isCustom && isEditing && (
-                                    <CustomItemControls>
-                                        <button onClick={(e) => { e.stopPropagation(); setEditingItem(item); setCustomItemModalOpen(true); }} title="Editar"><FaPen /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); setDeletingItem(item); }} title="Deletar"><FaTrash /></button>
-                                    </CustomItemControls>
-                                )}
-                            </ItemCard>
-                        );
-                    })}
+                    {filteredItems.map(item => (
+                        <GridItem
+                            key={item.nome}
+                            item={item}
+                            count={itemCounts[item.nome] || 0}
+                            isDisabled={lockedItems.has(item.nome) || (itemCounts[item.nome] > 0 && !item.repetivel)}
+                            isLocked={lockedItems.has(item.nome)}
+                            isEditing={isEditing}
+                            onClick={handleItemClick}
+                            onContextMenu={(data) => setActiveModal({ type: 'details', data })}
+                            onEdit={(data) => setActiveModal({ type: 'customEdit', data })}
+                            onDelete={(data) => setActiveModal({ type: 'customDelete', data })}
+                        />
+                    ))}
                 </Grid>
             </GridContainer>
 
-            <HintText>
-                <b>Botão esquerdo:</b> selecionar item. <b>Botão direito:</b> ver detalhes.
-            </HintText>
+            <HintText><b>Botão esquerdo:</b> selecionar item. <b>Botão direito:</b> ver detalhes.</HintText>
 
-            {specializationModalItem && (
-                <Modal isOpen={!!specializationModalItem} onClose={() => setSpecializationModalItem(null)}>
-                    <SpecializationModalContent>
-                        <h3>{specializationModalItem.nome}</h3>
-                        <p>Deseja adquirir a perícia completa ou uma especialização?</p>
-                        
-                        <ChoiceButton onClick={() => handleConfirmSpecialization(specializationModalItem, false)}>
-                            Perícia Completa (+1 Ponto)
-                        </ChoiceButton>
-                        
-                        <hr />
-
-                        <p>Uma especialização concede acerto crítico com 5 ou 6 em testes, mas apenas em uma área específica da perícia.</p>
-                        <SpecializationInput 
-                            type="text"
-                            value={specializationName}
-                            onChange={(e) => setSpecializationName(e.target.value)}
-                            placeholder="Ex: Escalar, Lábia, Parkour..."
-                        />
-                        <ChoiceButton onClick={() => handleConfirmSpecialization(specializationModalItem, true)} disabled={!specializationName.trim()}>
-                            Especialização (+1 Ponto)
-                        </ChoiceButton>
-                        
-                        <DisclaimerText>
-                            "Lembre-se, tudo isto deve ser aprovado pelo mestre."
-                            <span>3DeT Victory - Livro Básico, pág. 168</span>
-                        </DisclaimerText>
-                    </SpecializationModalContent>
-                </Modal>
-            )}
-
-            {modalContent && (
-                <Modal isOpen={!!modalContent} onClose={() => setModalContent(null)}>
-                    <h3>{modalContent.nome}</h3>
-                    <p><strong>Custo:</strong> {modalContent.custo > 0 ? `+${modalContent.custo}` : modalContent.custo}pt</p>
-                    <p style={{marginTop: '1rem'}}>{modalContent.descricao}</p>
-                </Modal>
-            )}
-
-            {subOptionModalItem && (
-                <Modal isOpen={!!subOptionModalItem} onClose={() => setSubOptionModalItem(null)}>
-                    <h3>Escolha uma opção para: {subOptionModalItem.nome}</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-                        {subOptionModalItem.opcoes.map(opt => (
-                            <ChoiceButton key={opt} onClick={() => {
-                                onAddItem(subOptionModalItem, opt);
-                                if (!subOptionModalItem.repetivel) {
-                                    setSubOptionModalItem(null);
-                                }
-                            }}>
-                                {opt}
-                            </ChoiceButton>
-                        ))}
-                    </div>
-                </Modal>
-            )}
-
+            {/* Renderização dos Modais */}
+            <ItemDetailsModal item={activeModal.type === 'details' ? activeModal.data : null} onClose={closeModal} />
+            <SubOptionModal item={activeModal.type === 'subOption' ? activeModal.data : null} onSelect={handleSelectSubOption} onClose={closeModal} />
+            <SpecializationModal item={activeModal.type === 'specialization' ? activeModal.data : null} onConfirm={handleConfirmSpecialization} onClose={closeModal} />
+            
             <CustomItemModal
-                isOpen={customItemModalOpen}
-                onClose={() => { setCustomItemModalOpen(false); setEditingItem(null); }}
+                isOpen={activeModal.type === 'customAdd' || activeModal.type === 'customEdit'}
+                onClose={closeModal}
                 onSave={handleSaveCustom}
                 itemType={listName.slice(0, -1)}
-                initialData={editingItem}
+                initialData={activeModal.type === 'customEdit' ? activeModal.data : null}
             />
-
             <ConfirmModal
-                isOpen={!!deletingItem}
-                onClose={() => setDeletingItem(null)}
+                isOpen={activeModal.type === 'customDelete'}
+                onClose={closeModal}
                 onConfirm={handleDeleteCustom}
                 title={`Deletar ${listName.slice(0, -1)}`}
-                message={`Tem certeza que deseja deletar "${deletingItem?.nome}"? Esta ação não pode ser desfeita.`}
+                message={`Tem certeza que deseja deletar "${activeModal.data?.nome}"? Esta ação não pode ser desfeita.`}
             />
         </>
     );

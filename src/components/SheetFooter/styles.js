@@ -1,8 +1,8 @@
 import styled, { keyframes, css } from 'styled-components';
 
 const fadeIn = keyframes`
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 `;
 
 export const FooterPanel = styled.div`
@@ -14,9 +14,9 @@ export const FooterPanel = styled.div`
 export const FinalizedSection = styled.div`
   margin-bottom: 2.5rem;
   padding: 1.5rem;
-  background-color: ${({ theme }) => theme.background};
-  border-radius: 8px;
-  animation: ${css`${fadeIn} 0.4s ease-out`};
+  background-color: ${({ theme }) => theme.surfaceVariant || theme.background};
+  border-radius: 12px;
+  animation: ${css`${fadeIn} 0.5s ease-out`};
 `;
 
 export const Section = styled.section``;
@@ -50,11 +50,12 @@ export const VisibilityButton = styled.button`
   opacity: 0.7;
   cursor: pointer;
   color: ${({ theme }) => theme.textSecondary};
+  transition: all 0.2s ease;
 
   &:hover { 
     opacity: 1; 
     transform: scale(1.1); 
-    color: ${({ theme }) => theme.textPrimary}; 
+    color: ${({ theme }) => theme.primary}; 
   }
 `;
 
@@ -64,14 +65,27 @@ export const BackstoryTextarea = styled.textarea`
   resize: vertical;
   font-size: 1rem;
   line-height: 1.6;
-  background-color: ${({ theme }) => theme.background};
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.border};
   white-space: pre-wrap;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
+  }
 
   &:read-only { 
     border-color: transparent; 
+    background-color: transparent;
     color: ${({ theme }) => theme.textSecondary}; 
   }
 
-  &:disabled { opacity: 0.7; }
+  &:disabled { 
+    opacity: 0.7; 
+    cursor: not-allowed;
+  }
 `;

@@ -8,25 +8,33 @@ export const MochilaContainer = styled.div`
   border: 1px solid ${({ theme }) => theme.border};
   border-radius: 8px;
   background-color: ${({ theme }) => theme.background};
-
 `;
 
 export const InventoryHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 `;
 
 export const AddButton = styled.button`
   background-color: ${({ theme }) => theme.success};
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 8px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: #279644;
+  }
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -47,10 +55,10 @@ export const CapacityBar = styled.div`
     top: 0;
     left: 0;
     height: 100%;
-    width: ${({ $percentage }) => $percentage}%;
+    width: ${({ $percentage }) => Math.min($percentage, 100)}%;
     background-color: ${({ $percentage, theme }) => $percentage > 90 ? theme.error : theme.primary};
     border-radius: 4px;
-    transition: width 0.3s ease;
+    transition: width 0.3s ease, background-color 0.3s ease;
   }
 `;
 
@@ -59,14 +67,13 @@ export const ItemList = styled.div`
   flex-direction: column;
   gap: 0.5rem;
   min-height: 250px;
-  max-height: 1000px;
+  max-height: 450px; /* Aumentado para melhor usabilidade */
   overflow-y: auto;
-  padding-right: 8px;
+  padding: 0.2rem 0.5rem 0.2rem 0;
   border-bottom: 1px solid ${({ theme }) => theme.border};
   padding-bottom: 1rem;
 `;
 
-// ... todos os outros estilos de ItemCard, ItemInfo, etc permanecem os mesmos ...
 export const ItemCard = styled.div`
   display: grid;
   grid-template-columns: 1fr auto;
@@ -79,15 +86,27 @@ export const ItemCard = styled.div`
   transition: background-color 0.2s;
   &:hover { background-color: ${({ theme }) => theme.border}22; }
 `;
-export const ItemInfo = styled.div``;
-export const ItemName = styled.h4`font-weight: 500;`;
+
+export const ItemInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+export const ItemName = styled.h4`
+  font-weight: 500;
+  margin: 0;
+`;
+
 export const ItemDetails = styled.p`
   font-size: 0.8rem;
   color: ${({ theme }) => theme.textSecondary};
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  margin: 0;
 `;
+
 export const ItemActions = styled.div`
   display: flex;
   gap: 0.5rem;
@@ -98,30 +117,52 @@ export const ItemActions = styled.div`
     cursor: pointer;
     font-size: 0.9rem;
     padding: 4px;
-    &.delete { color: ${({ theme }) => theme.error}; }
-    &:hover:not(:disabled) { color: ${({ theme }) => theme.textPrimary}; }
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    &.delete { 
+      &:hover:not(:disabled) {
+        background-color: ${({ theme }) => theme.error}20;
+        color: ${({ theme }) => theme.error};
+      }
+    }
+    &:hover:not(:disabled) { 
+      background-color: ${({ theme }) => theme.border}44;
+      color: ${({ theme }) => theme.textPrimary};
+    }
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
   }
 `;
+
 const goldenGlow = keyframes`
-  0% { box-shadow: 0 0 5px gold; }
-  50% { box-shadow: 0 0 15px gold; }
-  100% { box-shadow: 0 0 5px gold; }
+  0% { box-shadow: 0 0 3px gold, inset 0 0 2px #0002; }
+  50% { box-shadow: 0 0 12px gold, inset 0 0 2px #0002; }
+  100% { box-shadow: 0 0 3px gold, inset 0 0 2px #0002; }
 `;
+
 export const RarityBadge = styled.span`
   font-size: 0.7rem;
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 8px;
   color: white;
   font-weight: bold;
-  background-color: ${({ rarity }) => {
+  background-color: ${({ rarity, theme }) => {
     switch (rarity) {
       case 'Comum': return '#888';
-      case 'Incomum': return '#2196F3';
-      case 'Raro': return '#9C27B0';
+      case 'Incomum': return theme.secondary;
+      case 'Raro': return theme.primary;
       case 'Lendário': return '#FFC107';
       default: return 'transparent';
     }
   }};
-  animation: ${({ rarity }) => rarity === 'Lendário' ? css`${goldenGlow} 1.5s ease-in-out infinite alternate` : 'none'};
+  animation: ${({ rarity }) => rarity === 'Lendário' ? css`${goldenGlow} 2s ease-in-out infinite alternate` : 'none'};
   box-shadow: ${({ rarity }) => rarity === 'Lendário' ? '0 0 5px gold' : 'none'};
 `;

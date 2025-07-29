@@ -1,5 +1,13 @@
 import styled from 'styled-components';
 
+export const GridContainer = styled.div`
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: ${({ theme }) => theme.background};
+  border-radius: 8px;
+`;
+
 export const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -30,6 +38,14 @@ export const TechniqueCard = styled.div`
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: ${({ category, theme }) => {
+      switch (category) {
+        case 'Truques': return theme.success;
+        case 'Técnicas Comuns': return theme.secondary;
+        case 'Técnicas Lendárias': return theme.primary;
+        default: return theme.textPrimary;
+      }
+    }};
   }
 `;
 
@@ -40,7 +56,8 @@ export const TechniqueName = styled.h4`
 `;
 
 export const CategoryBadge = styled.span`
-  align-self: flex-end;
+  align-self: flex-start; /* Alinhado com o nome da técnica */
+  margin-top: 0.5rem;
   padding: 3px 8px;
   border-radius: 12px;
   font-size: 0.75rem;
@@ -55,8 +72,6 @@ export const CategoryBadge = styled.span`
     }
   }};
 `;
-
-// --- NOVOS ESTILOS PARA AS TAGS ---
 
 export const SelectedItemsContainer = styled.div`
   display: flex;
@@ -89,4 +104,9 @@ export const RemoveButton = styled.button`
   line-height: 20px;
   font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
 `;

@@ -1,202 +1,138 @@
 import React, { useState, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { FaPlus, FaMinus } from 'react-icons/fa';
+import { moedas } from '../../data/gameData';
 import {
-    MoneyContainer, MoneyDisplay, Amount, CurrencyType, ActionForm,
-    AmountInput, ActionButton, EditContainer, EditRow, QuickControls, QuickButton
+    MoneyContainer, MoneyDisplay, Amount, CurrencyType, ActionForm, AmountInput,
+    ActionButton, EditContainer, EditRow, QuickControls, QuickButton, FormButton
 } from './styles';
-import { moedas } from '../../data/gameData'; // Importa a lista de moedas
 
-export const MoneyTracker = ({ money, onUpdate, isEditing, isDead }) => {
+// --- Configuração para os botões de ação rápida ---
+const quickActions = [
+    { value: 1, variant: 'subtract', label: '-1' },
+    { value: 10, variant: 'subtract', label: '-10' },
+    { value: 1, variant: 'add', label: '+1' },
+    { value: 10, variant: 'add', label: '+10' },
+];
+
+// --- Subcomponente para a Visão de Edição ---
+const EditView = ({ money, onUpdate }) => {
+    // Valores padrão para evitar erros se a prop 'money' for nula.
+    const currentMoney = money || { amount: 0, type: { nome: '' } };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        if (name === 'type') {
+            const newType = moedas.find(m => m.nome === value);
+            onUpdate({ ...currentMoney, type: newType });
+        } else {
+            onUpdate({ ...currentMoney, [name]: parseInt(value) || 0 });
+        }
+    };
+
+    return (
+        <EditContainer>
+            <EditRow>
+                <label htmlFor="money-type">Tipo de Moeda</label>
+                <select id="money-type" name="type" value={currentMoney.type.nome} onChange={handleChange}>
+                    {moedas.map(m => <option key={m.nome} value={m.nome}>{m.nome}</option>)}
+                </select>
+            </EditRow>
+            <EditRow>
+                <label htmlFor="money-amount">Quantidade Inicial</label>
+                <input id="money-amount" type="number" name="amount" value={currentMoney.amount} onChange={handleChange} />
+            </EditRow>
+        </EditContainer>
+    );
+};
+
+// --- Subcomponente para a Visão de Jogo ---
+const DisplayView = ({ money, onUpdate, isDead }) => {
     const [showForm, setShowForm] = useState(false);
     const [amount, setAmount] = useState('');
     const [isSubtracting, setIsSubtracting] = useState(false);
-    
-    // Refs para controle de segurar botão
     const holdTimeoutRef = useRef(null);
     const holdIntervalRef = useRef(null);
+    
+    // Valores padrão para segurança.
+    const currentMoney = money || { amount: 0, type: { sigla: '--' } };
 
-    // Função para iniciar o hold (segurar botão)
-    const startHold = useCallback((callback, initialDelay = 500, repeatDelay = 150) => {
-        // Executa imediatamente
-        callback();
-        
-        // Aguarda o delay inicial antes de começar a repetir
+    // **CORREÇÃO PRINCIPAL**: Esta função agora calcula o novo objeto e o passa para 'onUpdate'.
+    const handleQuickChange = useCallback((value) => {
+        const newAmount = Math.max(0, currentMoney.amount + value);
+        onUpdate({ ...currentMoney, amount: newAmount });
+    }, [currentMoney, onUpdate]);
+
+    const startHold = useCallback((value) => {
+        handleQuickChange(value);
         holdTimeoutRef.current = setTimeout(() => {
-            holdIntervalRef.current = setInterval(callback, repeatDelay);
-        }, initialDelay);
-    }, []);
+            holdIntervalRef.current = setInterval(() => handleQuickChange(value), 150);
+        }, 500);
+    }, [handleQuickChange]);
 
-    // Função para parar o hold
     const stopHold = useCallback(() => {
-        if (holdTimeoutRef.current) {
-            clearTimeout(holdTimeoutRef.current);
-            holdTimeoutRef.current = null;
-        }
-        if (holdIntervalRef.current) {
-            clearInterval(holdIntervalRef.current);
-            holdIntervalRef.current = null;
-        }
+        clearTimeout(holdTimeoutRef.current);
+        clearInterval(holdIntervalRef.current);
     }, []);
 
-    // Funções para mudanças rápidas
-    const quickAdd = useCallback((value) => {
-        const newAmount = money.amount + value;
-        onUpdate({ ...money, amount: newAmount });
-    }, [money, onUpdate]);
-
-    const quickSubtract = useCallback((value) => {
-        const newAmount = Math.max(0, money.amount - value);
-        onUpdate({ ...money, amount: newAmount });
-    }, [money, onUpdate]);
-
-    const handleUpdateAmount = (e) => {
+    const handleFormSubmit = (e) => {
         e.preventDefault();
         const value = parseInt(amount, 10);
         if (isNaN(value) || value <= 0) {
             toast.error("Valor inválido.");
             return;
         }
-
-        const newAmount = isSubtracting
-            ? Math.max(0, money.amount - value)
-            : money.amount + value;
-
-        onUpdate({ ...money, amount: newAmount });
+        const finalAmount = isSubtracting ? -value : value;
+        handleQuickChange(finalAmount);
         setShowForm(false);
         setAmount('');
     };
 
-    const handleTypeChange = (e) => {
-        const newType = moedas.find(m => m.nome === e.target.value);
-        onUpdate({ ...money, type: newType });
-    };
-
-    if (isEditing) {
-        return (
-            <EditContainer>
-                <EditRow>
-                    <label>Tipo de Moeda</label>
-                    <select value={money.type.nome} onChange={handleTypeChange}>
-                        {moedas.map(m => <option key={m.nome} value={m.nome}>{m.nome}</option>)}
-                    </select>
-                </EditRow>
-                <EditRow>
-                    <label>Quantidade Inicial</label>
-                    <input
-                        type="number"
-                        value={money.amount}
-                        onChange={(e) => onUpdate({ ...money, amount: parseInt(e.target.value) || 0 })}
-                    />
-                </EditRow>
-            </EditContainer>
-        );
-    }
-
     return (
         <MoneyContainer>
             <MoneyDisplay>
-                <Amount>{money.amount.toLocaleString('pt-BR')}</Amount>
-                <CurrencyType>{money.type.sigla}</CurrencyType>
+                <Amount>{currentMoney.amount.toLocaleString('pt-BR')}</Amount>
+                <CurrencyType>{currentMoney.type.sigla}</CurrencyType>
             </MoneyDisplay>
-            
-            {showForm ? (
-                <ActionForm onSubmit={handleUpdateAmount}>
-                    <div className="input-row">
-                        <AmountInput
-                            type="number"
-                            value={amount}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (/^\d*$/.test(val)) setAmount(val);
-                            }}
-                            placeholder="Valor"
-                            min="1"
-                            step="1"
-                            autoFocus
-                        />
-                    </div>
 
-                    <div className="button-row">
-                        <button type="submit">OK</button>
-                        <button type="button" onClick={() => setShowForm(false)}>Cancelar</button>
+            {showForm ? (
+                <ActionForm onSubmit={handleFormSubmit}>
+                    <AmountInput
+                        type="number"
+                        value={amount}
+                        onChange={(e) => /^\d*$/.test(e.target.value) && setAmount(e.target.value)}
+                        placeholder="Valor"
+                        autoFocus
+                    />
+                    <div>
+                        <FormButton type="submit">OK</FormButton>
+                        <FormButton type="button" $variant="cancel" onClick={() => setShowForm(false)}>
+                            Cancelar
+                        </FormButton>
                     </div>
                 </ActionForm>
             ) : (
                 <>
-                    {/* Controles Rápidos */}
                     <QuickControls>
-                        <QuickButton 
-                            onMouseDown={() => startHold(() => quickSubtract(1))}
-                            onMouseUp={stopHold}
-                            onMouseLeave={stopHold}
-                            onTouchStart={() => startHold(() => quickSubtract(1))}
-                            onTouchEnd={stopHold}
-                            disabled={isDead || money.amount <= 0}
-                            title="Diminuir 1 (segure para continuar)"
-                            className="subtract"
-                        >
-                            -1
-                        </QuickButton>
-                        
-                        <QuickButton 
-                            onMouseDown={() => startHold(() => quickSubtract(10))}
-                            onMouseUp={stopHold}
-                            onMouseLeave={stopHold}
-                            onTouchStart={() => startHold(() => quickSubtract(10))}
-                            onTouchEnd={stopHold}
-                            disabled={isDead || money.amount < 10}
-                            title="Diminuir 10 (segure para continuar)"
-                            className="subtract"
-                        >
-                            -10
-                        </QuickButton>
-                        
-                        <QuickButton 
-                            onMouseDown={() => startHold(() => quickAdd(1))}
-                            onMouseUp={stopHold}
-                            onMouseLeave={stopHold}
-                            onTouchStart={() => startHold(() => quickAdd(1))}
-                            onTouchEnd={stopHold}
-                            disabled={isDead}
-                            title="Adicionar 1 (segure para continuar)"
-                            className="add"
-                        >
-                            +1
-                        </QuickButton>
-                        
-                        <QuickButton 
-                            onMouseDown={() => startHold(() => quickAdd(10))}
-                            onMouseUp={stopHold}
-                            onMouseLeave={stopHold}
-                            onTouchStart={() => startHold(() => quickAdd(10))}
-                            onTouchEnd={stopHold}
-                            disabled={isDead}
-                            title="Adicionar 10 (segure para continuar)"
-                            className="add"
-                        >
-                            +10
-                        </QuickButton>
+                        {quickActions.map(({ value, variant, label }) => (
+                            <QuickButton
+                                key={label}
+                                $variant={variant}
+                                onMouseDown={() => startHold(variant === 'add' ? value : -value)}
+                                onMouseUp={stopHold}
+                                onMouseLeave={stopHold}
+                                onTouchStart={() => startHold(variant === 'add' ? value : -value)}
+                                onTouchEnd={stopHold}
+                                disabled={isDead || (variant === 'subtract' && currentMoney.amount < value)}
+                                title={`${variant === 'add' ? 'Adicionar' : 'Diminuir'} ${value} (segure)`}
+                            >
+                                {label}
+                            </QuickButton>
+                        ))}
                     </QuickControls>
-                    
-                    {/* Controles de Formulário */}
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        <ActionButton 
-                            className="remove" 
-                            onClick={() => { setShowForm(true); setIsSubtracting(true); }} 
-                            disabled={isDead}
-                            title="Remover valor personalizado"
-                        >
-                            <FaMinus />
-                        </ActionButton>
-                        <ActionButton 
-                            className="add" 
-                            onClick={() => { setShowForm(true); setIsSubtracting(false); }} 
-                            disabled={isDead}
-                            title="Adicionar valor personalizado"
-                        >
-                            <FaPlus />
-                        </ActionButton>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '0.5rem' }}>
+                        <ActionButton $variant="subtract" onClick={() => { setShowForm(true); setIsSubtracting(true); }} disabled={isDead} title="Remover valor personalizado"><FaMinus /></ActionButton>
+                        <ActionButton $variant="add" onClick={() => { setShowForm(true); setIsSubtracting(false); }} disabled={isDead} title="Adicionar valor personalizado"><FaPlus /></ActionButton>
                     </div>
                 </>
             )}
@@ -204,3 +140,14 @@ export const MoneyTracker = ({ money, onUpdate, isEditing, isDead }) => {
     );
 };
 
+// --- Componente Principal ---
+export const MoneyTracker = ({ money, onUpdate, isEditing, isDead }) => {
+    // Guarda de segurança para o caso da prop 'money' ainda não ter chegado.
+    if (!money) {
+        return <MoneyContainer>Carregando dinheiro...</MoneyContainer>;
+    }
+
+    return isEditing
+        ? <EditView money={money} onUpdate={onUpdate} />
+        : <DisplayView money={money} onUpdate={onUpdate} isDead={isDead} />;
+};

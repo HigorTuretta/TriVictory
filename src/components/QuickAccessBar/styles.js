@@ -4,14 +4,16 @@ export const BarContainer = styled.div`
   display: flex;
   gap: 0.75rem;
   padding: 0.75rem;
-  background-color: ${({ theme }) => theme.background};
+  background-color: ${({ theme }) => theme.surfaceVariant || theme.background};
   border-radius: 8px;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   flex-wrap: wrap;
+  border: 1px solid ${({ theme }) => theme.border};
 `;
 
 export const QuickButton = styled.button`
   flex-grow: 1;
+  min-width: 120px; /* Garante um tamanho mínimo para os botões */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,17 +30,21 @@ export const QuickButton = styled.button`
   &:hover:not(:disabled) {
     background-color: ${({ theme }) => theme.border};
     border-color: ${({ theme }) => theme.textSecondary};
+    transform: translateY(-2px);
   }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 `;
 
 export const ButtonIcon = styled.div`
   font-size: 1.5rem;
-  color: ${({ theme }) => theme.primary};
+  /* A cor agora é passada via prop, com um fallback para o tema */
+  color: ${({ $color, theme }) => $color || theme.primary};
+  display: flex;
+  align-items: center;
 `;
 
 export const ButtonLabel = styled.span`
@@ -48,17 +54,20 @@ export const ButtonLabel = styled.span`
 
 export const ButtonQuantity = styled.span`
   position: absolute;
-  top: -5px;
-  right: -5px;
-  background-color: ${({ theme }) => theme.secondary};
-  color: white;
+  top: -8px;
+  right: -8px;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 0.75rem;
+  width: 22px;
+  height: 22px;
+  font-size: 0.8rem;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid ${({ theme }) => theme.surface};
+  border: 2px solid ${({ theme }) => theme.surface};
+  transition: all 0.2s ease;
+
+  /* Estilo dinâmico com base na prop $hasItems */
+  background-color: ${({ theme, $hasItems }) => $hasItems ? theme.primary : theme.border};
+  color: ${({ theme, $hasItems }) => $hasItems ? 'white' : theme.textSecondary};
 `;

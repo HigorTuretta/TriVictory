@@ -1,30 +1,25 @@
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { motion } from 'framer-motion';
-
-/* animação do resultado */
-const resultFadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0);   }
-`;
 
 export const Overlay = styled(motion.div)`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(5px);
-
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
   z-index: 2000;
+  overflow: hidden; // Previne qualquer scroll indesejado
 `;
 
 export const DiceWrapper = styled(motion.div)`
+  position: relative; // Garante que os dados fiquem no centro do wrapper
   display: flex;
-  gap: 2rem;
-  padding-bottom: 10rem;
+  justify-content: center;
+  align-items: center;
+  // O gap é controlado pela transformação 'x' nos elementos filhos
 `;
 
 export const DieSvg = styled.svg`
@@ -39,18 +34,18 @@ export const ResultWrapper = styled(motion.div)`
   text-align: center;
   color: #fff;
   text-shadow: 0 0 15px #000;
-  animation: ${resultFadeIn} 0.5s ease-out;
+  // A animação de fade-in agora é controlada pelo framer-motion no próprio componente.
 `;
 
 export const TotalText = styled.h1`
   font-size: 10rem;
   font-weight: 900;
   line-height: 1;
-  color: ${({ theme }) => theme.primary};
+  color: ${({ theme }) => theme.primary || '#8a4fff'}; // Adicionado fallback
 `;
 
 export const BreakdownText = styled.p`
   font-size: 1.5rem;
   font-family: monospace;
-  color: ${({ theme }) => theme.textSecondary};
+  color: ${({ theme }) => theme.textSecondary || '#ccc'}; // Adicionado fallback
 `;

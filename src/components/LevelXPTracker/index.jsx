@@ -2,41 +2,141 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaPlus, FaMinus, FaSync, FaSkull } from 'react-icons/fa';
 import { ConfirmModal } from '../ConfirmModal';
-
-// Importe os novos componentes de estilo
 import {
     Wrapper, LevelDisplay, BarContainer, BarInfo, XPBar, XPProgress,
     Actions, ActionButton, AddXpForm, AddXpInput, ResetActions,
     EditGrid, EditField, RadioGroup
 } from './styles';
 
-export const LevelXPTracker = ({
-    level = 0,
-    xp = { current: 0, target: 100, system: 'unit' },
-    basePoints = 12,
-    isEditing,
-    onUpdate,
-    isDead
-}) => {
-    const [isAddingXp, setIsAddingXp] = useState(false);
+// --- Subcomponente para a Visão de Edição ---
+const EditView = ({ level, xp, basePoints, onUpdate }) => {
+    const handleChange = (e) => {
+        const { name, value, type } = e.target;
+        const isXpField = name.startsWith('xp.');
+        const parsedValue = type === 'number' ? parseInt(value, 10) || 0 : value;
+
+        if (isXpField) {
+            const xpKey = name.split('.')[1];
+            onUpdate({ xp: { ...xp, [xpKey]: parsedValue } });
+        } else {
+            onUpdate({ [name]: parsedValue });
+        }
+    };
+
+    return (
+        <EditGrid>
+            <EditField>
+                <label htmlFor="level">Nível</label>
+                <input id="level" type="number" name="level" value={level} onChange={handleChange} />
+            </EditField>
+            <EditField>
+                <label htmlFor="basePoints">Pontos Base</label>
+                <input id="basePoints" type="number" name="basePoints" value={basePoints} onChange={handleChange} />
+            </EditField>
+            <EditField>
+                <label htmlFor="xp.current">XP Atual</label>
+                <input id="xp.current" type="number" name="xp.current" value={xp.current} onChange={handleChange} />
+            </EditField>
+            <EditField>
+                <label htmlFor="xp.target">XP para Próximo Nível</label>
+                <input id="xp.target" type="number" name="xp.target" value={xp.target} onChange={handleChange} />
+            </EditField>
+        </EditGrid>
+    );
+};
+
+// --- Subcomponente para a Visão de Display ---
+const DisplayView = ({ level, xp, progress, isDead, onXpChange, onResetRequest }) => {
+    const [isFormActive, setIsFormActive] = useState(false);
     const [xpAmount, setXpAmount] = useState('');
     const [isSubtracting, setIsSubtracting] = useState(false);
-    const [confirmReset, setConfirmReset] = useState(null); // 'xp' ou 'level'
 
-    const handleXpChange = (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         const amount = parseInt(xpAmount, 10);
         if (isNaN(amount) || amount <= 0) {
             toast.error("Por favor, insira um valor válido.");
             return;
         }
+        
+        onXpChange(isSubtracting ? -amount : amount);
+        setXpAmount('');
+        setIsFormActive(false);
+    };
 
-        const modifier = isSubtracting ? -1 : 1;
-        let newXp = xp.current + (amount * modifier);
+    return (
+        <>
+            <LevelDisplay>
+                <span>Nível</span>
+                <span>{level}</span>
+            </LevelDisplay>
+
+            <BarContainer>
+                <BarInfo>
+                    <span>Progresso</span>
+                    <ResetActions>
+                        <button title="Resetar XP Atual" onClick={() => onResetRequest('xp')} disabled={isDead}>
+                            <FaSync size={12} />
+                        </button>
+                        <button title="Resetar Nível e XP" className="danger" onClick={() => onResetRequest('level')} disabled={isDead}>
+                            <FaSkull size={12} />
+                        </button>
+                    </ResetActions>
+                </BarInfo>
+                <XPBar>
+                    <XPProgress style={{ width: `${progress}%` }} />
+                </XPBar>
+                <div style={{ textAlign: 'right', fontSize: '0.8rem', color: '#888' }}>
+                    {xp.current} / {xp.target} XP
+                </div>
+            </BarContainer>
+
+            {isFormActive ? (
+                <AddXpForm onSubmit={handleSubmit}>
+                    <AddXpInput
+                        type="number"
+                        value={xpAmount}
+                        onChange={(e) => setXpAmount(e.target.value)}
+                        placeholder="Valor"
+                        autoFocus
+                        onBlur={() => !xpAmount && setIsFormActive(false)}
+                    />
+                    <ActionButton type="submit" title={isSubtracting ? 'Confirmar Remoção' : 'Confirmar Adição'}>
+                        {isSubtracting ? <FaMinus /> : <FaPlus />}
+                    </ActionButton>
+                </AddXpForm>
+            ) : (
+                <Actions>
+                    <ActionButton title="Remover XP" className="remove" onClick={() => { setIsFormActive(true); setIsSubtracting(true); }} disabled={isDead}>
+                        <FaMinus />
+                    </ActionButton>
+                    <ActionButton title="Adicionar XP" onClick={() => { setIsFormActive(true); setIsSubtracting(false); }} disabled={isDead}>
+                        <FaPlus />
+                    </ActionButton>
+                </Actions>
+            )}
+        </>
+    );
+};
+
+// --- Componente Principal ---
+export const LevelXPTracker = ({
+    level = 0,
+    xp = { current: 0, target: 100 },
+    basePoints = 12,
+    isEditing,
+    onUpdate,
+    isDead
+}) => {
+    const [confirmReset, setConfirmReset] = useState(null); // 'xp' ou 'level'
+
+    const handleXpChange = (amount) => {
+        let newXp = xp.current + amount;
         let newLevel = level;
         let newBasePoints = basePoints;
 
-        if (newXp >= xp.target && !isSubtracting) {
+        // Lógica de Level Up
+        if (newXp >= xp.target && amount > 0) {
             newLevel += 1;
             newXp -= xp.target;
             newBasePoints += 1;
@@ -51,111 +151,44 @@ export const LevelXPTracker = ({
             xp: { ...xp, current: newXp },
             basePoints: newBasePoints
         });
-
-        setXpAmount('');
-        setIsAddingXp(false);
-        setIsSubtracting(false);
     };
 
-    const handleReset = (type) => {
-        if (type === 'xp') {
+    const handleReset = () => {
+        if (confirmReset === 'xp') {
             onUpdate({ xp: { ...xp, current: 0 } });
             toast.success("XP do nível atual zerado!");
-        } else if (type === 'level') {
-            onUpdate({ level: 0, xp: { ...xp, current: 0 }, basePoints: 12 }); // Reseta os pontos base também
+        } else if (confirmReset === 'level') {
+            onUpdate({ level: 0, xp: { ...xp, current: 0 }, basePoints: 12 });
             toast.success("Nível e XP zerados!");
         }
         setConfirmReset(null);
     };
 
-    const progress = xp.system === 'percentage'
-        ? xp.current
-        : xp.target > 0 ? (xp.current / xp.target) * 100 : 0;
+    const progress = xp.target > 0 ? (xp.current / xp.target) * 100 : 0;
 
-    // --- MODO DE EDIÇÃO ---
-    if (isEditing) {
-        // ... (código do modo de edição permanece o mesmo)
-    }
-
-    // --- MODO DE VISUALIZAÇÃO ---
     return (
         <>
             <ConfirmModal
                 isOpen={!!confirmReset}
                 onClose={() => setConfirmReset(null)}
-                onConfirm={() => handleReset(confirmReset)}
+                onConfirm={handleReset}
                 title={`Resetar ${confirmReset === 'xp' ? 'XP' : 'Nível'}`}
                 message={`Tem certeza que deseja resetar o ${confirmReset === 'xp' ? 'XP atual' : 'Nível e XP'} do personagem? Esta ação não pode ser desfeita.`}
-                confirmButtonClass={confirmReset === 'level' ? 'danger' : ''}
+                confirmVariant={confirmReset === 'level' ? 'confirm' : 'default'}
             />
 
             <Wrapper $isEditing={isEditing}>
-                <LevelDisplay>
-                    <span>Nível</span>
-                    <span>{level}</span>
-                </LevelDisplay>
-
-                <BarContainer>
-                    <BarInfo>
-                        <span>Progresso</span>
-                        <ResetActions>
-                            <button title="Resetar XP Atual" onClick={() => setConfirmReset('xp')} disabled={isDead}>
-                                <FaSync size={12} />
-                            </button>
-                            <button title="Resetar Nível e XP" className="danger" onClick={() => setConfirmReset('level')} disabled={isDead}>
-                                <FaSkull size={12} />
-                            </button>
-                        </ResetActions>
-                    </BarInfo>
-                    <XPBar>
-                        <XPProgress
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progress}%` }}
-                            transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
-                        />
-                    </XPBar>
-                    <div style={{ textAlign: 'right', fontSize: '0.8rem', color: '#888' }}>
-                        {xp.current} / {xp.target} XP
-                    </div>
-                </BarContainer>
-
-                {isAddingXp ? (
-                    <AddXpForm onSubmit={handleXpChange}>
-                        <AddXpInput
-                            type="number"
-                            value={xpAmount}
-                            onChange={(e) => setXpAmount(e.target.value)}
-                            placeholder="Valor"
-                            autoFocus
-                            onBlur={() => {
-                                if (!xpAmount) {
-                                    setIsAddingXp(false);
-                                    setIsSubtracting(false);
-                                }
-                            }}
-                        />
-                        <ActionButton type="submit" title={isSubtracting ? 'Confirmar Remoção' : 'Confirmar Adição'}>
-                            {isSubtracting ? <FaMinus /> : <FaPlus />}
-                        </ActionButton>
-                    </AddXpForm>
+                {isEditing ? (
+                    <EditView level={level} xp={xp} basePoints={basePoints} onUpdate={onUpdate} />
                 ) : (
-                    <Actions>
-                        <ActionButton
-                            title="Remover XP"
-                            className="remove"
-                            onClick={() => { setIsAddingXp(true); setIsSubtracting(true); }}
-                            disabled={isDead}
-                        >
-                            <FaMinus />
-                        </ActionButton>
-                        <ActionButton
-                            title="Adicionar XP"
-                            onClick={() => { setIsAddingXp(true); setIsSubtracting(false); }}
-                            disabled={isDead}
-                        >
-                            <FaPlus />
-                        </ActionButton>
-                    </Actions>
+                    <DisplayView
+                        level={level}
+                        xp={xp}
+                        progress={progress}
+                        isDead={isDead}
+                        onXpChange={handleXpChange}
+                        onResetRequest={setConfirmReset}
+                    />
                 )}
             </Wrapper>
         </>

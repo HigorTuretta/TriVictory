@@ -12,6 +12,7 @@ export const Wrapper = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid ${({ theme }) => theme.border};
   min-height: 80px;
+  transition: all 0.3s ease-in-out;
 
   ${({ $isEditing }) => $isEditing && css`
     flex-direction: column;
@@ -112,6 +113,7 @@ export const XPProgress = styled(motion.div)`
   height: 100%;
   background: linear-gradient(90deg, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
   border-radius: 18px;
+  transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 `;
 
 // Botões de Ação (+ e -)
@@ -133,6 +135,7 @@ export const ActionButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 
   &:not(:disabled):hover {
     background: ${({ theme }) => theme.primary};
@@ -183,7 +186,8 @@ export const AddXpInput = styled.input`
 
 export const EditGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
 `;
 

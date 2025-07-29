@@ -1,15 +1,9 @@
 import React from 'react';
 import { FaHeart, FaBolt, FaStar } from 'react-icons/fa';
 import {
-    CardContainer,
-    CardHeader,
-    CharacterName,
-    PlayerNickname,
-    ResourceGrid,
-    Resource,
-    ResourceIcon,
-    ResourceBar,
-    ResourceProgress
+    CardContainer, CardHeader, CharacterName, PlayerNickname,
+    ResourceGrid, Resource, ResourceIcon, ResourceBar, ResourceProgress,
+    ResourceValues
 } from './styles';
 
 export const PlayerStatusCard = ({ character }) => {
@@ -17,47 +11,71 @@ export const PlayerStatusCard = ({ character }) => {
         return null; // Não renderiza nada se os dados do personagem ainda não chegaram
     }
 
-    // Calcula os valores máximos com base nos atributos
-    const maxPv = (character.attributes.resistencia || 0) * 5 || 1;
-    const maxPm = (character.attributes.habilidade || 0) * 5 || 1;
-    const maxPa = character.attributes.poder || 1;
+    // Desestrutura os dados do personagem para um acesso mais limpo
+    const {
+        id,
+        name,
+        ownerNickname,
+        attributes,
+        pv_current,
+        pm_current,
+        pa_current,
+    } = character;
 
-    // Garante que os valores atuais não excedam o máximo
-    const currentPv = Math.min(character.pv_current, maxPv);
-    const currentPm = Math.min(character.pm_current, maxPm);
-    const currentPa = Math.min(character.pa_current, maxPa);
+    // --- Preparação dos Dados dos Recursos ---
+    // Centraliza a lógica de cálculo e os dados de cada barra de recurso.
+    const maxPv = (attributes.resistencia || 0) * 5 || 1;
+    const maxPm = (attributes.habilidade || 0) * 5 || 1;
+    const maxPa = attributes.poder || 1;
+
+    const resourceData = [
+        {
+            key: 'pv',
+            Icon: FaHeart,
+            color: '#F44336',
+            currentValue: Math.min(pv_current, maxPv),
+            maxValue: maxPv,
+        },
+        {
+            key: 'pm',
+            Icon: FaBolt,
+            color: '#00BCD4',
+            currentValue: Math.min(pm_current, maxPm),
+            maxValue: maxPm,
+        },
+        {
+            key: 'pa',
+            Icon: FaStar,
+            color: '#FFC107',
+            currentValue: Math.min(pa_current, maxPa),
+            maxValue: maxPa,
+        },
+    ];
 
     return (
         <CardContainer>
             <CardHeader>
-                <CharacterName to={`/sheet/${character.id}`} target="_blank">{character.name}</CharacterName>
-                <PlayerNickname>({character.ownerNickname})</PlayerNickname>
+                <CharacterName to={`/sheet/${id}`} target="_blank" rel="noopener noreferrer">
+                    {name}
+                </CharacterName>
+                <PlayerNickname>({ownerNickname})</PlayerNickname>
             </CardHeader>
             <ResourceGrid>
-                {/* Pontos de Vida */}
-                <Resource>
-                    <ResourceIcon><FaHeart color="#F44336" /></ResourceIcon>
-                    <ResourceBar>
-                        <ResourceProgress $progress={(currentPv / maxPv) * 100} $color="#F44336" />
-                    </ResourceBar>
-                    <span>{currentPv}/{maxPv}</span>
-                </Resource>
-                {/* Pontos de Mana */}
-                <Resource>
-                    <ResourceIcon><FaBolt color="#00BCD4" /></ResourceIcon>
-                    <ResourceBar>
-                        <ResourceProgress $progress={(currentPm / maxPm) * 100} $color="#00BCD4" />
-                    </ResourceBar>
-                    <span>{currentPm}/{maxPm}</span>
-                </Resource>
-                {/* Pontos de Ação */}
-                <Resource>
-                    <ResourceIcon><FaStar color="#FFC107" /></ResourceIcon>
-                    <ResourceBar>
-                        <ResourceProgress $progress={(currentPa / maxPa) * 100} $color="#FFC107" />
-                    </ResourceBar>
-                    <span>{currentPa}/{maxPa}</span>
-                </Resource>
+                {/* O JSX agora mapeia o array de dados, eliminando a repetição. */}
+                {resourceData.map(res => (
+                    <Resource key={res.key}>
+                        <ResourceIcon title={res.key.toUpperCase()}>
+                            <res.Icon color={res.color} />
+                        </ResourceIcon>
+                        <ResourceBar>
+                            <ResourceProgress
+                                $progress={(res.currentValue / res.maxValue) * 100}
+                                $color={res.color}
+                            />
+                        </ResourceBar>
+                        <ResourceValues>{res.currentValue}/{res.maxValue}</ResourceValues>
+                    </Resource>
+                ))}
             </ResourceGrid>
         </CardContainer>
     );

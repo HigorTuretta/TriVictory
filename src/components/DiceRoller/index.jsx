@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
-
 import {
   Overlay,
   DiceWrapper,
@@ -11,74 +10,39 @@ import {
   DieSvg
 } from './styles';
 
-/* ---------- SVG da face do dado ---------- */
+// --- Configuração dos Padrões dos Pontos do Dado ---
+// Mapeia o valor da face para um array de coordenadas dos pontos.
+const DOT_PATTERNS = {
+  1: [{ x: 50, y: 50, r: 10 }],
+  2: [{ x: 25, y: 25, r: 8 }, { x: 75, y: 75, r: 8 }],
+  3: [{ x: 25, y: 25, r: 8 }, { x: 50, y: 50, r: 8 }, { x: 75, y: 75, r: 8 }],
+  4: [{ x: 25, y: 25, r: 8 }, { x: 75, y: 25, r: 8 }, { x: 25, y: 75, r: 8 }, { x: 75, y: 75, r: 8 }],
+  5: [{ x: 25, y: 25, r: 8 }, { x: 75, y: 25, r: 8 }, { x: 50, y: 50, r: 8 }, { x: 25, y: 75, r: 8 }, { x: 75, y: 75, r: 8 }],
+  6: [{ x: 25, y: 25, r: 8 }, { x: 75, y: 25, r: 8 }, { x: 25, y: 50, r: 8 }, { x: 75, y: 50, r: 8 }, { x: 25, y: 75, r: 8 }, { x: 75, y: 75, r: 8 }],
+};
+
 const DieFace = ({ value }) => (
   <DieSvg viewBox="0 0 100 100">
-    <rect
-      width="100"
-      height="100"
-      rx="15"
-      fill="white"
-      stroke="#1E1E26"
-      strokeWidth="5"
-    />
-    {value === 1 && <circle cx="50" cy="50" r="10" fill="black" />}
-    {value === 2 && (
-      <>
-        <circle cx="25" cy="25" r="8" fill="black" />
-        <circle cx="75" cy="75" r="8" fill="black" />
-      </>
-    )}
-    {value === 3 && (
-      <>
-        <circle cx="25" cy="25" r="8" fill="black" />
-        <circle cx="50" cy="50" r="8" fill="black" />
-        <circle cx="75" cy="75" r="8" fill="black" />
-      </>
-    )}
-    {value === 4 && (
-      <>
-        <circle cx="25" cy="25" r="8" fill="black" />
-        <circle cx="75" cy="25" r="8" fill="black" />
-        <circle cx="25" cy="75" r="8" fill="black" />
-        <circle cx="75" cy="75" r="8" fill="black" />
-      </>
-    )}
-    {value === 5 && (
-      <>
-        <circle cx="25" cy="25" r="8" fill="black" />
-        <circle cx="75" cy="25" r="8" fill="black" />
-        <circle cx="50" cy="50" r="8" fill="black" />
-        <circle cx="25" cy="75" r="8" fill="black" />
-        <circle cx="75" cy="75" r="8" fill="black" />
-      </>
-    )}
-    {value === 6 && (
-      <>
-        <circle cx="25" cy="25" r="8" fill="black" />
-        <circle cx="75" cy="25" r="8" fill="black" />
-        <circle cx="25" cy="50" r="8" fill="black" />
-        <circle cx="75" cy="50" r="8" fill="black" />
-        <circle cx="25" cy="75" r="8" fill="black" />
-        <circle cx="75" cy="75" r="8" fill="black" />
-      </>
-    )}
+    <rect width="100" height="100" rx="15" fill="white" stroke="#1E1E26" strokeWidth="5" />
+    {(DOT_PATTERNS[value] || []).map((dot, index) => (
+      <circle key={index} cx={dot.x} cy={dot.y} r={dot.r} fill="black" />
+    ))}
   </DieSvg>
 );
-
 DieFace.propTypes = { value: PropTypes.number.isRequired };
 
-/* ---------- formata a “quebra” ---------- */
+// --- Função Helper para Formatar a Rolagem ---
 const formatBreakdown = (rollData) => {
   if (!rollData?.individualResults) return '';
   const diceStr = `[${rollData.individualResults.join(' + ')}]`;
-  const modifiersStr = (rollData.modifiers || [])
-    .map((m) => ` + ${m.value} (${m.label})`)
-    .join(' ');
-  return `${diceStr} ${modifiersStr}`.trim();
+  const modifiersStr = (rollData.modifiers || []).map((m) => ` + ${m.value} (${m.label})`).join('');
+  return `${diceStr}${modifiersStr}`;
 };
 
-/* ================================================================== */
+// --- Configurações de Animação ---
+const ANIMATION_DURATION_MS = 4000;
+const RESULTS_DELAY_MS = 1500;
+
 export const DiceRoller = ({ isVisible, rollData, onAnimationComplete }) => {
   const [showResults, setShowResults] = useState(false);
 
@@ -86,9 +50,14 @@ export const DiceRoller = ({ isVisible, rollData, onAnimationComplete }) => {
     if (!isVisible) return;
 
     setShowResults(false);
-    const showTimer = setTimeout(() => setShowResults(true), 1500);
-    const finishTimer = setTimeout(onAnimationComplete, 4000);
+    
+    // Timer para mostrar o resultado final após a animação dos dados.
+    const showTimer = setTimeout(() => setShowResults(true), RESULTS_DELAY_MS);
+    
+    // Timer para fechar o modal após a animação completa.
+    const finishTimer = setTimeout(onAnimationComplete, ANIMATION_DURATION_MS);
 
+    // Limpa os timers se o componente for desmontado ou re-renderizado.
     return () => {
       clearTimeout(showTimer);
       clearTimeout(finishTimer);
@@ -100,11 +69,10 @@ export const DiceRoller = ({ isVisible, rollData, onAnimationComplete }) => {
   const { individualResults } = rollData;
   const diceCount = individualResults.length;
 
-  /* cálculo de offset horizontal evitando overlap */
-  const calcOffsetX = (idx) => {
-    const gap = 140; // distância entre colunas
-    const mid = (diceCount - 1) / 2;
-    return (idx - mid) * gap;
+  const calcOffsetX = (index) => {
+    const gap = 140; // Espaçamento horizontal entre os dados.
+    const middleIndex = (diceCount - 1) / 2;
+    return (index - middleIndex) * gap;
   };
 
   return (
@@ -116,24 +84,14 @@ export const DiceRoller = ({ isVisible, rollData, onAnimationComplete }) => {
         transition={{ duration: 0.3 }}
       >
         <DiceWrapper>
-          {individualResults.map((result, idx) => (
+          {individualResults.map((result, index) => (
             <motion.div
-              key={idx}
-              initial={{
-                y: -500,
-                x: calcOffsetX(idx),
-                rotate: Math.random() * 720
-              }}
+              key={index}
+              initial={{ y: -500, x: calcOffsetX(index), rotate: Math.random() * 720 }}
               animate={{
                 y: 0,
-                x: calcOffsetX(idx),
                 rotate: 1440 + (Math.random() - 0.5) * 180,
-                transition: {
-                  type: 'spring',
-                  stiffness: 100,
-                  damping: 12,
-                  delay: idx * 0.1
-                }
+                transition: { type: 'spring', stiffness: 100, damping: 12, delay: index * 0.1 }
               }}
             >
               <DieFace value={result} />
@@ -145,6 +103,7 @@ export const DiceRoller = ({ isVisible, rollData, onAnimationComplete }) => {
           <ResultWrapper
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <TotalText>{rollData.total}</TotalText>
             <BreakdownText>= {formatBreakdown(rollData)}</BreakdownText>
@@ -160,7 +119,10 @@ DiceRoller.propTypes = {
   rollData: PropTypes.shape({
     individualResults: PropTypes.arrayOf(PropTypes.number).isRequired,
     total: PropTypes.number,
-    modifiers: PropTypes.array
+    modifiers: PropTypes.arrayOf(PropTypes.shape({
+      label: PropTypes.string,
+      value: PropTypes.number,
+    })),
   }),
   onAnimationComplete: PropTypes.func.isRequired
 };

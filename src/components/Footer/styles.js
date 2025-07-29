@@ -1,17 +1,13 @@
-import styled, { keyframes } from 'styled-components';
-
-// animação sutil de rotação
-const rotate = keyframes`
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-`;
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 
 export const FooterContainer = styled.footer`
   width: 100%;
   padding: 1rem 2rem;
   background-color: ${({ theme }) => theme.surface};
   border-top: 1px solid ${({ theme }) => theme.border};
-  margin-top: auto;
+  margin-top: auto; // Garante que o rodapé fique no final da página
+  flex-shrink: 0; // Previne que o rodapé encolha em layouts flex
 `;
 
 export const FooterContent = styled.div`
@@ -33,28 +29,32 @@ export const FooterText = styled.p`
   }
 `;
 
-export const ThemeToggle = styled.button`
+export const ThemeToggle = styled(motion.button)`
   background: ${({ theme, $isLight }) => $isLight ? theme.surface : theme.primary};
   color: ${({ theme, $isLight }) => $isLight ? theme.textSecondary : '#fff'};
-  border: none;
+  border: 1px solid ${({ theme }) => theme.border};
   border-radius: 50%;
-  padding: 0.8rem;
-  font-size: 1.1rem;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  // O framer-motion agora controla as animações de interação (hover, tap).
+  // A animação de rotação contínua foi removida em favor de uma interativa.
 
+  // O hover agora usa um filtro para um efeito mais sutil e consistente.
   &:hover {
-    animation: ${rotate} 0.6s linear;
-    background: ${({ theme }) => theme.secondary};
-    color: #fff;
+    filter: brightness(1.1);
   }
 
+  // Garante que o SVG dentro do botão não capture eventos do mouse.
   svg {
     pointer-events: none;
+    font-size: 1.1rem; // Tamanho do ícone explícito
   }
 `;

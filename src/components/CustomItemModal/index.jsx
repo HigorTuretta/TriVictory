@@ -3,53 +3,65 @@ import toast from 'react-hot-toast';
 import { Modal } from '../Modal';
 import { Form, FormGroup, Label, Input, Textarea, SaveButton } from './styles';
 
+// Define o estado inicial fora do componente para clareza e reutilização.
+const INITIAL_STATE = { nome: '', custo: 0, descricao: '' };
+
 export const CustomItemModal = ({ isOpen, onClose, onSave, itemType, initialData }) => {
-    const [item, setItem] = useState({ nome: '', custo: 0, descricao: '' });
+    const [item, setItem] = useState(INITIAL_STATE);
+
+    // Determina se o modal está em modo de edição para simplificar a lógica.
+    const isEditing = !!initialData;
 
     useEffect(() => {
-        // Se recebermos dados iniciais (modo edição), preenche o formulário
-        if (initialData) {
+        // Popula o formulário com dados iniciais se estiver editando,
+        // caso contrário, reseta para o estado inicial sempre que o modal for aberto.
+        if (isEditing) {
             setItem(initialData);
         } else {
-            // Senão (modo criação), reseta o formulário
-            setItem({ nome: '', custo: 0, descricao: '' });
+            setItem(INITIAL_STATE);
         }
-    }, [initialData, isOpen]);
+    }, [initialData, isEditing, isOpen]); // A dependência de `isOpen` garante o reset ao reabrir.
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setItem(prev => ({ ...prev, [name]: name === 'custo' ? parseInt(value) || 0 : value }));
+        const { name, value, type } = e.target;
+        // Garante que o campo de custo seja sempre tratado como um número.
+        const processedValue = type === 'number' ? parseInt(value, 10) || 0 : value;
+        setItem(prev => ({ ...prev, [name]: processedValue }));
     };
 
     const handleSave = (e) => {
         e.preventDefault();
-        if (!item.nome || !item.descricao) {
+        if (!item.nome.trim() || !item.descricao.trim()) {
             toast.error("Nome e Descrição são obrigatórios!");
             return;
         }
         onSave(item);
-        onClose();
+        onClose(); // Fecha o modal após o salvamento bem-sucedido.
     };
+
+    // Textos dinâmicos para o modal, melhorando a experiência do usuário.
+    const modalTitle = `${isEditing ? 'Editar' : 'Criar'} ${itemType} Customizada`;
+    const saveButtonText = isEditing ? 'Salvar Alterações' : `Criar ${itemType}`;
 
     if (!isOpen) return null;
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
-            <h3>{initialData ? `Editar` : 'Criar'} {itemType} Customizada</h3>
+            <h3>{modalTitle}</h3>
             <Form onSubmit={handleSave}>
                 <FormGroup>
-                    <Label>Nome</Label>
-                    <Input type="text" name="nome" value={item.nome} onChange={handleChange} required />
+                    <Label htmlFor="nome">Nome</Label>
+                    <Input id="nome" type="text" name="nome" value={item.nome} onChange={handleChange} required />
                 </FormGroup>
                 <FormGroup>
-                    <Label>Custo em Pontos (Use valores negativos para Desvantagens)</Label>
-                    <Input type="number" name="custo" value={item.custo} onChange={handleChange} />
+                    <Label htmlFor="custo">Custo em Pontos (Use valores negativos para Desvantagens)</Label>
+                    <Input id="custo" type="number" name="custo" value={item.custo} onChange={handleChange} />
                 </FormGroup>
                 <FormGroup>
-                    <Label>Descrição</Label>
-                    <Textarea name="descricao" value={item.descricao} onChange={handleChange} rows="4" required />
+                    <Label htmlFor="descricao">Descrição</Label>
+                    <Textarea id="descricao" name="descricao" value={item.descricao} onChange={handleChange} rows="4" required />
                 </FormGroup>
-                <SaveButton type="submit">Salvar Item</SaveButton>
+                <SaveButton type="submit">{saveButtonText}</SaveButton>
             </Form>
         </Modal>
     );

@@ -1,13 +1,28 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
+
+const sharedButtonPulse = css`
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+    animation: pulse 0.1s ease-in-out;
+  }
+  @keyframes pulse {
+    0% { transform: scale(0.95); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(0.95); }
+  }
+  @media (hover: none) {
+    &:active:not(:disabled) { transform: scale(0.9); }
+  }
+`;
 
 export const MoneyContainer = styled.div`
-  background-color: ${({ theme }) => theme.background};
-  padding: 1rem;
-  border-radius: 8px;
+  background-color: ${({ theme }) => theme.surface};
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.border};
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 `;
 
 export const MoneyDisplay = styled.div`
@@ -18,105 +33,51 @@ export const MoneyDisplay = styled.div`
 `;
 
 export const Amount = styled.span`
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  color: #ffd700; /* cor específica mantida para representar ouro */
+  color: #ffd700;
   line-height: 1;
+  text-shadow: 0 1px 3px #00000080;
 `;
 
 export const CurrencyType = styled.span`
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.secondary};
+  color: ${({ theme }) => theme.textSecondary};
 `;
 
 export const QuickControls = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.5rem;
-  width: 100%;
 `;
 
 export const QuickButton = styled.button`
   padding: 0.5rem;
   border: none;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
-  min-height: 32px;
+  min-height: 36px;
+  color: white;
+  ${sharedButtonPulse};
 
-  &.add {
-    background-color: ${({ theme }) => theme.success};
-    color: white;
-  }
-
-  &.subtract {
-    background-color: ${({ theme }) => theme.error};
-    color: white;
-  }
+  background-color: ${({ theme, $variant }) => $variant === 'add' ? theme.success : theme.error};
 
   &:hover:not(:disabled) {
     transform: scale(1.05);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.95);
-    animation: pulse 0.1s ease-in-out;
-  }
-
-  @keyframes pulse {
-    0% { transform: scale(0.95); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(0.95); }
+    filter: brightness(1.1);
   }
 
   &:disabled {
     background-color: ${({ theme }) => theme.border};
-    color: #666;
+    color: ${({ theme }) => theme.textSecondary};
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.6;
     transform: none;
-    box-shadow: none;
-  }
-
-  /* Feedback visual para touch devices */
-  @media (hover: none) {
-    &:active:not(:disabled) {
-      transform: scale(0.9);
-    }
-  }
-`;
-
-export const AmountInput = styled.input`
-  width: 100%;
-  text-align: center;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid ${({ theme }) => theme.border};
-  background-color: ${({ theme }) => theme.surface};
-  color: ${({ theme }) => theme.textPrimary};
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease;
-  appearance: textfield;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.primary};
-    outline: none;
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
-  }
-
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  [type='number'] {
-    -moz-appearance: textfield;
   }
 `;
 
@@ -131,24 +92,15 @@ export const ActionButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.2s ease;
+  transition: all 0.2s ease;
+  ${sharedButtonPulse};
 
-  &.add {
-    background-color: ${({ theme }) => theme.success};
-  }
-
-  &.remove {
-    background-color: ${({ theme }) => theme.error};
-  }
-
+  background-color: ${({ theme, $variant }) => $variant === 'add' ? theme.success : theme.error};
+  
   &:hover:not(:disabled) {
     transform: scale(1.05);
   }
-
-  &:active:not(:disabled) {
-    transform: scale(0.95);
-  }
-
+  
   &:disabled {
     background-color: ${({ theme }) => theme.border};
     cursor: not-allowed;
@@ -157,12 +109,68 @@ export const ActionButton = styled.button`
   }
 `;
 
-/* Modo Edição */
+export const ActionForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+`;
+
+export const AmountInput = styled.input`
+  width: 100%;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid ${({ theme }) => theme.border};
+  background-color: ${({ theme }) => theme.background};
+  color: ${({ theme }) => theme.textPrimary};
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  appearance: textfield;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button, &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    border-color: ${({ theme }) => theme.primary};
+    outline: none;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}40;
+  }
+`;
+
+export const FormButton = styled.button`
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  ${({ theme, $variant }) => $variant === 'cancel'
+    ? css`
+      background-color: transparent;
+      color: ${theme.textSecondary};
+      &:hover { color: ${theme.error}; }
+    `
+    : css`
+      background-color: ${theme.primary};
+      color: ${theme.onPrimary};
+      &:hover { filter: brightness(1.15); }
+    `
+  }
+`;
 
 export const EditContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  padding: 1rem;
+  background-color: ${({ theme }) => theme.surface};
+  border-radius: 12px;
 `;
 
 export const EditRow = styled.div`
@@ -172,67 +180,23 @@ export const EditRow = styled.div`
 
   label {
     font-size: 0.9rem;
-    color: ${({ theme }) => theme.secondary};
+    font-weight: 500;
+    color: ${({ theme }) => theme.textSecondary};
   }
 
-  input,
-  select {
-    padding: 6px 8px;
+  input, select {
+    padding: 10px;
     font-size: 1rem;
     border-radius: 6px;
     border: 1px solid ${({ theme }) => theme.border};
-    background-color: ${({ theme }) => theme.surface};
+    background-color: ${({ theme }) => theme.background};
     color: ${({ theme }) => theme.textPrimary};
-    transition: border-color 0.2s ease;
+    transition: all 0.2s ease;
 
     &:focus {
       border-color: ${({ theme }) => theme.primary};
       outline: none;
-      box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
+      box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}40;
     }
   }
 `;
-
-export const ActionForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-
-  .input-row {
-    width: 100%;
-  }
-
-  .button-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    justify-content: end;
-    width: 100%;
-
-    button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      background-color: ${({ theme }) => theme.primary};
-      color: white;
-      cursor: pointer;
-      transition: background 0.2s ease;
-
-      &:hover {
-        background-color: ${({ theme }) => theme.primary}cc;
-      }
-
-      &:last-child {
-        background-color: transparent;
-        color: ${({ theme }) => theme.secondary};
-      }
-
-      &:last-child:hover {
-        color: ${({ theme }) => theme.error};
-      }
-    }
-  }
-`;
-
