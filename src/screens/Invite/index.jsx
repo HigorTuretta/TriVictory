@@ -1,3 +1,4 @@
+// src/screens/Invite/index.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -5,12 +6,13 @@ import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { FaCrown } from 'react-icons/fa';
-import { 
-    InviteContainer, InviteBox, Title, Subtitle, InfoLine, 
-    ActionsWrapper, Button 
+import {
+    InviteContainer, InviteBox, Title, Subtitle, InfoLine,
+    ActionsWrapper, Button, LoadingText
 } from './styles';
 
-export const Invite = () => {
+// --- Hook Customizado para gerenciar a lógica do convite ---
+const useRoomInvite = () => {
     const { roomId } = useParams();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -21,12 +23,14 @@ export const Invite = () => {
 
     useEffect(() => {
         const fetchRoomData = async () => {
+            if (!currentUser) return;
+            setLoading(true);
+            
             const roomRef = doc(db, "rooms", roomId);
             const roomSnap = await getDoc(roomRef);
 
             if (roomSnap.exists()) {
                 const roomData = roomSnap.data();
-                // Se o usuário já faz parte da sala, redireciona ele para lá
                 if (roomData.masterId === currentUser.uid || roomData.playerIds.includes(currentUser.uid)) {
                     navigate(`/room/${roomId}`);
                     return;
@@ -38,20 +42,14 @@ export const Invite = () => {
             }
             setLoading(false);
         };
-
-        if (currentUser) {
-            fetchRoomData();
-        }
+        fetchRoomData();
     }, [roomId, currentUser, navigate]);
 
-    const handleAcceptInvite = async () => {
+    const acceptInvite = async () => {
         setIsJoining(true);
-        const roomRef = doc(db, "rooms", roomId);
         try {
-            // Adiciona o ID do usuário atual ao array de jogadores da sala
-            await updateDoc(roomRef, {
-                playerIds: arrayUnion(currentUser.uid)
-            });
+            const roomRef = doc(db, "rooms", roomId);
+            await updateDoc(roomRef, { playerIds: arrayUnion(currentUser.uid) });
             toast.success("Você atendeu ao chamado!");
             navigate(`/room/${roomId}`);
         } catch (error) {
@@ -61,16 +59,25 @@ export const Invite = () => {
         }
     };
 
-    const handleDeclineInvite = () => {
+    const declineInvite = () => {
         toast('Você recusou o chamado... por enquanto.', { icon: '🤔' });
         navigate('/');
     };
 
+    return { room, loading, isJoining, acceptInvite, declineInvite };
+};
+
+
+// --- Componente de Apresentação ---
+export const Invite = () => {
+    const { room, loading, isJoining, acceptInvite, declineInvite } = useRoomInvite();
+
     if (loading) {
-        return <InviteContainer><Title>Verificando o pergaminho...</Title></InviteContainer>;
+        return <InviteContainer><LoadingText>Verificando o pergaminho...</LoadingText></InviteContainer>;
     }
 
     if (!room) {
+        // Se a sala for nula após o carregamento, significa que o usuário já foi redirecionado.
         return null;
     }
 
@@ -88,10 +95,10 @@ export const Invite = () => {
                 </InfoLine>
 
                 <ActionsWrapper>
-                    <Button className="decline" onClick={handleDeclineInvite}>
+                    <Button $variant="decline" onClick={declineInvite} disabled={isJoining}>
                         Recusar Chamado
                     </Button>
-                    <Button className="accept" onClick={handleAcceptInvite} disabled={isJoining}>
+                    <Button $variant="accept" onClick={acceptInvite} disabled={isJoining}>
                         {isJoining ? 'Entrando...' : 'Atender ao Chamado'}
                     </Button>
                 </ActionsWrapper>

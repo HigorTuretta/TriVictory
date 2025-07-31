@@ -1,4 +1,5 @@
-import styled from 'styled-components';
+// src/screens/Invite/styles.js
+import styled, { css } from 'styled-components';
 import { AuthContainer, AuthBox, Title as AuthTitle, Button as AuthButton } from '../../styles/Auth';
 
 export const InviteContainer = styled(AuthContainer)``;
@@ -9,6 +10,11 @@ export const InviteBox = styled(AuthBox)`
 
 export const Title = styled(AuthTitle)``;
 
+// Adicionado um estilo para o texto de carregamento
+export const LoadingText = styled(Title)`
+    font-size: 1.5rem;
+`;
+
 export const Subtitle = styled.p`
     text-align: center;
     color: ${({ theme }) => theme.textSecondary};
@@ -18,11 +24,12 @@ export const Subtitle = styled.p`
 `;
 
 export const InfoLine = styled.div`
-    background-color: ${({ theme }) => theme.background};
+    background-color: ${({ theme }) => theme.surfaceVariant || theme.background};
     padding: 1rem;
     border-radius: 6px;
     margin-bottom: 1rem;
     font-size: 1.1rem;
+    border: 1px solid ${({ theme }) => theme.border};
 
     strong {
         color: ${({ theme }) => theme.primary};
@@ -48,11 +55,23 @@ export const Button = styled(AuthButton)`
     width: 100%;
     flex-grow: 1;
 
-    &.accept {
-        background-color: ${({ theme }) => theme.success};
-    }
-    
-    &.decline {
-        background-color: ${({ theme }) => theme.error};
-    }
+    /* A estilização agora usa a prop $variant em vez de classes CSS */
+    ${({ theme, $variant }) => {
+        if ($variant === 'accept') {
+            return css`
+                background-color: ${theme.success};
+                &:hover:not(:disabled) {
+                    background-color: #2e7d32;
+                }
+            `;
+        }
+        if ($variant === 'decline') {
+            return css`
+                background-color: ${theme.error};
+                &:hover:not(:disabled) {
+                    background-color: #c62828;
+                }
+            `;
+        }
+    }}
 `;
