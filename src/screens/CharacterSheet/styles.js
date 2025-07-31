@@ -1,47 +1,43 @@
+// src/screens/CharacterSheet/styles.js
 import styled, { keyframes, css } from 'styled-components';
 
 const fadeIn = keyframes`
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 `;
 
 export const SheetContainer = styled.div`
-  background-color: transparent;
-  padding: 0 2rem 2rem 2rem;
-  border-radius: 18px;
-  border: none;
-  box-shadow: none;
   max-width: 1400px;
   margin: 2rem auto;
+  padding: 0 2rem 4rem;
   animation: ${css`${fadeIn} 0.5s ease-in-out`};
   position: relative;
   transition: filter 0.5s ease-in-out;
-  filter: ${({ $isDead }) => ($isDead ? 'grayscale(100%)' : 'none')};
+  filter: ${({ $isDead }) => ($isDead ? 'grayscale(80%) opacity(0.9)' : 'none')};
   
-  & > *:nth-child(2) {
-    margin-top: 2rem;
-  }
-
   @media (max-width: 768px) {
-    padding: 0 1rem 1rem 1rem;
+    padding: 0 1rem 2rem;
     margin: 1rem auto;
   }
 `;
 
 export const DeathAnimationOverlay = styled.div`
-  position: absolute;
-  inset: 0;
+  position: fixed; /* Fixo na tela inteira */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
-  align-items: start;
-  background-color: rgba(0, 0, 0, 0.55);
-  z-index: 15;
-  border-radius: 12px;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 999;
   pointer-events: none;
-  div { width: 300px; height: 300px; }
+  div { max-width: 400px; max-height: 400px; }
 
   @media (max-width: 768px) {
-    div { width: 200px; height: 200px; }
+    div { max-width: 250px; max-height: 250px; }
   }
 `;
 
@@ -52,7 +48,6 @@ export const FloatingActionButton = styled.button`
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(45deg, ${({ theme }) => theme.primary}, ${({ theme }) => theme.secondary});
   color: white;
   font-size: 1.5rem;
   display: flex;
@@ -62,27 +57,39 @@ export const FloatingActionButton = styled.button`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   z-index: 100;
   transition: all 0.3s ease;
-  &:hover { transform: scale(1.1) rotate(15deg); }
+
+  /* Estilos dinâmicos baseados nas props */
+  background: ${({ theme, $isEditing, $isDead }) => {
+    if ($isDead) return theme.success;
+    if ($isEditing) return theme.secondary;
+    return theme.primary;
+  }};
+
+  &:hover { 
+    transform: scale(1.1) rotate(10deg);
+    filter: brightness(1.1);
+  }
 
   @media (max-width: 768px) {
     width: 55px;
     height: 55px;
     font-size: 1.3rem;
-    right: 1rem;
-    bottom: 5.5rem; 
+    right: 1.5rem;
   }
 `;
 
 export const BackButton = styled.button`
-  background-color: ${({ theme }) => theme.textSecondary};
-  color: ${({ theme }) => theme.background};
-  margin-bottom: 1.5rem;
-  &:hover { background-color: #b0b0c0; }
-  
-  @media (max-width: 768px) {
-    margin-bottom: 1rem;
-    align-self: flex-start;
-    margin-left: 1rem;
+  background-color: ${({ theme }) => theme.surfaceVariant};
+  color: ${({ theme }) => theme.textSecondary};
+  margin-bottom: 2rem;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover { 
+    background-color: ${({ theme }) => theme.border};
+    color: ${({ theme }) => theme.textPrimary};
   }
 `;
 
@@ -103,63 +110,33 @@ export const SectionTitle = styled.h2`
 `;
 
 export const HeaderPanel = styled.div`
-  width: 100%;
-  display: grid;
-  grid-template-columns: 3fr;
-  gap: 2rem;
   padding: 2rem;
   background: ${({ theme }) => theme.surface};
   border-radius: 18px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 
   @media (max-width: 900px) { 
-    grid-template-columns: 1fr;
     padding: 1.5rem;
   }
   @media (max-width: 768px) {
     padding: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
   }
 `;
 
 export const SheetLayoutGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1.5fr;
-  gap: 2rem;
+  gap: 2.5rem;
   align-items: start;
 
   @media (max-width: 1024px) { 
     grid-template-columns: 1fr; 
-    gap: 1.5rem;
+    gap: 2rem;
   }
 `;
 
-export const DeathButton = styled.button`
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  background-color: #a80000;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 8px 15px;
-  border: 1px solid #ff4d4d;
-  box-shadow: 0 0 10px #a80000;
-  z-index: 20;
-
-  &.resurrect {
-    background-color: ${({ theme }) => theme.success};
-    border-color: #81c784;
-    box-shadow: 0 0 10px ${({ theme }) => theme.success};
-  }
-
-  &:hover { transform: scale(1.05); }
-`;
-
-// ✅ CORREÇÃO: Adicionando o estilo 'ChoiceButton' que estava faltando
 export const ChoiceButton = styled.button`
   width: 100%;
   background-color: ${({ theme }) => theme.primary};

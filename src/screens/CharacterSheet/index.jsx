@@ -1,15 +1,15 @@
 // src/screens/CharacterSheet/index.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, updateDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { FaPencilAlt, FaSave, FaSkull, FaHeartbeat } from 'react-icons/fa';
 import Lottie from 'lottie-react';
 
-import { db } from '../../firebase/config';
-import { useAuth } from '../../contexts/AuthContext';
+// CORREÇÃO: Re-importa o useAuth que estava faltando.
+import { useAuth } from '../../contexts/AuthContext'; 
 import { CharacterProvider, useCharacter } from '../../contexts/CharacterContext';
 
+// Componentes de UI
 import { CharacterSheetHeader } from '../../components/CharacterSheetHeader';
 import { ImageCropperModal } from '../../components/ImageCropperModal';
 import { ImageLightbox } from '../../components/ImageLightbox';
@@ -18,238 +18,193 @@ import { SheetLeftColumn } from '../../components/SheetLeftColumn';
 import { SheetRightColumn } from '../../components/SheetRightColumn';
 import { SheetFooter } from '../../components/SheetFooter';
 import { ConfirmModal } from '../../components/ConfirmModal';
-
-import deathAnimation from '../../assets/lotties/deathAnimation.json';
-
-import {
-  SheetContainer,
-  BackButton,
-  HeaderPanel,
-  Section,
-  SectionTitle,
-  SheetLayoutGrid,
-  DeathAnimationOverlay,
-  FloatingActionButton,
-  DeathButton
-} from './styles';
 import { RPGLoader } from '../../components/RPGLoader';
 
-/* --------------------- Conteúdo interno da tela ------------------------- */
-const CharacterSheetContent = () => {
-  const {
-    character,
-    loading,
-    updateCharacter,
-    resources,
-    points,
-    handleAttributeChange,
-    handleResourceChange
-  } = useCharacter();
-  const { currentUser } = useAuth();
-  const navigate = useNavigate();
+import deathAnimation from '../../assets/lotties/deathAnimation.json';
+import {
+  SheetContainer, BackButton, HeaderPanel, Section, SectionTitle,
+  SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
+} from './styles';
 
-  /* estados de UI --------------------------------------------------------- */
-  const [isEditing, setIsEditing] = useState(false);
-  const [imageModalOpen, setImageModalOpen] = useState(false);
-  const [confirmDeathModal, setConfirmDeathModal] = useState(false);
-  const [confirmResModal, setConfirmResModal] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxImageUrl, setLightboxImageUrl] = useState('');
+// --- Hook Customizado para gerenciar o estado da UI da Ficha ---
+const useCharacterSheetUI = () => {
+    const [modals, setModals] = useState({
+        imageCropper: false,
+        lightbox: false,
+        confirmDeath: false,
+        confirmResurrection: false,
+    });
+    const [lightboxImageUrl, setLightboxImageUrl] = useState('');
 
-  /* verifica se o usuário logado é o dono */
-  const isOwner = character && currentUser.uid === character.ownerId;
+    const openModal = (modalName) => setModals(prev => ({ ...prev, [modalName]: true }));
+    const closeModal = (modalName) => setModals(prev => ({ ...prev, [modalName]: false }));
 
-  /* --------------------- upload de retrato / token ----------------------- */
-  const handleImagesDone = useCallback(
-    async ({ portraitImage, tokenImage, bannerPosition, tokenBorderColor }) => {
-      if (!character?.id) return;
-      const updatedData = {
-        portraitImage,
-        tokenImage,
-        bannerPosition,
-        tokenBorderColor
-      };
-      await updateDoc(doc(db, 'characters', character.id), updatedData);
-      updateCharacter(updatedData);
-    },
-    [character, updateCharacter]
-  );
+    const openLightbox = (url) => {
+        setLightboxImageUrl(url);
+        openModal('lightbox');
+    };
 
-  const handleBannerClick = (imageUrl) => {
-    if (imageUrl) {
-      setLightboxImageUrl(imageUrl);
-      setLightboxOpen(true);
-    }
-  };
+    return { modals, openModal, closeModal, lightboxImageUrl, openLightbox };
+};
 
-  /* ---------------------------------------------------------------------- */
-  useEffect(() => {
-    if (!loading && character?.isDead) setIsEditing(false);
-  }, [loading, character]);
-
- if (loading || !character) {
-  return <RPGLoader  />;
-}
-
-  /* ------------------------------- JSX ---------------------------------- */
-  return (
-    <SheetContainer $isDead={character.isDead}>
-      {/* ---------- Modais de confirmação ---------- */}
-      <ConfirmModal
-        isOpen={confirmDeathModal}
-        onClose={() => setConfirmDeathModal(false)}
-        onConfirm={() => {
-          updateCharacter({ isDead: true, pv_current: 0 });
-          toast('Que seus feitos sejam lembrados.', { icon: '💀' });
-          setConfirmDeathModal(false);
-        }}
-        title="Confirmar Morte"
-        message="Isso marcará o personagem como morto. Continuar?"
-      />
-
-      <ConfirmModal
-        isOpen={confirmResModal}
-        onClose={() => setConfirmResModal(false)}
-        onConfirm={() => {
-          updateCharacter({ isDead: false, pv_current: resources.pv });
-          toast.success('Milagre! Personagem ressuscitado.');
-          setConfirmResModal(false);
-        }}
-        title="Ressuscitar Personagem"
-        message="Deseja trazer o personagem de volta à vida?"
-        confirmButtonClass="resurrect"
-      />
-
-      {/* animação de morte */}
-      {character.isDead && (
-        <DeathAnimationOverlay>
-          <Lottie animationData={deathAnimation} loop />
-        </DeathAnimationOverlay>
-      )}
-
-      {/* navegação simples */}
-      <BackButton onClick={() => navigate(-1)}>← Voltar</BackButton>
-
-      {/* cabeçalho */}
-      <CharacterSheetHeader
-        isEditing={isEditing}
-        isOwner={isOwner}
-        characterName={character.name}
-        onNameChange={(value) => updateCharacter({ name: value })}
-        points={points}
-        isDead={character.isDead}
-        character={character}
-        onOpenImageManager={() => setImageModalOpen(true)}
-        onBannerClick={() =>
-          handleBannerClick(character.portraitImage || character.bannerImage)
-        }
-      />
-
-      {/* atributos / recursos */}
-      <HeaderPanel>
-        <Section>
-          <SectionTitle>Atributos e Recursos</SectionTitle>
-          <AttributeDisplay
-            attributes={character.attributes}
-            resources={resources}
-            currentResources={{
-              pv_current: character.pv_current,
-              pm_current: character.pm_current,
-              pa_current: character.pa_current
-            }}
-            onAttributeChange={handleAttributeChange}
-            onResourceChange={handleResourceChange}
-            isEditing={isEditing}
-            isDead={character.isDead}
-            points={points}
-          />
-        </Section>
-      </HeaderPanel>
-
-      {/* colunas */}
-      <SheetLayoutGrid>
-        <SheetLeftColumn
-          character={character}
-          isEditing={isEditing}
-          isOwner={isOwner}
-          handleUpdate={updateCharacter}
-        />
-        <SheetRightColumn
-          character={character}
-          isEditing={isEditing}
-          isOwner={isOwner}
-          resources={resources}
-          handleUpdate={updateCharacter}
-        />
-      </SheetLayoutGrid>
-
-      {/* rodapé */}
-      <SheetFooter
-        character={character}
-        isEditing={isEditing}
-        isOwner={isOwner}
-        points={points}
-        handleUpdate={updateCharacter}
-      />
-
-      {/* botões flutuantes */}
-      {isOwner && (
+// --- Subcomponente: Botões Flutuantes ---
+const FloatingActions = ({ isOwner, isEditing, onEditToggle, onDeathToggle, isDead }) => {
+    if (!isOwner) return null;
+    return (
         <>
-          <FloatingActionButton
-            onClick={() => setIsEditing((p) => !p)}
-            style={{ bottom: '5rem', right: '2rem' }}
-            title={
-              isEditing ? 'Sair do Modo Edição' : 'Entrar no Modo Edição'
-            }
-          >
-            {isEditing ? <FaSave /> : <FaPencilAlt />}
-          </FloatingActionButton>
-
-          {!isEditing && (
-            <DeathButton
-              onClick={() =>
-                character.isDead
-                  ? setConfirmResModal(true)
-                  : setConfirmDeathModal(true)
-              }
-              $isDead={character.isDead}
-              title={
-                character.isDead
-                  ? 'Ressuscitar Personagem'
-                  : 'Marcar como Morto'
-              }
+            <FloatingActionButton
+                onClick={onEditToggle}
+                $isEditing={isEditing}
+                title={isEditing ? 'Salvar Alterações' : 'Modo de Edição'}
             >
-              {character.isDead ? <FaHeartbeat /> : <FaSkull />}
-            </DeathButton>
-          )}
+                {isEditing ? <FaSave /> : <FaPencilAlt />}
+            </FloatingActionButton>
+
+            {!isEditing && (
+                <FloatingActionButton
+                    onClick={onDeathToggle}
+                    $isDead={isDead}
+                    style={{ bottom: '7rem' }}
+                    title={isDead ? 'Ressuscitar Personagem' : 'Marcar como Morto'}
+                >
+                    {isDead ? <FaHeartbeat /> : <FaSkull />}
+                </FloatingActionButton>
+            )}
         </>
-      )}
-
-      {/* modal de upload/crop */}
-      <ImageCropperModal
-        open={imageModalOpen}
-        onClose={() => setImageModalOpen(false)}
-        onDone={handleImagesDone}
-        characterImage={character?.portraitImage || character?.bannerImage}
-      />
-
-      {/* lightbox */}
-      <ImageLightbox
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-        imageUrl={lightboxImageUrl}
-      />
-    </SheetContainer>
-  );
+    );
 };
 
-/* ------- Provider externo que injeta o characterId da rota -------------- */
-export const CharacterSheet = (props) => {
-  const { characterId } = useParams();
-  return (
-    <CharacterProvider characterId={characterId}>
-      <CharacterSheetContent {...props} />
-    </CharacterProvider>
-  );
+// --- Subcomponente: Modais da Ficha ---
+const SheetModals = ({ character, modals, closeModal, openLightbox, updateCharacter }) => {
+    const handleDeathConfirm = () => {
+        updateCharacter({ isDead: true, pv_current: 0 });
+        toast('Que seus feitos sejam lembrados.', { icon: '💀' });
+        closeModal('confirmDeath');
+    };
+
+    const handleResurrectionConfirm = () => {
+        const maxPv = (character.attributes.resistencia || 0) * 5 || 1;
+        updateCharacter({ isDead: false, pv_current: maxPv });
+        toast.success('Milagre! Personagem ressuscitado.');
+        closeModal('confirmResurrection');
+    };
+
+    return (
+        <>
+            <ConfirmModal isOpen={modals.confirmDeath} onClose={() => closeModal('confirmDeath')} onConfirm={handleDeathConfirm} title="Confirmar Morte" message="Isso marcará o personagem como morto. Continuar?" />
+            <ConfirmModal isOpen={modals.confirmResurrection} onClose={() => closeModal('confirmResurrection')} onConfirm={handleResurrectionConfirm} title="Ressuscitar Personagem" message="Deseja trazer o personagem de volta à vida?" confirmVariant="resurrect" />
+            <ImageCropperModal open={modals.imageCropper} onClose={() => closeModal('imageCropper')} onDone={(data) => updateCharacter(data)} characterImage={character?.portraitImage || character?.bannerImage} />
+            <ImageLightbox isOpen={modals.lightbox} onClose={() => closeModal('lightbox')} imageUrl={openLightbox.url} />
+        </>
+    );
 };
 
+
+/* --------------------- Conteúdo Principal da Tela ------------------------- */
+const CharacterSheetContent = () => {
+    const navigate = useNavigate();
+    // CORREÇÃO: Chama o useAuth para obter o usuário logado e verificar a posse.
+    const { currentUser } = useAuth();
+    const { character, loading, isEditing, setIsEditing, updateCharacter, ...actions } = useCharacter();
+    const { modals, openModal, closeModal, lightboxImageUrl, openLightbox } = useCharacterSheetUI();
+    const [isBackstoryVisible, setIsBackstoryVisible] = useState(false);
+
+    useEffect(() => {
+        if (!loading && character?.isDead) setIsEditing(false);
+    }, [loading, character, setIsEditing]);
+
+    if (loading || !character) {
+        return <RPGLoader />;
+    }
+
+    // CORREÇÃO: A verificação de 'isOwner' agora usa o 'currentUser' do useAuth.
+    const isOwner = currentUser?.uid === character?.ownerId;
+    const { resources, points, lockedItems, itemCounts } = actions;
+
+    return (
+        <SheetContainer $isDead={character.isDead}>
+            <SheetModals character={character} modals={modals} closeModal={closeModal} openLightbox={{ url: lightboxImageUrl }} updateCharacter={updateCharacter} />
+            {character.isDead && <DeathAnimationOverlay><Lottie animationData={deathAnimation} loop /></DeathAnimationOverlay>}
+            <BackButton onClick={() => navigate(-1)}>← Voltar</BackButton>
+
+            <CharacterSheetHeader
+                character={character}
+                characterName={character.name}
+                onNameChange={(name) => updateCharacter({ name })}
+                isOwner={isOwner}
+                isEditing={isEditing}
+                isDead={character.isDead}
+                points={points}
+                onOpenImageManager={() => openModal('imageCropper')}
+                onBannerClick={() => openLightbox(character.portraitImage || character.bannerImage)}
+            />
+
+            <HeaderPanel>
+                <Section>
+                    <SectionTitle>Atributos e Recursos</SectionTitle>
+                    <AttributeDisplay
+                        attributes={character.attributes}
+                        resources={resources}
+                        currentResources={{ pv_current: character.pv_current, pm_current: character.pm_current, pa_current: character.pa_current }}
+                        onAttributeChange={actions.handleAttributeChange}
+                        onResourceChange={actions.handleResourceChange}
+                        isEditing={isEditing}
+                        isDead={character.isDead}
+                        points={points}
+                    />
+                </Section>
+            </HeaderPanel>
+
+            <SheetLayoutGrid>
+                <SheetLeftColumn
+                    character={character}
+                    isEditing={isEditing}
+                    handleUpdate={updateCharacter}
+                    handleArchetypeChange={actions.handleArchetypeChange}
+                    onAddKit={actions.handleAddKit}
+                    onRemoveKit={actions.handleRemoveKit}
+                    unmetClassReqs={actions.unmetClassReqs}
+                />
+                <SheetRightColumn
+                    character={character}
+                    isEditing={isEditing}
+                    handleUpdate={updateCharacter}
+                    onConsume={actions.handleConsume}
+                />
+            </SheetLayoutGrid>
+
+            <SheetFooter
+                character={character}
+                isEditing={isEditing}
+                lockedItems={lockedItems}
+                itemCounts={itemCounts}
+                addItem={actions.addItem}
+                removeItem={actions.removeItem}
+                onAddTechnique={actions.handleAddTechnique}
+                onRemoveTechnique={actions.handleRemoveTechnique}
+                checkTechniqueRequirements={actions.checkTechniqueRequirements}
+                isBackstoryVisible={isBackstoryVisible}
+                setIsBackstoryVisible={setIsBackstoryVisible}
+                handleUpdate={updateCharacter}
+            />
+
+            <FloatingActions
+                isOwner={isOwner}
+                isEditing={isEditing}
+                onEditToggle={() => setIsEditing(prev => !prev)}
+                onDeathToggle={() => openModal(character.isDead ? 'confirmResurrection' : 'confirmDeath')}
+                isDead={character.isDead}
+            />
+        </SheetContainer>
+    );
+};
+
+/* ------- Componente Wrapper com o Provider -------------- */
+export const CharacterSheet = () => {
+    const { characterId } = useParams();
+    return (
+        <CharacterProvider characterId={characterId}>
+            <CharacterSheetContent />
+        </CharacterProvider>
+    );
+};

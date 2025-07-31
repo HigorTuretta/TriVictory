@@ -1,3 +1,4 @@
+// src/components/ArchetypeSection/styles.js
 import styled from 'styled-components';
 
 export const Section = styled.section``;
@@ -63,4 +64,55 @@ export const ArchetypeChoiceInfo = styled(ArchetypeInfo)`
     font-size: 0.9rem;
     margin-top: 0.25rem;
   }
+`;
+
+// --- NOVOS ESTILOS PARA O MODAL DE ESCOLHA ---
+
+export const ModalContent = styled.div`
+  h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: ${({ theme }) => theme.primary};
+  }
+  p {
+    color: ${({ theme }) => theme.textSecondary};
+    margin-bottom: 1.5rem;
+  }
+`;
+
+export const ChoiceList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+export const ChoiceButton = styled.button`
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  background-color: ${({ theme }) => theme.surface};
+  color: ${({ theme }) => theme.textPrimary};
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.primary};
+    color: white;
+    border-color: ${({ theme }) => theme.primary};
+  }
+`;
+
+export const ChoiceDescription = styled.p`
+  font-size: 0.8rem !important;
+  color: ${({ theme }) => theme.textSecondary} !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0 !important;
+  padding-left: 0.5rem;
 `;

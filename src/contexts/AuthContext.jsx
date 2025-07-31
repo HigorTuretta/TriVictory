@@ -10,22 +10,33 @@ import {
     sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase/config'; // Importa a configuração do Firebase
+import { auth, db } from '../firebase/config';
 
-// 1. Cria o Contexto
 const AuthContext = createContext();
 
-// 2. Cria um hook customizado para facilitar o uso do contexto
 export const useAuth = () => {
     return useContext(AuthContext);
 };
 
-// 3. Cria o Provedor do Contexto
+// --- Função Auxiliar Privada ---
+// Centraliza a lógica de buscar o documento do Firestore e mesclar com o usuário da autenticação.
+const _getMergedUser = async (authUser) => {
+    if (!authUser) return null;
+
+    const userDocRef = doc(db, "users", authUser.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+        return { ...authUser, ...userDoc.data() }; // Mescla dados do Auth e Firestore
+    }
+    return authUser; // Retorna apenas dados do Auth se o documento não existir
+};
+
+
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Função de Cadastro com Email/Senha
     const register = async (nickname, email, password) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: nickname });
@@ -37,36 +48,22 @@ export const AuthProvider = ({ children }) => {
             email: email,
         });
 
-        // Atualiza o currentUser localmente para refletir o nickname imediatamente
-        const userDoc = await getDoc(userDocRef);
-        setCurrentUser({ ...userCredential.user, ...userDoc.data() });
-
+        const mergedUser = await _getMergedUser(userCredential.user);
+        setCurrentUser(mergedUser);
         return userCredential;
     };
 
-    // Função de Login com Email/Senha
     const login = async (email, password) => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        const userDocRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-            setCurrentUser({ ...user, ...userDoc.data() });
-        } else {
-            setCurrentUser(user);
-        }
-
+        const mergedUser = await _getMergedUser(userCredential.user);
+        setCurrentUser(mergedUser);
         return userCredential;
     };
 
-    // Função de Login com Google
     const signInWithGoogle = async () => {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
-
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
 
@@ -77,44 +74,32 @@ export const AuthProvider = ({ children }) => {
                 email: user.email,
             });
         }
-
-        // opcional: garantir consistência do currentUser
-        const finalDoc = await getDoc(userDocRef);
-        setCurrentUser({ ...user, ...finalDoc.data() });
+        
+        const mergedUser = await _getMergedUser(user);
+        setCurrentUser(mergedUser);
     };
 
-    // Função para recuperar senha
     const forgotPassword = (email) => {
         return sendPasswordResetEmail(auth, email);
-    }
+    };
 
-    // Função de Logout
     const logout = () => {
+        setCurrentUser(null);
         return signOut(auth);
     };
 
-    // Efeito que observa o estado de autenticação do usuário
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userDocRef = doc(db, "users", user.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    setCurrentUser({ ...user, ...userDoc.data() });
-                } else {
-                    setCurrentUser(user);
-                }
-            } else {
-                setCurrentUser(null);
-            }
+            const mergedUser = await _getMergedUser(user);
+            setCurrentUser(mergedUser);
             setLoading(false);
         });
-
         return unsubscribe;
     }, []);
 
     const value = {
         currentUser,
+        isLoading: loading, // Exporta o estado de loading
         register,
         login,
         signInWithGoogle,
@@ -124,7 +109,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };
