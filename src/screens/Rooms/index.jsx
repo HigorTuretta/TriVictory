@@ -1,122 +1,102 @@
+// src/screens/Rooms/index.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { FaPlus, FaCrown, FaUserFriends } from 'react-icons/fa';
 
 import { Modal } from '../../components/Modal';
+import { RPGLoader } from '../../components/RPGLoader';
 import {
     RoomsContainer, Header, Title, CreateRoomButton, RoomGrid,
-    RoomCard, RoomName, RoomRole, Form, Input, Button
+    RoomCard, RoomName, RoomRole, Form, Input, Button, SectionHeader
 } from './styles';
-import { RPGLoader } from '../../components/RPGLoader';
 
-export const Rooms = () => {
-    const [myRooms, setMyRooms] = useState([]); // Salas que eu mestro
-    const [joinedRooms, setJoinedRooms] = useState([]); // Salas que eu jogo
-    const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newRoomName, setNewRoomName] = useState('');
-
+// --- Hook Customizado para buscar e gerenciar as salas do usuário ---
+const useUserRooms = () => {
     const { currentUser } = useAuth();
-    const navigate = useNavigate();
+    const [masteredRooms, setMasteredRooms] = useState([]);
+    const [joinedRooms, setJoinedRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!currentUser?.uid) return;
+        if (!currentUser?.uid) {
+            setLoading(false);
+            return;
+        }
 
         setLoading(true);
 
         const masterQuery = query(collection(db, "rooms"), where("masterId", "==", currentUser.uid));
-        const unsubscribeMaster = onSnapshot(masterQuery, (snapshot) => {
-            const roomsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setMyRooms(roomsData);
+        const playerQuery = query(collection(db, "rooms"), where("playerIds", "array-contains", currentUser.uid));
+
+        const unsubMaster = onSnapshot(masterQuery, (snapshot) => {
+            setMasteredRooms(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
 
-        const playerQuery = query(collection(db, "rooms"), where("playerIds", "array-contains", currentUser.uid));
-        const unsubscribePlayer = onSnapshot(playerQuery, (snapshot) => {
-            const roomsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setJoinedRooms(roomsData);
+        const unsubPlayer = onSnapshot(playerQuery, (snapshot) => {
+            setJoinedRooms(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setLoading(false); // Considera carregado após a segunda query retornar
         });
         
-        // Timeout para garantir que as queries tenham tempo de carregar
-        setTimeout(() => setLoading(false), 500);
-
         return () => {
-            unsubscribeMaster();
-            unsubscribePlayer();
+            unsubMaster();
+            unsubPlayer();
         };
     }, [currentUser]);
 
-    const handleCreateRoom = async (e) => {
+    return { masteredRooms, joinedRooms, loading };
+};
+
+// --- Subcomponente: Modal de Criação de Sala ---
+const CreateRoomModal = ({ isOpen, onClose }) => {
+    const [name, setName] = useState('');
+    const { currentUser } = useAuth();
+    const navigate = useNavigate();
+
+    const handleCreate = async (e) => {
         e.preventDefault();
-        if (!newRoomName.trim()) {
-            toast.error("O nome da sala não pode estar vazio.");
-            return;
-        }
+        if (!name.trim()) return toast.error("O nome da sala não pode estar vazio.");
 
         const newRoom = {
-            roomName: newRoomName,
+            roomName: name.trim(),
             masterId: currentUser.uid,
             masterNickname: currentUser.nickname || currentUser.displayName,
             playerIds: [],
-            characters: [], // Array de objetos { userId, characterId }
+            createdAt: serverTimestamp(),
         };
 
         try {
             const docRef = await addDoc(collection(db, "rooms"), newRoom);
-            toast.success(`Sala "${newRoomName}" criada com sucesso!`);
-            setIsModalOpen(false);
-            setNewRoomName('');
-            navigate(`/room/${docRef.id}`); // Navega para a nova sala
+            toast.success(`Sala "${name}" criada com sucesso!`);
+            onClose();
+            navigate(`/room/${docRef.id}`);
         } catch (error) {
             toast.error("Erro ao criar a sala.");
             console.error("Erro: ", error);
         }
     };
 
-    if (loading) {
-        return <RoomsContainer><RPGLoader/></RoomsContainer>;
-    }
-
     return (
-        <>
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <Title>Criar Nova Sala de Jogo</Title>
-                <Form onSubmit={handleCreateRoom}>
-                    <Input 
-                        type="text"
-                        value={newRoomName}
-                        onChange={(e) => setNewRoomName(e.target.value)}
-                        placeholder="Nome da Campanha (Ex: A Ameaça de K'Athanoa)"
-                        required
-                    />
-                    <Button type="submit">Forjar Sala</Button>
-                </Form>
-            </Modal>
-
-            <RoomsContainer>
-                <Header>
-                    <Title>Suas Salas de Jogo</Title>
-                    <CreateRoomButton onClick={() => setIsModalOpen(true)}>
-                        <FaPlus /> Criar Nova Sala
-                    </CreateRoomButton>
-                </Header>
-                
-                <Section title="Salas que eu Mestro" icon={<FaCrown />} rooms={myRooms} role="Mestre" navigate={navigate} />
-                <Section title="Salas que eu Jogo" icon={<FaUserFriends />} rooms={joinedRooms} role="Jogador" navigate={navigate} />
-            </RoomsContainer>
-        </>
+        <Modal isOpen={isOpen} onClose={onClose}>
+            <Title>Criar Nova Sala de Jogo</Title>
+            <Form onSubmit={handleCreate}>
+                <Input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome da Campanha" required />
+                <Button type="submit">Forjar Sala</Button>
+            </Form>
+        </Modal>
     );
 };
 
-const Section = ({ title, icon, rooms, role, navigate }) => {
+// --- Subcomponente: Seção de Salas ---
+const RoomSection = ({ title, icon, rooms, role }) => {
+    const navigate = useNavigate();
+    
     return (
-        <div style={{marginBottom: '3rem'}}>
-            <h3 style={{display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', fontSize: '1.5rem'}}>
-                {icon} {title}
-            </h3>
+        <section>
+            <SectionHeader>{icon} {title}</SectionHeader>
             {rooms.length > 0 ? (
                 <RoomGrid>
                     {rooms.map(room => (
@@ -127,8 +107,39 @@ const Section = ({ title, icon, rooms, role, navigate }) => {
                     ))}
                 </RoomGrid>
             ) : (
-                <p style={{color: 'var(--color-text-secondary)', fontSize: '0.9rem'}}>Você ainda não {role === 'Mestre' ? 'mestrou nenhuma sala' : 'participou de nenhuma sala'}.</p>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                    Você ainda não {role === 'Mestre' ? 'mestrou nenhuma sala' : 'participou de nenhuma sala'}.
+                </p>
             )}
-        </div>
+        </section>
     );
-}
+};
+
+
+// --- Componente Principal da Tela ---
+export const Rooms = () => {
+    const { masteredRooms, joinedRooms, loading } = useUserRooms();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    if (loading) {
+        return <RoomsContainer><RPGLoader /></RoomsContainer>;
+    }
+
+    return (
+        <>
+            <CreateRoomModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
+            <RoomsContainer>
+                <Header>
+                    <Title>Suas Salas de Jogo</Title>
+                    <CreateRoomButton onClick={() => setIsModalOpen(true)}>
+                        <FaPlus /> Criar Nova Sala
+                    </CreateRoomButton>
+                </Header>
+                
+                <RoomSection title="Salas que eu Mestro" icon={<FaCrown />} rooms={masteredRooms} role="Mestre" />
+                <RoomSection title="Salas que eu Jogo" icon={<FaUserFriends />} rooms={joinedRooms} role="Jogador" />
+            </RoomsContainer>
+        </>
+    );
+};
