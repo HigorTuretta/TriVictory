@@ -133,20 +133,25 @@ export const Btn = styled.button`
   align-items: center;
   gap: 0.4rem;
   cursor: pointer;
-  background: ${({ theme }) => theme.background};
+  background: ${({ theme }) => theme.surfaceVariant};
   color: ${({ theme }) => theme.textPrimary};
-  transition: filter 0.2s;
+  transition: all 0.2s;
+
   &:hover:not(:disabled) {
-    filter: brightness(1.1);
+    filter: brightness(0.9);
   }
   &:disabled {
     opacity: 0.5;
+    cursor: not-allowed;
   }
   ${({ $primary }) =>
     $primary &&
     css`
       background: ${({ theme }) => theme.primary};
       color: ${({ theme }) => theme.onPrimary};
+       &:hover:not(:disabled) {
+        filter: brightness(1.1);
+      }
     `}
 `;
 
@@ -157,17 +162,17 @@ export const Stepper = styled.div`
   
   span {
     font-size: 0.9rem;
-    opacity: 0.5;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     border: 1px solid transparent;
-  }
-  .active {
-    font-weight: 700;
-    opacity: 1;
-    color: ${({ theme }) => theme.primary};
-    background-color: ${({ theme }) => theme.primary}20;
-    border-color: ${({ theme }) => theme.primary};
+    transition: all 0.2s;
+    
+    &.active {
+      font-weight: 700;
+      color: ${({ theme }) => theme.primary};
+      background-color: ${({ theme }) => theme.primary}20;
+      border-color: ${({ theme }) => theme.primary};
+    }
   }
 `;
 

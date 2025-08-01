@@ -1,86 +1,79 @@
 // src/services/cloudinaryService.js
-import { Cloudinary } from 'cloudinary-core';
 
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-
-// Configuração do Cloudinary
-const cloudinary = new Cloudinary({
-  cloud_name: CLOUD_NAME,
-  secure: true
-});
-
-/* ------------------------------------------------------------------ */
-/* UPLOAD                                                             */
-/* ------------------------------------------------------------------ */
-export const uploadImage = async (file, extraFormData = {}) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', 'trivictory_preset');
-  Object.entries(extraFormData).forEach(([k, v]) => formData.append(k, v));
-
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-    { method: 'POST', body: formData }
-  );
-  if (!res.ok) throw new Error('Falha no upload');
-  return res.json();
+// --- Configuração e Validação ---
+const CLOUDINARY_CONFIG = {
+  CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+  UPLOAD_PRESET: 'trivictory_preset',
 };
 
-/* ------------------------------------------------------------------ */
-/* URL HELPERS                                                        */
-/* ------------------------------------------------------------------ */
-export const getTokenImageUrl = (publicId, borderColor = '#7b3ff1') =>
-  cloudinary.url(publicId, {
-    width: 70,
-    height: 70,
-    crop: 'fill',
-    gravity: 'face',
-    radius: 'max',
-    quality: 'auto',
-    fetch_format: 'auto',
-    border: `3px_solid_${borderColor.replace('#', 'rgb:')}`,
-    background: 'transparent'
-  });
+if (!CLOUDINARY_CONFIG.CLOUD_NAME) {
+  throw new Error("Variável de ambiente 'VITE_CLOUDINARY_CLOUD_NAME' não está definida.");
+}
 
-export const getMainImageUrl = (publicId) =>
-  cloudinary.url(publicId, {
-    width: 1024,
-    height: 1536,
-    crop: 'fill',
-    gravity: 'auto',
-    quality: 'auto',
-    fetch_format: 'auto'
-  });
+const UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.CLOUD_NAME}/image/upload`;
+const BASE_URL = `https://res.cloudinary.com/${CLOUDINARY_CONFIG.CLOUD_NAME}/image/upload`;
 
-/* ------------------------------------------------------------------ */
-/* RESIZE LOCAL (canvas)                                              */
-/* ------------------------------------------------------------------ */
-export const resizeImageFile = (
-  file,
-  maxWidth = 1024,
-  maxHeight = 1536,
-  quality = 0.85
-) =>
-  new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      let { width, height } = img;
+// --- Funções de Upload ---
+const _uploadFile = async (file, extraFormData = {}) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_CONFIG.UPLOAD_PRESET);
 
-      if (width / height > maxWidth / maxHeight) {
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-      } else if (height > maxHeight) {
-        width = (width * maxHeight) / height;
-        height = maxHeight;
-      }
+  for (const key in extraFormData) {
+    formData.append(key, extraFormData[key]);
+  }
 
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-      canvas.toBlob(resolve, 'image/jpeg', quality);
-    };
-    img.src = URL.createObjectURL(file);
-  });
+  try {
+    const response = await fetch(UPLOAD_URL, { method: 'POST', body: formData });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error.message || 'Falha no upload para o Cloudinary');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Erro no serviço Cloudinary:', error);
+    throw error;
+  }
+};
+
+export const uploadImage = (imageFile) => {
+  return _uploadFile(imageFile);
+};
+
+// --- Funções Auxiliares de URL (Tornadas Robustas) ---
+
+/**
+ * Gera uma URL otimizada para o token do personagem.
+ * Lida tanto com public_id quanto com URLs completas para retrocompatibilidade.
+ */
+export const getTokenImageUrl = (publicIdOrUrl, borderColor = '#7b3ff1') => {
+  if (!publicIdOrUrl) return '';
+  // Se já for uma URL completa, retorna diretamente.
+  if (publicIdOrUrl.startsWith('http')) {
+    return publicIdOrUrl;
+  }
+  
+  const cloudinaryColor = `rgb:${borderColor.substring(1)}`;
+  const transformations = [
+    'w_140,h_140', 'c_fill,g_face', 'r_max', 'f_auto,q_auto',
+    `bo_6px_solid_${cloudinaryColor}`,
+  ].join(',');
+  
+  return `${BASE_URL}/${transformations}/${publicIdOrUrl}`;
+};
+
+/**
+ * Gera uma URL otimizada para a imagem principal.
+ * Lida tanto com public_id quanto com URLs completas para retrocompatibilidade.
+ */
+export const getMainImageUrl = (publicIdOrUrl) => {
+  if (!publicIdOrUrl) return '';
+  // Se já for uma URL completa, retorna diretamente.
+  if (publicIdOrUrl.startsWith('http')) {
+    return publicIdOrUrl;
+  }
+  
+  const transformations = ['w_1024', 'c_fill,g_auto', 'f_auto,q_auto'].join(',');
+  
+  return `${BASE_URL}/${transformations}/${publicIdOrUrl}`;
+};

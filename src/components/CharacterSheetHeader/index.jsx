@@ -1,7 +1,12 @@
+// src/components/CharacterSheetHeader/index.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaCamera, FaExpandArrowsAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+
+// CORREÇÃO: Importar as funções para construir as URLs das imagens
+import { getMainImageUrl, getTokenImageUrl } from '../../services/cloudinaryService';
+
 import {
   Wrapper,
   BannerImage,
@@ -29,22 +34,19 @@ export const CharacterSheetHeader = ({
   onOpenImageManager,
   onBannerClick,
 }) => {
-  // --- Destruturação e Valores Padrão ---
   const {
-    portraitImage,
-    bannerImage,
+    portraitImage, // Agora é o public_id
     bannerPosition = 50,
-    tokenImage,
+    tokenImage, // Agora é o public_id
     tokenBorderColor = '#7b3ff1',
   } = character || {};
 
   const { total = 0, used = 0, remaining = 0, disBonus = 0 } = points || {};
 
-  const bannerUrl = portraitImage || bannerImage || '';
-  const tokenUrl = tokenImage || '';
+  // CORREÇÃO: Usar os helpers para construir as URLs completas a partir dos public_ids
+  const bannerUrl = portraitImage ? getMainImageUrl(portraitImage) : '';
+  const tokenUrl = tokenImage ? getTokenImageUrl(tokenImage, tokenBorderColor) : '';
 
-  // --- Array de configuração para os "Pills" de Pontos ---
-  // Torna a renderização dinâmica e mais fácil de manter.
   const pointPills = [
     { label: 'Base', value: total, variant: 'base' },
     { label: 'Gastos', value: used, variant: 'default' },

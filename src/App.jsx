@@ -1,12 +1,12 @@
-import React, { useState, useCallback } from 'react';
+// src/App.jsx
+import React from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import toast, { Toaster } from 'react-hot-toast';
-import { v4 as uuidv4 } from 'uuid';
+import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from 'styled-components';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, Outlet } from 'react-router-dom';
 
 // Contexto e Rota Protegida
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Layouts e Telas
@@ -25,70 +25,22 @@ import { Invite } from './screens/Invite';
 import { lightTheme, darkTheme } from './styles/theme';
 import { GlobalStyle } from './styles/GlobalStyle';
 
-// Dados Padrão do Jogo
-import { pericias, vantagens, desvantagens, arquetipos } from './data/gameData';
+// Hook para gerenciar dados customizados
+import { useUserCustomData } from './hooks/useUserCustomData';
 
-// Componente Interno para gerenciar as rotas e os dados globais do usuário logado
-const AppRoutes = ({ theme, toggleTheme }) => {
-    const { currentUser } = useAuth();
+// Componente Interno para gerenciar as rotas
+const AppRoutes = () => {
     const navigate = useNavigate();
-    // A lógica de dados agora vive aqui, dentro do escopo de um usuário logado
-    // Usamos o UID do usuário na chave do localStorage para separar os dados de cada um
-    const [customSkills, setCustomSkills] = useLocalStorage(`3det_custom_skills_${currentUser?.uid}`, []);
-    const [customAdvantages, setCustomAdvantages] = useLocalStorage(`3det_custom_advantages_${currentUser?.uid}`, []);
-    const [customDisadvantages, setCustomDisadvantages] = useLocalStorage(`3det_custom_disadvantages_${currentUser?.uid}`, []);
-    const [customArchetypes, setCustomArchetypes] = useLocalStorage(`3det_custom_archetypes_${currentUser?.uid}`, []);
-
-    // Funções para manipular os itens customizados
-    const addCustomItem = useCallback((type, item) => {
-        const newItem = { ...item, id: uuidv4(), custom: true };
-        if (type === 'pericias') setCustomSkills(prev => [...prev, newItem]);
-        if (type === 'vantagens') setCustomAdvantages(prev => [...prev, newItem]);
-        if (type === 'desvantagens') setCustomDisadvantages(prev => [...prev, newItem]);
-        if (type === 'arquetipos') setCustomArchetypes(prev => [...prev, newItem]);
-    }, [setCustomSkills, setCustomAdvantages, setCustomDisadvantages, setCustomArchetypes]);
-
-    const updateCustomItem = useCallback((type, updatedItem) => {
-        const updater = (prev) => prev.map(item => item.id === updatedItem.id ? updatedItem : item);
-        if (type === 'pericias') setCustomSkills(updater);
-        if (type === 'vantagens') setCustomAdvantages(updater);
-        if (type === 'desvantagens') setCustomDisadvantages(updater);
-        if (type === 'arquetipos') setCustomArchetypes(updater);
-    }, [setCustomSkills, setCustomAdvantages, setCustomDisadvantages, setCustomArchetypes]);
-
-    const deleteCustomItem = useCallback((type, itemId) => {
-        const updater = (prev) => prev.filter(item => item.id !== itemId);
-        if (type === 'pericias') setCustomSkills(updater);
-        if (type === 'vantagens') setCustomAdvantages(updater);
-        if (type === 'desvantagens') setCustomDisadvantages(updater);
-        if (type === 'arquetipos') setCustomArchetypes(updater);
-    }, [setCustomSkills, setCustomAdvantages, setCustomDisadvantages, setCustomArchetypes]);
-
-    // Combina os dados padrão com os customizados do usuário logado
-    const allData = {
-        pericias: [...pericias, ...customSkills],
-        vantagens: [...vantagens, ...customAdvantages],
-        desvantagens: [...desvantagens, ...customDisadvantages],
-        arquetipos: [...arquetipos, ...customArchetypes],
-    };
+    const { allData, addCustomItem, updateCustomItem, deleteCustomItem } = useUserCustomData();
 
     return (
         <Routes>
-            {/* Rotas Públicas */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/invite/:roomId" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
-
-            {/* Rotas Protegidas que exigem Login */}
-            <Route path="/" element={<ProtectedRoute><MainLayout theme={theme} toggleTheme={toggleTheme}><Rooms /></MainLayout></ProtectedRoute>} />
-            <Route path="/characters" element={<ProtectedRoute><MainLayout theme={theme} toggleTheme={toggleTheme}><CharacterSelect /></MainLayout></ProtectedRoute>} />
-            <Route path="/room/:roomId" element={<ProtectedRoute><MainLayout theme={theme} toggleTheme={toggleTheme}><GameRoom /></MainLayout></ProtectedRoute>} />
-
+            {/* === ROTAS SEM LAYOUT (TELA CHEIA) === */}
+            <Route path="/room/:roomId" element={<ProtectedRoute><GameRoom /></ProtectedRoute>} />
             <Route path="/sheet/:characterId" element={
                 <ProtectedRoute>
                     <CharacterSheet
-                        gameData={allData}
+                        gameData={allData} // Passa os dados combinados
                         onAddCustomItem={addCustomItem}
                         onUpdateCustomItem={updateCustomItem}
                         onDeleteCustomItem={deleteCustomItem}
@@ -97,23 +49,32 @@ const AppRoutes = ({ theme, toggleTheme }) => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/creator/archetype" element={
-                <ProtectedRoute>
-                    <MainLayout>
+            {/* === ROTAS COM LAYOUT PADRÃO === */}
+            {/* O componente MainLayout agora atua como um invólucro para as rotas aninhadas */}
+            <Route element={<MainLayout />}>
+                <Route path="/" element={<Navigate to="/rooms" replace />} />
+                <Route path="/rooms" element={<ProtectedRoute><Rooms /></ProtectedRoute>} />
+                <Route path="/characters" element={<ProtectedRoute><CharacterSelect /></ProtectedRoute>} />
+                <Route path="/invite/:roomId" element={<ProtectedRoute><Invite /></ProtectedRoute>} />
+                <Route path="/creator/archetype" element={
+                    <ProtectedRoute>
                         <ArchetypeCreator
                             gameData={allData}
                             onSave={(newItem) => {
                                 addCustomItem('arquetipos', newItem);
-                                // A navegação de volta pode ser gerenciada dentro do componente ou aqui
-                                navigate(-1); // Volta para a página anterior (a ficha)
+                                navigate(-1);
                             }}
                         />
-                    </MainLayout>
-                </ProtectedRoute>
-            } />
+                    </ProtectedRoute>
+                } />
+            </Route>
 
-            {/* Rota para redirecionar qualquer caminho não encontrado */}
-            <Route path="*" element={<Navigate to="/" />} />
+            {/* === ROTAS DE AUTENTICAÇÃO === */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            
+            <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
 };
@@ -122,6 +83,8 @@ function App() {
     const [theme, setTheme] = useLocalStorage('3det_theme', 'dark');
     const currentTheme = theme === 'light' ? lightTheme : darkTheme;
 
+    // A prop 'toggleTheme' pode ser passada para um ThemeContext se o Footer precisar dela.
+    // Para esta correção, focamos na estrutura de rotas.
     return (
         <ThemeProvider theme={currentTheme}>
             <GlobalStyle />
@@ -138,7 +101,7 @@ function App() {
             />
             <BrowserRouter>
                 <AuthProvider>
-                    <AppRoutes theme={theme} toggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')} />
+                    <AppRoutes />
                 </AuthProvider>
             </BrowserRouter>
         </ThemeProvider>

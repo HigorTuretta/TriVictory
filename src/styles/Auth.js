@@ -1,5 +1,5 @@
 // src/styles/Auth.js
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import pattern from '../assets/pattern.png';
@@ -11,12 +11,6 @@ export const AuthContainer = styled.div`
   min-height: 100vh;
   background-image: url(${pattern});
   background-size: 200px;
-  background-position: center;
-  background-repeat: repeat;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
 `;
 
 export const LeftPane = styled.div`
@@ -30,9 +24,15 @@ export const LeftPane = styled.div`
   flex-direction: column;
   text-align: center;
 
+  @keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0); }
+  }
+
   img {
     width: 250px;
-    animation: float 3s ease-in-out infinite;
+    animation: float 3.5s ease-in-out infinite;
   }
 
   h1 {
@@ -48,34 +48,15 @@ export const LeftPane = styled.div`
   }
 
   @media (max-width: 768px) {
-    padding: 2rem;
-
-    img {
-      width: 180px;
-    }
-
-    h1 {
-      font-size: 2.2rem;
-    }
-
-    p {
-      font-size: 1rem;
-      max-width: 100%;
-    }
-  }
-
-  @keyframes float {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-    100% { transform: translateY(0); }
+    display: none; // Oculta o painel esquerdo em telas menores
   }
 `;
 
 export const RightPane = styled(motion.div)`
   flex: 1;
-  max-width: 480px;
+  max-width: 500px;
   width: 100%;
-  background-color: ${({ theme }) => theme.surface + 'dd'};
+  background-color: ${({ theme }) => theme.surface}E6; // Adiciona transparência
   backdrop-filter: blur(12px);
   padding: 3rem;
   border-left: 1px solid ${({ theme }) => theme.border};
@@ -85,8 +66,10 @@ export const RightPane = styled(motion.div)`
 
   @media (max-width: 768px) {
     border-left: none;
-    border-top: 1px solid ${({ theme }) => theme.border};
+    max-width: 100%;
     padding: 2rem 1.5rem;
+    background-color: ${({ theme }) => theme.surface};
+    backdrop-filter: none;
   }
 `;
 
@@ -101,7 +84,7 @@ export const Title = styled.h2`
 export const Subtitle = styled.p`
   text-align: center;
   color: ${({ theme }) => theme.textSecondary};
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 `;
 
 export const Form = styled.form`
@@ -112,32 +95,23 @@ export const Form = styled.form`
 
 export const AuthBox = styled.div`
   background-color: ${({ theme }) => theme.surface};
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  max-width: 400px;
+  box-shadow: ${({ theme }) => theme.shadows.large};
+  max-width: 420px;
   width: 100%;
-  margin: 0 auto;
+  margin: auto; // Centraliza a caixa
 `;
 
-export const Input = styled.input`
-  padding: 14px;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.border};
-  background-color: ${({ theme }) => theme.background};
-  color: ${({ theme }) => theme.textPrimary};
-`;
+export const Input = styled.input``; // Reutiliza o estilo global
 
 export const Button = styled.button`
   padding: 14px;
-  border-radius: 8px;
   background-color: ${({ theme }) => theme.primary};
-  color: white;
+  color: ${({ theme }) => theme.onPrimary};
   font-weight: bold;
   font-size: 1rem;
   margin-top: 0.5rem;
-  transition: all 0.3s;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -145,14 +119,14 @@ export const Button = styled.button`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: ${({ theme }) => theme.shadows.medium};
   }
 `;
 
 export const GoogleButton = styled(Button)`
-  background-color: white;
-  color: #444;
-  border: 1px solid #ccc;
+  background-color: ${({ theme }) => theme.surface};
+  color: ${({ theme }) => theme.textPrimary};
+  border: 1px solid ${({ theme }) => theme.border};
   font-weight: 600;
   margin-top: 1rem;
 
@@ -162,7 +136,7 @@ export const GoogleButton = styled(Button)`
 
   &:hover {
     border-color: #4285F4;
-    background-color: #f5faff;
+    background-color: ${({ theme }) => theme.surfaceVariant};
   }
 `;
 

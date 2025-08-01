@@ -1,242 +1,58 @@
 import styled from 'styled-components';
 
-/* -------------- CONTÊINER PRINCIPAL -------------- */
 export const GameRoomContainer = styled.div`
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-`;
-
-/* Cabeçalho da sala */
-export const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid ${({ theme }) => theme.border};
-  margin-bottom: 2rem;
-`;
-
-export const RoomInfo = styled.div`
-  flex-grow: 1;
-`;
-
-export const RoomTitle = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: ${({ theme }) => theme.primary};
-  margin-bottom: 0.5rem;
-`;
-
-export const MasterInfo = styled.p`
-  font-size: 1rem;
-  color: ${({ theme }) => theme.textSecondary};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-`;
-
-/* Convidar jogadores */
-export const InviteSection = styled.div`
-  background-color: ${({ theme }) => theme.surface};
-  padding: 1rem;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
-
-  p {
-    font-size: 0.9rem;
-    color: ${({ theme }) => theme.textSecondary};
-  }
-`;
-
-export const InviteLink = styled.input`
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   background-color: ${({ theme }) => theme.background};
   color: ${({ theme }) => theme.textPrimary};
-  font-weight: 500;
-  min-width: 300px;
+  
+  /* Força a tela a ocupar todo o espaço, ignorando o padding do MainLayout */
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
 `;
 
-export const CopyButton = styled.button`
-  background-color: ${({ theme }) => theme.primary};
-  color: #fff;
-  font-size: 1.2rem;
-  padding: 10px;
-`;
-
-/* Grid principal */
-export const MainContent = styled.div`
+export const VTTLayout = styled.div`
   display: grid;
-  grid-template-columns: 1fr 3fr;
-  gap: 2rem;
-  align-items: start;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-/* Painel de jogadores */
-export const PlayersPanel = styled.div`
-  background-color: ${({ theme }) => theme.surface};
-  border-radius: 8px;
-  padding: 1.5rem;
-  position: sticky;
-  top: 100px;
-
-  @media (max-width: 1024px) {
-    position: static;
-  }
-`;
-
-export const PanelTitle = styled.h3`
-  font-size: 1.2rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid ${({ theme }) => theme.border};
-`;
-
-export const PlayerList = styled.ul`
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-`;
-
-export const PlayerCard = styled.li`
-  background-color: ${({ theme }) => theme.background};
-  padding: 1rem;
-  border-radius: 6px;
-`;
-
-export const PlayerInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-`;
-
-export const PlayerName = styled.span`
-  font-weight: bold;
-  font-size: 1.1rem;
-`;
-
-export const CharacterName = styled.div`
-  font-size: 0.9rem;
-  color: ${({ theme }) => theme.textSecondary};
-  font-style: italic;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  a {
-    color: ${({ theme }) => theme.secondary};
-    font-weight: 500;
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  button {
-    background: none;
-    border: none;
-    color: ${({ theme }) => theme.textSecondary};
-    padding: 0;
-    margin-left: 0.5rem;
-    cursor: pointer;
-    &:hover {
-      color: ${({ theme }) => theme.error};
-    }
-  }
-`;
-
-export const LinkCharacterButton = styled.button`
+  grid-template-columns: 280px 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "sidebar map";
   width: 100%;
-  padding: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  background-color: ${({ theme }) => theme.secondary};
-  color: #fff;
-
-  &:disabled {
-    background-color: ${({ theme }) => theme.border};
-    cursor: not-allowed;
-  }
+  height: 100%;
+  position: relative; /* Necessário para o 'bounds' do Draggable */
+  overflow: hidden;
 `;
 
-/* Área central */
-export const GameArea = styled.div`
+export const MapArea = styled.main`
+  grid-area: map;
+  position: relative;
+  overflow: hidden;
+  background-color: #000; /* O fundo do mapa é preto por padrão */
+  background-image: radial-gradient(${({ theme }) => theme.border}22 1px, transparent 1px);
+  background-size: 20px 20px;
+`;
+
+
+// --- PLACEHOLDER ---
+export const TempPlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-`;
-
-/* Painel do mestre */
-export const MasterDashboard = styled.div`
-  background-color: ${({ theme }) => theme.surface};
-  border-radius: 8px;
-  padding: 1.5rem;
-`;
-
-export const DashboardGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
-`;
-
-/* Painel de ações */
-export const ActionPanel = styled.div`
-  background-color: ${({ theme }) => theme.surface};
-  border-radius: 8px;
-  padding: 1.5rem;
-`;
-
-export const ActionGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 0.75rem;
-`;
-
-export const ActionButton = styled.button`
-  background-color: ${({ theme }) => theme.primary};
-  color: #fff;
-  font-weight: 500;
-  padding: 10px 15px;
-
-  &:disabled {
-    background-color: ${({ theme }) => theme.border};
-    cursor: not-allowed;
-  }
-`;
-
-/* Opções de rolagem */
-export const RollOptions = styled.div`
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid ${({ theme }) => theme.border};
-`;
-
-export const OptionCheckbox = styled.div`
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  border: 2px dashed ${({ theme }) => theme.border};
+  border-radius: 8px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: ${({ theme }) => theme.textSecondary};
 
-  label {
-    font-size: 0.9rem;
-    cursor: pointer;
-  }
-
-  input {
-    width: auto;
-    cursor: pointer;
+  p {
+    font-size: 1rem;
+    font-weight: normal;
+    margin-top: 0.5rem;
   }
 `;

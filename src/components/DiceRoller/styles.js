@@ -11,15 +11,14 @@ export const Overlay = styled(motion.div)`
   justify-content: center;
   align-items: center;
   z-index: 2000;
-  overflow: hidden; // Previne qualquer scroll indesejado
+  overflow: hidden;
 `;
 
 export const DiceWrapper = styled(motion.div)`
-  position: relative; // Garante que os dados fiquem no centro do wrapper
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  // O gap é controlado pela transformação 'x' nos elementos filhos
 `;
 
 export const DieSvg = styled.svg`
@@ -34,18 +33,18 @@ export const ResultWrapper = styled(motion.div)`
   text-align: center;
   color: #fff;
   text-shadow: 0 0 15px #000;
-  // A animação de fade-in agora é controlada pelo framer-motion no próprio componente.
 `;
 
-export const TotalText = styled.h1`
+// Alterado para motion.h1 para suportar a animação de contagem.
+export const TotalText = styled(motion.h1)`
   font-size: 10rem;
   font-weight: 900;
   line-height: 1;
-  color: ${({ theme }) => theme.primary || '#8a4fff'}; // Adicionado fallback
+  color: ${({ theme }) => theme.primary || '#8a4fff'};
 `;
 
 export const BreakdownText = styled.p`
   font-size: 1.5rem;
   font-family: monospace;
-  color: ${({ theme }) => theme.textSecondary || '#ccc'}; // Adicionado fallback
+  color: ${({ theme }) => theme.textSecondary || '#ccc'};
 `;
