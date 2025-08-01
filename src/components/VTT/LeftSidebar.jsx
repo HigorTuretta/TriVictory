@@ -6,7 +6,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRoomMembers } from '../../hooks/useRoomMembers';
 import { useUserCharacters } from '../../hooks/useUserCharacters';
 import { getTokenImageUrl } from '../../services/cloudinaryService';
-// CORREÇÃO: Importa o 'ToolButton' dos estilos
 import { SidebarContainer, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
 import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -56,16 +55,17 @@ export const LeftSidebar = ({ onToolSelect }) => {
             userId: currentUser.uid, 
             characterId: character.id, 
             characterName: character.name, 
-            tokenImage: character.tokenImage
+            // Garante que estamos usando o public_id
+            tokenImage: character.tokenImage 
         };
-        const otherLinks = room.characters.filter(c => c.userId !== currentUser.uid);
+        const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
         updateRoom({ characters: [...otherLinks, newLink] });
         setIsLinkModalOpen(false);
         toast.success(`Personagem ${character.name} vinculado!`);
     };
     
     const handleUnlinkCharacter = () => {
-        const otherLinks = room.characters.filter(c => c.userId !== currentUser.uid);
+        const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
         updateRoom({ characters: otherLinks });
         toast.error("Personagem desvinculado.");
     };
@@ -103,7 +103,6 @@ export const LeftSidebar = ({ onToolSelect }) => {
                 {isMaster && (
                     <ToolSection>
                         <h4>Ferramentas do Mestre</h4>
-                        {/* CORREÇÃO: Usa o componente ToolButton estilizado com os ícones e texto como children */}
                         <ToolButton onClick={() => onToolSelect('sceneManager')}><FaMap /> Gerenciar Cenas</ToolButton>
                         <ToolButton onClick={() => onToolSelect('fogOfWar')}><FaEye /> Fog of War (WIP)</ToolButton>
                         <ToolButton onClick={() => onToolSelect('initiativeTracker')}><FaUsers /> Iniciativa (WIP)</ToolButton>
