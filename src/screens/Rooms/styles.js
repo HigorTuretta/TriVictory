@@ -1,3 +1,4 @@
+// src/screens/Rooms/styles.js
 import styled from "styled-components";
 import { Form as AuthForm, Input as AuthInput, Button as AuthButton } from "../../styles/Auth";
 
@@ -31,6 +32,24 @@ export const CreateRoomButton = styled.button`
     align-items: center;
     gap: 0.5rem;
     padding: 12px 20px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #279644;
+    }
+`;
+
+// Novo estilo para o cabeçalho de cada seção
+export const SectionHeader = styled.h3`
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: ${({ theme }) => theme.textPrimary};
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid ${({ theme }) => theme.border};
 `;
 
 export const RoomGrid = styled.div`
@@ -47,11 +66,11 @@ export const RoomCard = styled.div`
     border-left: 5px solid ${({ theme }) => theme.primary};
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
     &:hover {
         transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         border-left-color: ${({ theme }) => theme.secondary};
     }
 `;
@@ -67,7 +86,6 @@ export const RoomRole = styled.span`
     font-weight: 500;
 `;
 
-// Estilos para o formulário no modal (reutilizando e adaptando)
 export const Form = styled(AuthForm)``;
 export const Input = styled(AuthInput)``;
 export const Button = styled(AuthButton)``;
