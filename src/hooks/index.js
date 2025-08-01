@@ -10,3 +10,4 @@ export * from './useImageCropper';
 export * from './useCurrentPlayerCharacter';
 export * from './useRoomMembers';
 export * from './useUserCharacters';
+export * from './useGrimoire';
