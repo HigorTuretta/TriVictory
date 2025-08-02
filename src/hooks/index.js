@@ -11,3 +11,6 @@ export * from './useCurrentPlayerCharacter';
 export * from './useRoomMembers';
 export * from './useUserCharacters';
 export * from './useGrimoire';
+export * from './useInitiative';
+export * from './useRollMacros';
+export * from './useFogOfWar';

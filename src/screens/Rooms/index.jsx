@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUserRooms } from '../../hooks/useUserRooms';
 import toast from 'react-hot-toast';
 import { FaPlus, FaCrown, FaUserFriends } from 'react-icons/fa';
 
@@ -13,42 +14,6 @@ import {
     RoomsContainer, Header, Title, CreateRoomButton, RoomGrid,
     RoomCard, RoomName, RoomRole, Form, Input, Button, SectionHeader
 } from './styles';
-
-// --- Hook Customizado para buscar e gerenciar as salas do usuário ---
-const useUserRooms = () => {
-    const { currentUser } = useAuth();
-    const [masteredRooms, setMasteredRooms] = useState([]);
-    const [joinedRooms, setJoinedRooms] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!currentUser?.uid) {
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-
-        const masterQuery = query(collection(db, "rooms"), where("masterId", "==", currentUser.uid));
-        const playerQuery = query(collection(db, "rooms"), where("playerIds", "array-contains", currentUser.uid));
-
-        const unsubMaster = onSnapshot(masterQuery, (snapshot) => {
-            setMasteredRooms(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
-
-        const unsubPlayer = onSnapshot(playerQuery, (snapshot) => {
-            setJoinedRooms(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-            setLoading(false); // Considera carregado após a segunda query retornar
-        });
-        
-        return () => {
-            unsubMaster();
-            unsubPlayer();
-        };
-    }, [currentUser]);
-
-    return { masteredRooms, joinedRooms, loading };
-};
 
 // --- Subcomponente: Modal de Criação de Sala ---
 const CreateRoomModal = ({ isOpen, onClose }) => {
@@ -60,11 +25,18 @@ const CreateRoomModal = ({ isOpen, onClose }) => {
         e.preventDefault();
         if (!name.trim()) return toast.error("O nome da sala não pode estar vazio.");
 
+        const masterData = {
+            uid: currentUser.uid,
+            nickname: currentUser.nickname || currentUser.displayName,
+        };
+
         const newRoom = {
             roomName: name.trim(),
             masterId: currentUser.uid,
             masterNickname: currentUser.nickname || currentUser.displayName,
             playerIds: [],
+            // CORREÇÃO: Adiciona o mestre à lista de membros na criação da sala
+            members: [masterData],
             createdAt: serverTimestamp(),
         };
 

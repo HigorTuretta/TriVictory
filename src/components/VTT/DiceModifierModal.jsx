@@ -1,32 +1,65 @@
+// src/components/VTT/DiceModifierModal.jsx
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useRoom } from '../../contexts/RoomContext';
 import { Modal } from '../Modal';
-// ... outros imports de estilo
+import { ModifierContent, ModifierInput, OptionsGrid, OptionToggle, RollButton } from './styles';
 
-export const DiceModifierModal = ({ modalState, setModalState }) => {
-    const { isOpen, initialRoll, resolve } = modalState;
+export const DiceModifierModal = ({ isOpen, onClose }) => {
+    const { currentUser } = useAuth();
+    const { room } = useRoom();
+    const isMaster = room.masterId === currentUser.uid;
+
     const [modifier, setModifier] = useState(0);
     const [spendPA, setSpendPA] = useState(false);
     const [critOnFive, setCritOnFive] = useState(false);
     const [isHidden, setIsHidden] = useState(false);
 
-    if (!isOpen) return null;
-
     const handleConfirm = () => {
-        resolve({ modifier, spendPA, critOnFive, isHidden });
-        setModalState({ isOpen: false, initialRoll: null, resolve: null });
+        onClose({ modifier, spendPA, critOnFive, isHidden });
+        // Reseta o estado para a próxima abertura
+        setModifier(0);
+        setSpendPA(false);
+        setCritOnFive(false);
+        setIsHidden(false);
     };
 
     const handleCancel = () => {
-        resolve(null); // Resolve como nulo para indicar cancelamento
-        setModalState({ isOpen: false, initialRoll: null, resolve: null });
+        onClose(null); // Envia nulo para indicar cancelamento
     };
 
     return (
         <Modal isOpen={isOpen} onClose={handleCancel}>
-            <h3>Modificar Rolagem</h3>
-            <p>Resultado dos dados: {initialRoll.results.join(', ')}</p>
-            {/* Inputs para modifier, toggles para PA, crit, hidden */}
-            <button onClick={handleConfirm}>Confirmar Rolagem</button>
+            <ModifierContent>
+                <h3>Modificar Rolagem</h3>
+                <ModifierInput>
+                    <label htmlFor="modifier">Modificador Adicional</label>
+                    <input
+                        id="modifier"
+                        type="number"
+                        value={modifier}
+                        onChange={(e) => setModifier(parseInt(e.target.value) || 0)}
+                        autoFocus
+                    />
+                </ModifierInput>
+                <OptionsGrid>
+                    <OptionToggle>
+                        <input type="checkbox" id="spendPA" checked={spendPA} onChange={(e) => setSpendPA(e.target.checked)} />
+                        <label htmlFor="spendPA">Gastar 1 PA? (1d=6)</label>
+                    </OptionToggle>
+                    <OptionToggle>
+                        <input type="checkbox" id="critOnFive" checked={critOnFive} onChange={(e) => setCritOnFive(e.target.checked)} />
+                        <label htmlFor="critOnFive">Crítico com 5 ou 6?</label>
+                    </OptionToggle>
+                    {isMaster && (
+                        <OptionToggle>
+                            <input type="checkbox" id="isHidden" checked={isHidden} onChange={(e) => setIsHidden(e.target.checked)} />
+                            <label htmlFor="isHidden">Rolagem Oculta?</label>
+                        </OptionToggle>
+                    )}
+                </OptionsGrid>
+                <RollButton onClick={handleConfirm}>Rolar Dados</RollButton>
+            </ModifierContent>
         </Modal>
     );
 };

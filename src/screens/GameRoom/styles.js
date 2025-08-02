@@ -7,14 +7,12 @@ export const GameRoomContainer = styled.div`
   background-color: ${({ theme }) => theme.background};
   color: ${({ theme }) => theme.textPrimary};
   
-  /* Força a tela a ocupar todo o espaço, ignorando o padding do MainLayout */
   main {
     padding: 0 !important;
     max-width: none !important;
     margin: 0 !important;
   }
 `;
-
 export const VTTLayout = styled.div`
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -22,19 +20,26 @@ export const VTTLayout = styled.div`
   grid-template-areas: "sidebar map";
   width: 100%;
   height: 100%;
-  position: relative; /* Necessário para o 'bounds' do Draggable */
+  position: relative;
   overflow: hidden;
 `;
-
 export const MapArea = styled.main`
   grid-area: map;
   position: relative;
   overflow: hidden;
-  background-color: #000; /* O fundo do mapa é preto por padrão */
+  background-color: #000;
   background-image: radial-gradient(${({ theme }) => theme.border}22 1px, transparent 1px);
   background-size: 20px 20px;
 `;
 
+export const GameLogContainer = styled.aside`
+  grid-area: log;
+  background-color: ${({ theme }) => theme.surface};
+  border-left: 1px solid ${({ theme }) => theme.border};
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`;
 
 // --- PLACEHOLDER ---
 export const TempPlaceholder = styled.div`

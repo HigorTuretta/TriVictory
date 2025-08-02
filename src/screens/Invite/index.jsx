@@ -6,13 +6,12 @@ import { db } from '../../firebase/config';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { FaCrown } from 'react-icons/fa';
-import {
-    InviteContainer, InviteBox, Title, Subtitle, InfoLine,
-    ActionsWrapper, Button, LoadingText
+import { 
+    InviteContainer, InviteBox, Title, Subtitle, InfoLine, 
+    ActionsWrapper, Button 
 } from './styles';
 
-// --- Hook Customizado para gerenciar a lógica do convite ---
-const useRoomInvite = () => {
+export const Invite = () => {
     const { roomId } = useParams();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -24,14 +23,15 @@ const useRoomInvite = () => {
     useEffect(() => {
         const fetchRoomData = async () => {
             if (!currentUser) return;
+
             setLoading(true);
-            
             const roomRef = doc(db, "rooms", roomId);
             const roomSnap = await getDoc(roomRef);
 
             if (roomSnap.exists()) {
                 const roomData = roomSnap.data();
-                if (roomData.masterId === currentUser.uid || roomData.playerIds.includes(currentUser.uid)) {
+                // Se o usuário já faz parte da sala, redireciona ele para lá
+                if (roomData.masterId === currentUser.uid || (roomData.playerIds && roomData.playerIds.includes(currentUser.uid))) {
                     navigate(`/room/${roomId}`);
                     return;
                 }
@@ -42,14 +42,28 @@ const useRoomInvite = () => {
             }
             setLoading(false);
         };
-        fetchRoomData();
+
+        if (currentUser) {
+            fetchRoomData();
+        }
     }, [roomId, currentUser, navigate]);
 
-    const acceptInvite = async () => {
+    const handleAcceptInvite = async () => {
         setIsJoining(true);
+        const roomRef = doc(db, "rooms", roomId);
         try {
-            const roomRef = doc(db, "rooms", roomId);
-            await updateDoc(roomRef, { playerIds: arrayUnion(currentUser.uid) });
+            // Objeto com as informações do jogador a ser adicionado
+            const playerMemberData = {
+                uid: currentUser.uid,
+                nickname: currentUser.nickname || currentUser.displayName,
+            };
+
+            // Atualiza o documento da sala atomicamente
+            await updateDoc(roomRef, {
+                playerIds: arrayUnion(currentUser.uid),
+                members: arrayUnion(playerMemberData)
+            });
+
             toast.success("Você atendeu ao chamado!");
             navigate(`/room/${roomId}`);
         } catch (error) {
@@ -59,25 +73,16 @@ const useRoomInvite = () => {
         }
     };
 
-    const declineInvite = () => {
+    const handleDeclineInvite = () => {
         toast('Você recusou o chamado... por enquanto.', { icon: '🤔' });
         navigate('/');
     };
 
-    return { room, loading, isJoining, acceptInvite, declineInvite };
-};
-
-
-// --- Componente de Apresentação ---
-export const Invite = () => {
-    const { room, loading, isJoining, acceptInvite, declineInvite } = useRoomInvite();
-
     if (loading) {
-        return <InviteContainer><LoadingText>Verificando o pergaminho...</LoadingText></InviteContainer>;
+        return <InviteContainer><Title>Verificando o pergaminho...</Title></InviteContainer>;
     }
 
     if (!room) {
-        // Se a sala for nula após o carregamento, significa que o usuário já foi redirecionado.
         return null;
     }
 
@@ -95,10 +100,10 @@ export const Invite = () => {
                 </InfoLine>
 
                 <ActionsWrapper>
-                    <Button $variant="decline" onClick={declineInvite} disabled={isJoining}>
+                    <Button $variant="decline" onClick={handleDeclineInvite}>
                         Recusar Chamado
                     </Button>
-                    <Button $variant="accept" onClick={acceptInvite} disabled={isJoining}>
+                    <Button $variant="accept" onClick={handleAcceptInvite} disabled={isJoining}>
                         {isJoining ? 'Entrando...' : 'Atender ao Chamado'}
                     </Button>
                 </ActionsWrapper>

@@ -13,57 +13,44 @@ export const RoomProvider = ({ children }) => {
     const { roomId } = useParams();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
+    
     const [room, setRoom] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     const updateRoom = useCallback(_.debounce((data) => {
         if (roomId) {
             const roomRef = doc(db, 'rooms', roomId);
-            updateDoc(roomRef, data).catch(err => toast.error("Falha na sincronização."));
+            updateDoc(roomRef, data).catch(err => {
+                console.error("Erro ao sincronizar com o Firestore:", err);
+                toast.error("Falha na sincronização.");
+            });
         }
     }, 500), [roomId]);
 
     useEffect(() => {
         if (!roomId || !currentUser?.uid) { setLoading(false); return; }
+        setLoading(true);
         const roomRef = doc(db, 'rooms', roomId);
         const unsubscribe = onSnapshot(roomRef, (snap) => {
             if (snap.exists()) {
                 const data = snap.data();
                 if (data.masterId !== currentUser.uid && !data.playerIds.includes(currentUser.uid)) {
-                    toast.error("Acesso negado.");
-                    setError("Acesso negado.");
-                    return navigate('/rooms');
+                    toast.error("Acesso negado."); return navigate('/rooms');
                 }
-                
-                // CORREÇÃO: Espalha os dados primeiro e depois aplica os valores padrão.
-                // Isso garante que os defaults não sejam sobrescritos por 'undefined'.
                 const validatedData = {
+                    scenes: [], tokens: [], characters: [], initiative: { order: [], currentIndex: -1, isRunning: false }, fogOfWar: {},
                     ...data,
-                    scenes: data.scenes || [],
-                    tokens: data.tokens || [],
-                    initiative: data.initiative || { order: [], currentIndex: -1, isRunning: false },
-                    activeSceneId: data.activeSceneId || null,
-                    fogOfWar: data.fogOfWar || {},
                 };
-
                 setRoom({ id: snap.id, ...validatedData });
             } else {
-                toast.error("Sala não encontrada.");
-                setError("Sala não existe.");
-                navigate('/rooms');
+                toast.error("Sala não encontrada."); navigate('/rooms');
             }
-            setLoading(false);
-        }, (err) => {
-            console.error("Erro ao carregar sala:", err);
-            toast.error("Erro ao carregar dados da sala.");
-            setError("Erro de conexão.");
             setLoading(false);
         });
         return () => unsubscribe();
     }, [roomId, currentUser, navigate]);
     
-    const value = { room, loading, error, roomId, updateRoom };
+    const value = { room, loading, roomId, updateRoom };
 
     return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>;
 };

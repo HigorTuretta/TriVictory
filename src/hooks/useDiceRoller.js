@@ -1,3 +1,4 @@
+// src/hooks/useDiceRoller.js
 import { useState, useCallback } from 'react';
 import { useRoom } from '../contexts/RoomContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -5,103 +6,132 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import toast from 'react-hot-toast';
 
-// Função para parsear um comando de rolagem, ex: "2d6+5" ou "1d6+Poder"
-const parseRollCommand = (command) => {
-    const parts = command.toLowerCase().split('d');
-    const numDice = parseInt(parts[0], 10);
-    const rest = parts[1].split('+');
-    const sides = parseInt(rest[0], 10);
-    const modifiers = rest.slice(1).map(mod => {
-        const num = parseInt(mod, 10);
-        return isNaN(num) ? { label: mod.trim(), value: 0 } : { label: `+${num}`, value: num };
-    });
+const parseRollCommand = (command, character) => {
+    // ...código da função parseRollCommand sem alterações...
+    let numDice = 0;
+    let sides = 6;
+    const modifiers = [];
+    const cleanCommand = command.toLowerCase().replace(/\s/g, '');
+    const diceRegex = /(\d+)d(\d+)/;
+    const diceMatch = cleanCommand.match(diceRegex);
+    if (diceMatch) {
+        numDice = parseInt(diceMatch[1], 10);
+        sides = parseInt(diceMatch[2], 10);
+    } else if (cleanCommand.startsWith('d')) {
+        numDice = 1;
+        sides = parseInt(cleanCommand.substring(1), 10);
+    }
+    const modsString = cleanCommand.replace(diceRegex, '');
+    const modParts = modsString.split(/[+-]/).filter(Boolean);
+    let remainingMods = modsString;
+    for (const part of modParts) {
+        const operatorIndex = remainingMods.indexOf(part);
+        const operator = remainingMods[operatorIndex - 1] || '+';
+        remainingMods = remainingMods.substring(operatorIndex + part.length);
+        const num = parseInt(part, 10);
+        if (!isNaN(num)) {
+            const value = operator === '+' ? num : -num;
+            modifiers.push({ label: `${operator}${num}`, value });
+        } else if (character && character.attributes) {
+            const attr = part.trim();
+            if (Object.keys(character.attributes).includes(attr)) {
+                const attrValue = character.attributes[attr];
+                if (typeof attrValue === 'number') {
+                    const value = operator === '+' ? attrValue : -attrValue;
+                    modifiers.push({ label: attr.charAt(0).toUpperCase() + attr.slice(1), value });
+                }
+            }
+        }
+    }
     return { numDice, sides, modifiers };
 };
 
-export const useDiceRoller = (character) => {
-    const { roomId } = useRoom();
+export const useDiceRoller = (character, updateCharacter) => {
+    const { roomId, room } = useRoom();
     const { currentUser } = useAuth();
+    const isMaster = room.masterId === currentUser.uid;
     
     const [isRolling, setIsRolling] = useState(false);
     const [currentRoll, setCurrentRoll] = useState(null);
-    const [modifierModal, setModifierModal] = useState({ isOpen: false, initialRoll: null, resolve: null });
+    const [modifierModal, setModifierModal] = useState({ isOpen: false, resolve: null });
 
-    const executeRoll = useCallback(async (command, baseModifiers = []) => {
-        const { numDice, sides, modifiers: commandModifiers } = parseRollCommand(command);
-        const allModifiers = [...baseModifiers, ...commandModifiers];
-
-        const results = Array.from({ length: numDice }, () => Math.floor(Math.random() * sides) + 1);
-        const initialSum = results.reduce((a, b) => a + b, 0);
-
-        const initialRoll = {
-            command,
-            results,
-            initialSum,
-            modifiers: allModifiers,
-        };
+    const executeRoll = useCallback(async (baseCommand, baseModifiers = [], onComplete) => {
+        const charForRoll = character || { attributes: {}, pa_current: 0 };
+        const userMods = await new Promise(resolve => { setModifierModal({ isOpen: true, resolve }); });
         
-        // Abre o modal de modificadores e aguarda a interação do usuário
-        const finalModifiers = await new Promise(resolve => {
-            setModifierModal({ isOpen: true, initialRoll, resolve });
-        });
-        
-        // Se o usuário cancelou o modal
-        if (finalModifiers === null) return;
-        
-        let finalResults = [...results];
-        let finalTotal = initialSum;
-        const finalModifiersList = [...allModifiers];
+        if (userMods === null) return;
 
-        // Aplicar gasto de PA
-        if (finalModifiers.spendPA && character && character.pa_current > 0) {
-            finalResults[0] = 6; // Garante um 6
-            finalTotal = finalResults.reduce((a, b) => a + b, 0);
-            finalModifiersList.push({ label: 'Gasto de PA', value: '1d=6' });
-            // Lógica para atualizar o PA do personagem no DB seria aqui
+        const { numDice, sides, modifiers: commandModifiers } = parseRollCommand(baseCommand, charForRoll);
+        if (numDice === 0) return toast.error("Comando de rolagem inválido.");
+
+        let finalDice = numDice;
+        let results = [];
+        let tempModifiers = [...baseModifiers, ...commandModifiers];
+
+        // CORREÇÃO: A atualização do PA só acontece se a função 'updateCharacter' for fornecida.
+        // Isso garante que apenas o jogador logado possa gastar seu próprio PA.
+        if (userMods.spendPA && charForRoll.pa_current > 0 && updateCharacter) {
+            finalDice -= 1;
+            results.push(6);
+            tempModifiers.push({ label: 'Gasto de PA', value: 0 });
+            updateCharacter({ pa_current: charForRoll.pa_current - 1 });
+            toast.success("Você gastou 1 PA para garantir um sucesso!", { icon: '✨'});
+        }
+        
+        for (let i = 0; i < finalDice; i++) {
+            results.push(Math.floor(Math.random() * 6) + 1);
         }
 
-        // Adicionar modificador da popup
-        if (finalModifiers.modifier !== 0) {
-            finalTotal += finalModifiers.modifier;
-            finalModifiersList.push({ label: 'Modificador', value: finalModifiers.modifier });
+        let total = results.reduce((a, b) => a + b, 0);
+        tempModifiers.forEach(m => total += m.value);
+        if (userMods.modifier !== 0) {
+            total += userMods.modifier;
+            tempModifiers.push({ label: 'Modificador', value: userMods.modifier });
         }
+        
+        const critThreshold = userMods.critOnFive ? 5 : 6;
+        const crits = results.filter(r => r >= critThreshold).length;
 
-        // Lógica de Crítico
-        const critThreshold = finalModifiers.critOnFive ? 5 : 6;
-        const crits = finalResults.filter(r => r >= critThreshold).length;
-        if (crits > 0) {
-             // Lógica de dobrar atributo se todos os dados forem críticos
-             // (simplificado por agora, pode ser expandido)
-        }
-
-        const finalRollData = {
-            ...initialRoll,
-            total: finalTotal,
-            modifiers: finalModifiersList,
-            critThreshold,
-            timestamp: serverTimestamp(),
-            hidden: finalModifiers.isHidden,
+        const localRollData = {
+            command: baseCommand, individualResults: results, modifiers: tempModifiers, total,
+            critThreshold, isCrit: crits > 0, isFumble: results.includes(1),
+            hidden: isMaster ? userMods.isHidden : false,
             user: {
-                uid: currentUser.uid,
-                name: currentUser.nickname,
-                character: character?.name || null,
+                uid: currentUser.uid, name: currentUser.nickname,
+                character: charForRoll.name || (isMaster ? 'Mestre' : null),
             }
         };
 
-        setCurrentRoll(finalRollData);
+        setCurrentRoll(localRollData);
         setIsRolling(true);
 
-        // Salva no log do Firestore
-        await addDoc(collection(db, 'rooms', roomId, 'rolls'), finalRollData);
+        const firestoreRollData = { ...localRollData, timestamp: serverTimestamp() };
+
+        try {
+            await addDoc(collection(db, 'rooms', roomId, 'rolls'), firestoreRollData);
+        } catch (error) {
+            console.error("Erro ao salvar rolagem no Firestore:", error);
+            toast.error("Falha ao registrar a rolagem.");
+            setIsRolling(false);
+            return;
+        }
         
-    }, [roomId, currentUser, character]);
+        if (onComplete) {
+            onComplete(localRollData);
+        }
+        
+    }, [roomId, currentUser, character, isMaster, updateCharacter]);
+
+    const onAnimationComplete = useCallback(() => setIsRolling(false), []);
+    
+    const closeModifierModal = useCallback((value) => {
+        if (modifierModal.resolve) modifierModal.resolve(value);
+        setModifierModal({ isOpen: false, resolve: null });
+    }, [modifierModal]);
 
     return {
-        isRolling,
-        currentRoll,
-        executeRoll,
-        modifierModal,
-        setModifierModal,
-        onAnimationComplete: () => setIsRolling(false),
+        isRolling, currentRoll, executeRoll,
+        onAnimationComplete, isModifierModalOpen: modifierModal.isOpen,
+        closeModifierModal,
     };
 };

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 
 // --- FloatingWindow Styles ---
+// --- FloatingWindow Styles (Modificado) ---
 export const WindowContainer = styled(motion.div)`
   position: absolute;
   z-index: 1010;
@@ -12,9 +13,15 @@ export const WindowContainer = styled(motion.div)`
   border-radius: 8px;
   box-shadow: ${({ theme }) => theme.shadows.large};
   min-width: 320px;
-  max-width: 500px;
+  min-height: 200px; // Altura mínima
+  max-width: 600px;
   display: flex;
   flex-direction: column;
+  color: ${({ theme }) => theme.textPrimary};
+  
+  /* Habilita o redimensionamento */
+  resize: both;
+  overflow: hidden; /* Necessário para que o resize funcione corretamente */
 `;
 export const WindowHeader = styled.header`
   padding: 0.5rem 1rem;
@@ -190,4 +197,222 @@ export const EnemyForm = styled.div`
     input { font-size: 0.9rem; padding: 8px; }
     input[name="name"], input[name="imageUrl"] { grid-column: 1 / -1; }
     button { grid-column: 1 / -1; background-color: ${({ theme }) => theme.success}; color: white; font-weight: 600; }
+`;
+
+// --- InitiativeTracker Styles ---
+export const TrackerContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+export const InitiativeList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+export const InitiativeItem = styled.li`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-radius: 6px;
+  background-color: ${({ theme, $isActive }) => $isActive ? theme.primary + '30' : theme.background};
+  border: 2px solid ${({ theme, $isActive }) => $isActive ? theme.primary : 'transparent'};
+  transition: all 0.2s ease-in-out;
+`;
+
+export const InitiativeInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+export const InitiativeRoll = styled.span`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.primary};
+  min-width: 30px;
+  text-align: center;
+`;
+
+export const InitiativeName = styled.span`font-weight: 500;`;
+export const InitiativeControls = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${({ theme }) => theme.border};
+`;
+export const PlayerInitiativeButton = styled.button`
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: ${({ theme }) => theme.success};
+    color: white;
+    border-radius: 6px;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.1);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+`;
+// --- DiceModifierModal Styles ---
+export const ModifierContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  text-align: center;
+`;
+export const ModifierInput = styled.div`
+  label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+  input { text-align: center; font-size: 1.5rem; padding: 0.5rem; width: 100px; margin: 0 auto; }
+`;
+export const OptionsGrid = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+`;
+export const OptionToggle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  label { cursor: pointer; }
+`;
+export const OptionCheckbox = styled.input`
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+`;
+
+// --- GameLog Styles ---
+export const LogContainer = styled.div`
+  display: flex;
+  flex-direction: column-reverse; /* Mostra os logs mais recentes embaixo */
+  flex-grow: 1; /* Ocupa o espaço disponível na WindowBody */
+  gap: 0.5rem; /* Espaçamento menor */
+  overflow-y: auto;
+  padding: 0.25rem;
+  background-color: ${({ theme }) => theme.background};
+  border-radius: 6px;
+  height: 100%; /* Garante que ocupe toda a altura da WindowBody */
+`;
+
+export const LogEntry = styled.div`
+  background-color: ${({ theme, $hidden }) => $hidden ? theme.border + '50' : theme.surface};
+  padding: 0.5rem 0.75rem; /* Padding menor */
+  border-radius: 6px;
+  border-left: 3px solid ${({ theme }) => theme.primary};
+  
+  p {
+    margin: 0;
+    font-size: 0.85rem; /* Fonte menor */
+  }
+`;
+export const RollResult = styled.h3` /* Mudado de h2 para h3 */
+  font-size: 1.8rem; /* Tamanho menor */
+  text-align: center;
+  margin: 0.25rem 0;
+`;
+
+export const RollBreakdown = styled.p`
+  font-family: monospace;
+  font-size: 0.8rem; /* Fonte menor */
+  text-align: center;
+  color: ${({ theme }) => theme.textSecondary};
+  word-break: break-all;
+  
+  small { font-size: 0.7rem; }
+  strong { font-weight: bold; }
+`;
+
+// --- MacroManager Styles ---
+export const MacroList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+`;
+
+export const MacroItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: ${({ theme }) => theme.background};
+  border-radius: 6px;
+`;
+
+export const MacroInfo = styled.div`
+  p { margin: 0; font-weight: 600; }
+  span { font-size: 0.8rem; font-family: monospace; color: ${({ theme }) => theme.textSecondary}; }
+`;
+
+export const MacroControls = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  button {
+    background: transparent;
+    padding: 0.5rem;
+    &:hover { color: ${({ theme }) => theme.primary}; }
+  }
+`;
+
+export const MacroForm = styled.div`
+    padding-top: 1rem;
+    border-top: 1px solid ${({ theme }) => theme.border};
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    h5 { margin-bottom: 0; }
+    input { font-size: 0.9rem; padding: 8px; }
+    button { background-color: ${({ theme }) => theme.success}; color: white; font-weight: 600; }
+`;
+
+// --- FogOfWarManager Styles ---
+export const FowToolbar = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+export const FowControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  
+  label {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  input[type="range"] {
+    flex-grow: 1;
+  }
+`;
+
+export const FowActions = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+
+  button {
+    font-weight: 600;
+  }
 `;

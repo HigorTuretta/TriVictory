@@ -3,11 +3,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useRoomMembers } from '../../hooks/useRoomMembers';
 import { useUserCharacters } from '../../hooks/useUserCharacters';
 import { getTokenImageUrl } from '../../services/cloudinaryService';
 import { SidebarContainer, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
-import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink } from 'react-icons/fa';
+import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { Modal } from '../Modal';
 
@@ -38,11 +37,11 @@ const LinkCharacterModal = ({ isOpen, onClose, onLink }) => {
 export const LeftSidebar = ({ onToolSelect }) => {
     const { room, roomId, updateRoom } = useRoom();
     const { currentUser } = useAuth();
-    const { members, loading: membersLoading } = useRoomMembers();
     const navigate = useNavigate();
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
     
     const isMaster = room.masterId === currentUser.uid;
+    const members = room.members || [];
 
     const copyInviteLink = () => {
         const inviteLink = `${window.location.origin}/invite/${roomId}`;
@@ -55,8 +54,7 @@ export const LeftSidebar = ({ onToolSelect }) => {
             userId: currentUser.uid, 
             characterId: character.id, 
             characterName: character.name, 
-            // Garante que estamos usando o public_id
-            tokenImage: character.tokenImage 
+            tokenImage: character.tokenImage
         };
         const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
         updateRoom({ characters: [...otherLinks, newLink] });
@@ -77,7 +75,7 @@ export const LeftSidebar = ({ onToolSelect }) => {
             <SidebarContainer>
                 <ToolSection>
                     <h4>Jogadores</h4>
-                    {membersLoading ? <p>Carregando...</p> :
+                    {members.length > 0 ? (
                         <PlayerList>
                             {members.map(member => {
                                 const charLink = room.characters?.find(c => c.userId === member.uid);
@@ -92,10 +90,11 @@ export const LeftSidebar = ({ onToolSelect }) => {
                                 )
                             })}
                         </PlayerList>
-                    }
+                    ) : <p>Nenhum jogador na sala.</p>}
+
                     {!isMaster && (
                         myCharacterLink ? 
-                        <LinkButton onClick={handleUnlinkCharacter}><FaUnlink /> Desvincular</LinkButton> :
+                        <LinkButton onClick={handleUnlinkCharacter}><FaUnlink /> Desvincular Personagem</LinkButton> :
                         <LinkButton onClick={() => setIsLinkModalOpen(true)}><FaLink /> Vincular Personagem</LinkButton>
                     )}
                 </ToolSection>
@@ -104,11 +103,16 @@ export const LeftSidebar = ({ onToolSelect }) => {
                     <ToolSection>
                         <h4>Ferramentas do Mestre</h4>
                         <ToolButton onClick={() => onToolSelect('sceneManager')}><FaMap /> Gerenciar Cenas</ToolButton>
-                        <ToolButton onClick={() => onToolSelect('fogOfWar')}><FaEye /> Fog of War (WIP)</ToolButton>
-                        <ToolButton onClick={() => onToolSelect('initiativeTracker')}><FaUsers /> Iniciativa (WIP)</ToolButton>
+                        <ToolButton onClick={() => onToolSelect('fogOfWar')}><FaEye /> Fog of War</ToolButton>
                         <ToolButton onClick={() => onToolSelect('enemyGrimoire')}><FaSkull /> Grimório</ToolButton>
                     </ToolSection>
                 )}
+                
+                <ToolSection>
+                    <h4>Ferramentas Gerais</h4>
+                    <ToolButton onClick={() => onToolSelect('initiativeTracker')}><FaUsers /> Iniciativa</ToolButton>
+                    <ToolButton onClick={() => onToolSelect('gameLog')}><FaScroll /> Log de Rolagens</ToolButton>
+                </ToolSection>
 
                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <ToolButton onClick={copyInviteLink}><FaCopy /> Copiar Convite</ToolButton>
