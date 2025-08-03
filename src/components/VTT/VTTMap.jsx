@@ -14,8 +14,16 @@ import toast from 'react-hot-toast';
 const GRID_SIZE = 70;
 const FOG_COLOR = "#0a0a0c";
 
-const SceneBackground = ({ imageUrl }) => {
+// MODIFICADO: O componente agora aceita um callback 'onLoad' para informar suas dimensões.
+const SceneBackground = ({ imageUrl, onLoad }) => {
     const [img] = useImage(imageUrl, 'anonymous');
+    
+    useEffect(() => {
+        if (img) {
+            onLoad({ width: img.width, height: img.height });
+        }
+    }, [img, onLoad]);
+
     return <KonvaImage image={img} x={0} y={0} listening={false} />;
 };
 
@@ -82,12 +90,20 @@ const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMa
     );
 };
 
-const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings }) => {
+// MODIFICADO: O componente agora recebe 'mapSize' para se dimensionar corretamente.
+const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings, mapSize }) => {
     const opacity = isMaster ? 0.7 : 1;
 
     return (
         <Layer listening={false}>
-            <Rect x={0} y={0} width={5000} height={5000} fill={FOG_COLOR} opacity={opacity} />
+            {/* CORREÇÃO: O retângulo da névoa agora usa o tamanho real do mapa, com um fallback. */}
+            <Rect 
+                x={0} y={0} 
+                width={mapSize.width || 5000} 
+                height={mapSize.height || 5000} 
+                fill={FOG_COLOR} 
+                opacity={opacity} 
+            />
             
             {!isMaster && visionSettings.playerVision && playerTokens.map(token => (
                 <Circle
@@ -131,10 +147,12 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
     const lastLine = useRef(null);
     const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
     const [isPanningWithSpace, setIsPanningWithSpace] = useState(false);
+    
+    // NOVO: Estado para armazenar as dimensões da imagem do mapa.
+    const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
 
     const roomSettings = room.roomSettings || { playerVision: true, visionRadius: 3.5 };
     
-    // CORREÇÃO: A fonte da verdade para tokens no mapa agora é unicamente o array `room.tokens`.
     const sceneTokens = useMemo(() => {
         if (!Array.isArray(room.tokens) || !activeScene) return [];
         return room.tokens.filter(t => t.sceneId === activeScene.id);
@@ -144,6 +162,13 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         if (!activeScene) return [];
         return sceneTokens.filter(t => t.type === 'player' && t.isVisible !== false);
     }, [sceneTokens, activeScene]);
+
+    // NOVO: Quando a cena ativa mudar, reseta o tamanho do mapa para evitar piscar.
+    useEffect(() => {
+        if (activeScene) {
+            setMapSize({ width: 0, height: 0 });
+        }
+    }, [activeScene?.id]);
 
     useEffect(() => {
         const handleSpacebar = (e) => {
@@ -194,7 +219,6 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         }
     };
     
-    // NOVO: Função para obter a posição correta no drop
     const getDropPosition = (e) => {
         stageRef.current.setPointersPositions(e);
         const position = stageRef.current.getPointerPosition();
@@ -293,13 +317,15 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
                 onContextMenu={(e) => e.evt.preventDefault()}
             >
                 <Layer>
-                    {activeScene?.imageUrl && <SceneBackground imageUrl={activeScene.imageUrl} />}
+                    {/* MODIFICADO: Passa o callback para obter as dimensões do mapa. */}
+                    {activeScene?.imageUrl && <SceneBackground imageUrl={activeScene.imageUrl} onLoad={setMapSize} />}
                 </Layer>
                 <FogOfWarLayer
                     paths={fogPaths}
                     playerTokens={playerVisionSources}
                     isMaster={isMaster}
                     visionSettings={roomSettings}
+                    mapSize={mapSize} // MODIFICADO: Passa as dimensões para a camada FoW.
                 />
                 <Layer>
                     {visibleTokens.map(token => <Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => handleTokenClick(e, token)} isDraggable={isMaster || token.userId === currentUser.uid} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} />)}

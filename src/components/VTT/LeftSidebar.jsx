@@ -76,7 +76,7 @@ export const LeftSidebar = ({ onToolSelect }) => {
     // NOVO: Função para iniciar o arraste de um token de jogador.
     const handleDragPlayer = (e, charLink) => {
         e.dataTransfer.setData('application/vtt-player-character', JSON.stringify(charLink));
-        toast.info(`Arrastando ${charLink.characterName}...`);
+        toast.success(`Arrastando ${charLink.characterName}...`);
     };
 
     const myCharacterLink = room.characters?.find(c => c.userId === currentUser.uid);
