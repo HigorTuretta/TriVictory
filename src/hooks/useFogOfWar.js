@@ -8,7 +8,6 @@ export const useFogOfWar = (activeSceneId) => {
     const { room, updateRoom } = useRoom();
 
     const fogState = useMemo(() => {
-        // Agora só precisamos dos fogPaths
         return room.fogOfWar?.[activeSceneId] || { fogPaths: [] };
     }, [room.fogOfWar, activeSceneId]);
 
@@ -19,25 +18,26 @@ export const useFogOfWar = (activeSceneId) => {
     }, 500), [activeSceneId, room.fogOfWar, updateRoom]);
 
     const setFogPaths = useCallback((paths) => {
-        const sanitizedPaths = paths.map(p => ({
-            points: p.points,
-            brushSize: p.brushSize,
-            isEraser: p.isEraser,
-        }));
-        debouncedUpdateFog({ ...fogState, fogPaths: sanitizedPaths });
+        debouncedUpdateFog({ ...fogState, fogPaths: paths });
     }, [fogState, debouncedUpdateFog]);
 
     const fillAll = useCallback(() => {
-        const fillPath = { points: [0, 0, 5000, 0, 5000, 5000, 0, 5000], isEraser: false };
-        // Atualiza diretamente para uma resposta mais rápida
-        updateRoom({ fogOfWar: { ...room.fogOfWar, [activeSceneId]: { fogPaths: [fillPath] } } });
+        // "Cobrir tudo" significa remover todos os caminhos revelados.
+        setFogPaths([]);
         toast.success("Mapa totalmente coberto.");
-    }, [activeSceneId, room.fogOfWar, updateRoom]);
+    }, [setFogPaths]);
 
     const clearAll = useCallback(() => {
-        updateRoom({ fogOfWar: { ...room.fogOfWar, [activeSceneId]: { fogPaths: [] } } });
+        // CORREÇÃO FINAL: Cria um segmento de linha válido (de um ponto a outro)
+        // e aplica um brushSize gigante para apagar toda a área.
+        const revealPath = { 
+            points: [2500, 2500, 2501, 2501], // Linha minúscula no centro do mapa.
+            brushSize: 10000,                  // Pincel gigante que cobre tudo.
+            isEraser: true                     // Essencial para apagar.
+        };
+        setFogPaths([revealPath]);
         toast.error("Névoa de guerra totalmente revelada.");
-    }, [activeSceneId, room.fogOfWar, updateRoom]);
+    }, [setFogPaths]);
 
     return {
         fogPaths: fogState.fogPaths || [],

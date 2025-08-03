@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useUserCharacters } from '../../hooks/useUserCharacters';
 import { getTokenImageUrl } from '../../services/cloudinaryService';
 import { SidebarContainer, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
-import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll } from 'react-icons/fa';
+import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { Modal } from '../Modal';
 
@@ -50,6 +50,8 @@ export const LeftSidebar = ({ onToolSelect }) => {
     };
 
     const handleLinkCharacter = (character) => {
+        // CORREÇÃO: A vinculação agora apenas adiciona a referência do personagem à sala.
+        // Ela não adiciona mais o token diretamente ao mapa.
         const newLink = { 
             userId: currentUser.uid, 
             characterId: character.id, 
@@ -59,13 +61,22 @@ export const LeftSidebar = ({ onToolSelect }) => {
         const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
         updateRoom({ characters: [...otherLinks, newLink] });
         setIsLinkModalOpen(false);
-        toast.success(`Personagem ${character.name} vinculado!`);
+        toast.success(`Personagem ${character.name} vinculado! Arraste-o para o mapa para entrar em cena.`);
     };
     
     const handleUnlinkCharacter = () => {
+        // CORREÇÃO: Ao desvincular, removemos tanto a referência do personagem
+        // quanto seu token do mapa, se ele existir.
         const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
-        updateRoom({ characters: otherLinks });
+        const tokensWithoutPlayer = (room.tokens || []).filter(t => t.userId !== currentUser.uid);
+        updateRoom({ characters: otherLinks, tokens: tokensWithoutPlayer });
         toast.error("Personagem desvinculado.");
+    };
+    
+    // NOVO: Função para iniciar o arraste de um token de jogador.
+    const handleDragPlayer = (e, charLink) => {
+        e.dataTransfer.setData('application/vtt-player-character', JSON.stringify(charLink));
+        toast.info(`Arrastando ${charLink.characterName}...`);
     };
 
     const myCharacterLink = room.characters?.find(c => c.userId === currentUser.uid);
@@ -79,8 +90,19 @@ export const LeftSidebar = ({ onToolSelect }) => {
                         <PlayerList>
                             {members.map(member => {
                                 const charLink = room.characters?.find(c => c.userId === member.uid);
+                                const isSelf = member.uid === currentUser.uid;
+                                
+                                // O card só é arrastável se for um personagem vinculado e for o mestre ou o próprio jogador.
+                                const isDraggable = charLink && (isMaster || isSelf);
+                                
                                 return (
-                                    <PlayerCard key={member.uid}>
+                                    <PlayerCard 
+                                        key={member.uid} 
+                                        draggable={isDraggable}
+                                        onDragStart={isDraggable ? (e) => handleDragPlayer(e, charLink) : undefined}
+                                        style={{ cursor: isDraggable ? 'grab' : 'default' }}
+                                        title={isDraggable ? `Arraste para adicionar ${charLink.characterName} ao mapa` : ''}
+                                    >
                                         <PlayerAvatar src={getTokenImageUrl(charLink?.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${member.nickname}`} />
                                         <PlayerInfo>
                                             <PlayerName>{member.nickname} {room.masterId === member.uid && ' (Mestre)'}</PlayerName>
@@ -105,6 +127,7 @@ export const LeftSidebar = ({ onToolSelect }) => {
                         <ToolButton onClick={() => onToolSelect('sceneManager')}><FaMap /> Gerenciar Cenas</ToolButton>
                         <ToolButton onClick={() => onToolSelect('fogOfWar')}><FaEye /> Fog of War</ToolButton>
                         <ToolButton onClick={() => onToolSelect('enemyGrimoire')}><FaSkull /> Grimório</ToolButton>
+                        <ToolButton onClick={() => onToolSelect('roomSettings')}><FaCog /> Configurações da Sala</ToolButton>                        
                     </ToolSection>
                 )}
                 

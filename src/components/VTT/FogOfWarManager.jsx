@@ -15,7 +15,7 @@ export const FogOfWarManager = ({ tool, setTool, brushSize, setBrushSize, onFill
                 <input
                     type="range"
                     min="20"
-                    max="200"
+                    max="1500"
                     value={brushSize}
                     onChange={(e) => setBrushSize(parseInt(e.target.value, 10))}
                 />
@@ -25,6 +25,7 @@ export const FogOfWarManager = ({ tool, setTool, brushSize, setBrushSize, onFill
                 <button onClick={onFillAll} style={{ backgroundColor: '#333', color: 'white' }}>Cobrir Tudo</button>
                 <button onClick={onClearAll} style={{ backgroundColor: '#FF3B30', color: 'white' }}>Revelar Tudo</button>
             </FowActions>
+            <p>Aperte <code>Espaço</code> para mover a tela enquanto pinta.</p>
         </FowToolbar>
     );
 };

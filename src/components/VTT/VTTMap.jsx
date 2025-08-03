@@ -9,11 +9,10 @@ import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 import { getTokenImageUrl } from '../../services/cloudinaryService';
+import toast from 'react-hot-toast';
 
 const GRID_SIZE = 70;
 const FOG_COLOR = "#0a0a0c";
-
-// --- Componentes Internos do Mapa ---
 
 const SceneBackground = ({ imageUrl }) => {
     const [img] = useImage(imageUrl, 'anonymous');
@@ -60,10 +59,7 @@ const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMa
                 fillPatternImage={img}
                 fillPatternScaleX={GRID_SIZE / (img?.width || GRID_SIZE)}
                 fillPatternScaleY={GRID_SIZE / (img?.height || GRID_SIZE)}
-                fillPatternOffset={{ 
-                    x: (img?.width || GRID_SIZE) / 2,
-                    y: (img?.height || GRID_SIZE) / 2
-                }}
+                fillPatternOffset={{ x: (img?.width || GRID_SIZE) / 2, y: (img?.height || GRID_SIZE) / 2 }}
                 stroke={isTurn ? '#FFD700' : (isSelected ? theme.primary : (tokenData.color || '#3498db'))}
                 strokeWidth={isSelected || isTurn ? 6 : 4}
                 shadowColor={isTurn ? '#FFD700' : (isSelected ? theme.primary : 'black')}
@@ -86,18 +82,19 @@ const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMa
     );
 };
 
-const FogOfWarLayer = ({ paths, playerTokens, isMaster }) => {
+const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings }) => {
     const opacity = isMaster ? 0.7 : 1;
+
     return (
         <Layer listening={false}>
             <Rect x={0} y={0} width={5000} height={5000} fill={FOG_COLOR} opacity={opacity} />
             
-            {!isMaster && playerTokens.map(token => (
+            {!isMaster && visionSettings.playerVision && playerTokens.map(token => (
                 <Circle
                     key={`vision-${token.tokenId}`}
                     x={token.x + GRID_SIZE / 2}
                     y={token.y + GRID_SIZE / 2}
-                    radius={GRID_SIZE * 3.5}
+                    radius={GRID_SIZE * visionSettings.visionRadius}
                     fill="white"
                     globalCompositeOperation={'destination-out'}
                 />
@@ -107,7 +104,7 @@ const FogOfWarLayer = ({ paths, playerTokens, isMaster }) => {
                 <Line
                     key={i}
                     points={path.points}
-                    stroke="white"
+                    stroke={path.isEraser ? 'white' : FOG_COLOR}
                     strokeWidth={path.brushSize}
                     lineCap="round"
                     lineJoin="round"
@@ -124,7 +121,7 @@ const BrushCursor = ({ x, y, brushSize, tool }) => {
 };
 
 export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenContextMenu, activeTurnTokenId, fowTool }) => {
-    const { room, updateRoom } = useRoom();
+    const { room, updateRoom, updateTokenPosition, setFogPaths } = useRoom();
     const { currentUser } = useAuth();
     const isMaster = room.masterId === currentUser.uid;
     const theme = useTheme();
@@ -133,54 +130,57 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
     const [isDrawing, setIsDrawing] = useState(false);
     const lastLine = useRef(null);
     const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
+    const [isPanningWithSpace, setIsPanningWithSpace] = useState(false);
 
-    const allTokensOnScene = useMemo(() => {
-        const playerTokensData = (Array.isArray(room.characters) && activeScene) ? room.characters.map(charLink => ({
-            tokenId: charLink.characterId, type: 'player', name: charLink.characterName || 'Jogador',
-            imageUrl: getTokenImageUrl(charLink.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${charLink.characterName}`,
-            x: charLink.x ?? 0, y: charLink.y ?? 0, isVisible: charLink.isVisible ?? true, isDead: charLink.isDead || false,
-            color: '#3498db', sceneId: activeScene.id,
-        })).filter(Boolean) : [];
-        const enemyTokens = (Array.isArray(room.tokens) && activeScene) ? room.tokens.filter(t => t.sceneId === activeScene.id) : [];
-        return [...playerTokensData, ...enemyTokens];
-    }, [room.characters, room.tokens, activeScene]);
+    const roomSettings = room.roomSettings || { playerVision: true, visionRadius: 3.5 };
     
-    const updateTokenPosition = useCallback((tokenId, newPos) => {
-        const isPlayerToken = (room.characters || []).some(c => c.characterId === tokenId);
-        const updatePayload = {};
+    // CORREÇÃO: A fonte da verdade para tokens no mapa agora é unicamente o array `room.tokens`.
+    const sceneTokens = useMemo(() => {
+        if (!Array.isArray(room.tokens) || !activeScene) return [];
+        return room.tokens.filter(t => t.sceneId === activeScene.id);
+    }, [room.tokens, activeScene]);
 
-        if (isPlayerToken) {
-            updatePayload.characters = (room.characters || []).map(c => c.characterId === tokenId ? { ...c, ...newPos } : c);
-        } else {
-            updatePayload.tokens = (room.tokens || []).map(t => t.tokenId === tokenId ? { ...t, ...newPos } : t);
-        }
-        updateRoom(updatePayload);
-    }, [room.characters, room.tokens, updateRoom]);
+    const playerVisionSources = useMemo(() => {
+        if (!activeScene) return [];
+        return sceneTokens.filter(t => t.type === 'player' && t.isVisible !== false);
+    }, [sceneTokens, activeScene]);
+
+    useEffect(() => {
+        const handleSpacebar = (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                setIsPanningWithSpace(e.type === 'keydown');
+            }
+        };
+        window.addEventListener('keydown', handleSpacebar);
+        window.addEventListener('keyup', handleSpacebar);
+        return () => {
+            window.removeEventListener('keydown', handleSpacebar);
+            window.removeEventListener('keyup', handleSpacebar);
+        };
+    }, []);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (!selectedTokenId) return;
-            const tokenToMove = allTokensOnScene.find(t => t.tokenId === selectedTokenId);
+            if (!selectedTokenId || e.code.startsWith('Arrow') === false) return;
+            e.preventDefault();
+            const tokenToMove = sceneTokens.find(t => t.tokenId === selectedTokenId);
             if (!tokenToMove) return;
             let newPos = { x: tokenToMove.x, y: tokenToMove.y };
-            let moved = false;
             switch (e.key) {
-                case 'ArrowUp': newPos.y -= GRID_SIZE; moved = true; break;
-                case 'ArrowDown': newPos.y += GRID_SIZE; moved = true; break;
-                case 'ArrowLeft': newPos.x -= GRID_SIZE; moved = true; break;
-                case 'ArrowRight': newPos.x += GRID_SIZE; moved = true; break;
+                case 'ArrowUp': newPos.y -= GRID_SIZE; break;
+                case 'ArrowDown': newPos.y += GRID_SIZE; break;
+                case 'ArrowLeft': newPos.x -= GRID_SIZE; break;
+                case 'ArrowRight': newPos.x += GRID_SIZE; break;
                 default: break;
             }
-            if (moved) {
-                e.preventDefault();
-                newPos.x = Math.max(0, newPos.x);
-                newPos.y = Math.max(0, newPos.y);
-                updateTokenPosition(selectedTokenId, newPos);
-            }
+            newPos.x = Math.max(0, newPos.x);
+            newPos.y = Math.max(0, newPos.y);
+            updateTokenPosition(selectedTokenId, newPos);
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedTokenId, allTokensOnScene, updateTokenPosition]);
+    }, [selectedTokenId, sceneTokens, updateTokenPosition]);
     
     const handleTokenClick = (e, token) => {
         const myCharId = room.characters?.find(c => c.userId === currentUser.uid)?.characterId;
@@ -193,33 +193,53 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             onTokenSelect(token);
         }
     };
+    
+    // NOVO: Função para obter a posição correta no drop
+    const getDropPosition = (e) => {
+        stageRef.current.setPointersPositions(e);
+        const position = stageRef.current.getPointerPosition();
+        const stage = stageRef.current;
+        return {
+            x: Math.round((position.x - stage.x()) / stage.scaleX() / GRID_SIZE) * GRID_SIZE,
+            y: Math.round((position.y - stage.y()) / stage.scaleY() / GRID_SIZE) * GRID_SIZE,
+        };
+    };
 
     const handleDrop = (e) => {
         e.preventDefault();
-        stageRef.current.setPointersPositions(e);
+        if (!activeScene) return;
+
         const enemyDataString = e.dataTransfer.getData('application/vtt-enemy');
-        if (enemyDataString && activeScene) {
+        const playerDataString = e.dataTransfer.getData('application/vtt-player-character');
+        const currentTokens = room.tokens || [];
+        const { x, y } = getDropPosition(e);
+
+        if (enemyDataString) {
             const enemy = JSON.parse(enemyDataString);
-            const position = stageRef.current.getPointerPosition();
-            const stage = stageRef.current;
-            const x = Math.round((position.x - stage.x()) / stage.scaleX() / GRID_SIZE) * GRID_SIZE;
-            const y = Math.round((position.y - stage.y()) / stage.scaleY() / GRID_SIZE) * GRID_SIZE;
-            const currentTokens = room.tokens || [];
             const sameNameCount = currentTokens.filter(t => t.grimoireId === enemy.id && t.sceneId === activeScene.id).length;
             const tokenName = sameNameCount > 0 ? `${enemy.name} ${sameNameCount + 1}` : enemy.name;
             const newToken = { ...enemy, tokenId: uuidv4(), grimoireId: enemy.id, type: 'enemy', sceneId: activeScene.id, name: tokenName, x, y, color: '#FF3B30', isVisible: true, isDead: false };
             delete newToken.id;
             updateRoom({ tokens: [...currentTokens, newToken] });
+        } else if (playerDataString) {
+            const playerChar = JSON.parse(playerDataString);
+            if (currentTokens.some(t => t.tokenId === playerChar.characterId)) {
+                return toast.info(`${playerChar.characterName} já está no mapa.`);
+            }
+            const newToken = {
+                tokenId: playerChar.characterId,
+                userId: playerChar.userId,
+                name: playerChar.characterName,
+                imageUrl: getTokenImageUrl(playerChar.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${playerChar.characterName}`,
+                type: 'player', sceneId: activeScene.id, x, y,
+                color: '#3498db', isVisible: true, isDead: false,
+            };
+            updateRoom({ tokens: [...currentTokens, newToken] });
         }
     };
     
     const handleDragOver = (e) => e.preventDefault();
-    const handleStageClick = (e) => {
-        if (e.target === e.target.getStage()) {
-            onTokenSelect(null);
-            onTokenContextMenu(e, null);
-        }
-    };
+    const handleStageClick = (e) => { if (e.target === e.target.getStage()) onTokenSelect(null); };
     const handleWheel = (e) => {
         e.evt.preventDefault();
         const scaleBy = 1.05;
@@ -234,7 +254,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
     };
 
     const handleMouseDown = (e) => {
-        if (!isMaster || !activeScene || e.target !== e.target.getStage() || !fowTool) return;
+        if (!isMaster || !activeScene || e.target !== e.target.getStage() || !fowTool || isPanningWithSpace) return;
         setIsDrawing(true);
         const pos = e.target.getRelativePointerPosition();
         lastLine.current = { points: [pos.x, pos.y], brushSize: fowTool.brushSize, isEraser: fowTool.tool === 'eraser' };
@@ -244,63 +264,47 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         if (stage) {
             const pos = stage.getRelativePointerPosition();
             setCursorPos(pos);
-            if (!isDrawing || !isMaster || !activeScene) return;
+            if (!isDrawing || !isMaster || !activeScene || isPanningWithSpace) return;
             const updatedPoints = lastLine.current.points.concat([pos.x, pos.y]);
             lastLine.current.points = updatedPoints;
             stage.batchDraw();
         }
     };
     const handleMouseUp = () => {
-        if (isDrawing && isMaster) {
+        if (isDrawing) {
             setIsDrawing(false);
-            const sceneFog = room.fogOfWar?.[activeScene.id] || { fogPaths: [] };
-            const newPaths = [...(sceneFog.fogPaths || []), lastLine.current];
-            updateRoom({ fogOfWar: { ...room.fogOfWar, [activeScene.id]: { ...sceneFog, fogPaths: newPaths } } });
+            const currentPaths = room.fogOfWar?.[activeScene.id]?.fogPaths || [];
+            setFogPaths(activeScene.id, [...currentPaths, lastLine.current]);
             lastLine.current = null;
         }
     };
     
-    const visibleTokens = isMaster ? allTokensOnScene : allTokensOnScene.filter(t => t.isVisible !== false);
+    const visibleTokens = isMaster ? sceneTokens : sceneTokens.filter(t => t.isVisible !== false || t.userId === currentUser.uid);
     const fogPaths = room.fogOfWar?.[activeScene?.id]?.fogPaths || [];
+    const isDraggable = (isPanningWithSpace || !fowTool) && !isDrawing;
 
     return (
-        <MapContainer ref={mapContainerRef} onDrop={handleDrop} onDragOver={handleDragOver} onContextMenu={(e) => e.preventDefault()} tabIndex={1}>
+        <MapContainer ref={mapContainerRef} onDrop={handleDrop} onDragOver={handleDragOver} tabIndex={1}>
             <Stage
                 width={mapContainerRef.current?.clientWidth || window.innerWidth - 280}
                 height={mapContainerRef.current?.clientHeight || window.innerHeight}
-                onWheel={handleWheel}
-                draggable={!isDrawing}
-                onClick={handleStageClick}
-                onTap={handleStageClick}
+                onWheel={handleWheel} draggable={isDraggable} onClick={handleStageClick} ref={stageRef}
+                onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}
                 onContextMenu={(e) => e.evt.preventDefault()}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                ref={stageRef}
             >
                 <Layer>
                     {activeScene?.imageUrl && <SceneBackground imageUrl={activeScene.imageUrl} />}
-                    {visibleTokens.map(token => (
-                        <Token
-                            key={`${token.type}-${token.tokenId}`}
-                            tokenData={token}
-                            onDragEnd={updateTokenPosition}
-                            onClick={(e) => handleTokenClick(e, token)}
-                            onContextMenu={(e) => handleTokenClick(e, token)}
-                            isDraggable={isMaster || (token.type === 'player' && token.tokenId === (room.characters?.find(c => c.userId === currentUser.uid)?.characterId))}
-                            isMaster={isMaster}
-                            isSelected={token.tokenId === selectedTokenId}
-                            isTurn={token.tokenId === activeTurnTokenId}
-                            theme={theme}
-                        />
-                    ))}
                 </Layer>
                 <FogOfWarLayer
                     paths={fogPaths}
-                    playerTokens={allTokensOnScene.filter(t => t.type === 'player' && t.sceneId === activeScene?.id)}
+                    playerTokens={playerVisionSources}
                     isMaster={isMaster}
+                    visionSettings={roomSettings}
                 />
-                {isMaster && fowTool && (
+                <Layer>
+                    {visibleTokens.map(token => <Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => handleTokenClick(e, token)} isDraggable={isMaster || token.userId === currentUser.uid} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} />)}
+                </Layer>
+                {isMaster && fowTool && !isPanningWithSpace && (
                     <Layer listening={false}>
                         <BrushCursor x={cursorPos.x} y={cursorPos.y} brushSize={fowTool.brushSize} tool={fowTool.tool} />
                     </Layer>

@@ -416,3 +416,69 @@ export const FowActions = styled.div`
     font-weight: 600;
   }
 `;
+
+// --- RoomSettings Styles ---
+export const SettingsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+export const SettingRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+`;
+
+export const SettingLabel = styled.label`
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  
+  span {
+    font-size: 0.8rem;
+    color: ${({ theme }) => theme.textSecondary};
+    font-weight: 400;
+    margin-top: 0.25rem;
+  }
+`;
+
+export const ToggleSwitch = styled.input.attrs({ type: 'checkbox' })`
+  /* Estilos para um toggle switch bonito */
+  appearance: none;
+  width: 40px;
+  height: 22px;
+  background-color: ${({ theme }) => theme.border};
+  border-radius: 22px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: white;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease;
+  }
+
+  &:checked {
+    background-color: ${({ theme }) => theme.success};
+  }
+
+  &:checked::before {
+    transform: translateX(18px);
+  }
+`;
