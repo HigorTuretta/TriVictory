@@ -10,7 +10,7 @@ import { useFogOfWar } from '../../hooks/useFogOfWar';
 import { useLinkedCharactersData } from '../../hooks/useLinkedCharactersData';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import _ from 'lodash'; // Importa o lodash para o debounce
+import _ from 'lodash';
 import { RPGLoader } from '../../components/RPGLoader';
 import { VTTLayout, MapArea } from './styles';
 import { LeftSidebar } from '../../components/VTT/LeftSidebar';
@@ -40,7 +40,7 @@ const GameRoomContent = () => {
     
     const [windows, setWindows] = useState({
         sceneManager: false, initiativeTracker: false, enemyGrimoire: false,
-        gameLog: true, macroManager: false, fogOfWar: false, roomSettings: false,
+        gameLog: true, macroManager: false, fogOfWar: false, roomSettings: false, jukebox: false,
     });
     const [selectedTokenId, setSelectedTokenId] = useState(null);
     const [contextMenuTokenId, setContextMenuTokenId] = useState(null);
@@ -51,7 +51,6 @@ const GameRoomContent = () => {
     
     const { fillAll: fillFog, clearAll: clearFog } = useFogOfWar(activeScene?.id);
 
-    // NOVO: Função com debounce para salvar as alterações de recursos na ficha do personagem.
     const debouncedCharacterUpdate = useCallback(_.debounce((charId, data) => {
         if (charId) {
             const charRef = doc(db, 'characters', charId);
@@ -60,7 +59,6 @@ const GameRoomContent = () => {
               .catch(() => toast.error('Falha ao salvar ficha.', { id: 'save-toast' }));
         }
     }, 800), []);
-
 
     const liveContextMenuToken = useMemo(() => {
         if (!contextMenuTokenId) return null;
@@ -113,6 +111,11 @@ const GameRoomContent = () => {
         }
     
         switch (action) {
+            case 'rollInitiative':
+                if (token.type === 'enemy') {
+                    handleRollInitiativeFor(token);
+                }
+                return;
             case 'updateResource':
                 token[payload.resource] = payload.value;
                 if(token.type === 'player') debouncedCharacterUpdate(token.tokenId, { [payload.resource]: payload.value });

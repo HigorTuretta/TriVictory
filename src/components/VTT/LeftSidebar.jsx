@@ -9,8 +9,7 @@ import { getTokenImageUrl } from '../../services/cloudinaryService';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { SidebarContainer, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
-import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog } from 'react-icons/fa';
-import toast from 'react-hot-toast';
+import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog, FaMusic } from 'react-icons/fa';import toast from 'react-hot-toast';
 import { Modal } from '../Modal';
 
 const LinkCharacterModal = ({ isOpen, onClose, onLink }) => {
@@ -142,6 +141,7 @@ export const LeftSidebar = ({ onToolSelect }) => {
                         <ToolButton onClick={() => onToolSelect('sceneManager')}><FaMap /> Gerenciar Cenas</ToolButton>
                         <ToolButton onClick={() => onToolSelect('fogOfWar')}><FaEye /> Fog of War</ToolButton>
                         <ToolButton onClick={() => onToolSelect('enemyGrimoire')}><FaSkull /> Grimório</ToolButton>
+                        <ToolButton onClick={() => onToolSelect('jukebox')}><FaMusic /> Jukebox</ToolButton>
                         <ToolButton onClick={() => onToolSelect('roomSettings')}><FaCog /> Configurações da Sala</ToolButton>                        
                     </ToolSection>
                 )}

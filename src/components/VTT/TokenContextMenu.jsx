@@ -1,12 +1,15 @@
 // src/components/VTT/TokenContextMenu.jsx
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaTrash, FaEyeSlash, FaBed, FaRunning, FaSkullCrossbones, FaPlus, FaMinus, FaArrowUp } from 'react-icons/fa';
+import { 
+    FaTimes, FaTrash, FaEyeSlash, FaBed, FaRunning, FaSkullCrossbones, 
+    FaArrowUp, FaDiceD20 
+} from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRoom } from '../../contexts/RoomContext';
 import { 
-    ContextMenuBody, ResourceBar, BarVisual, 
-    BarFill, ActionGrid, ResourceInput, ResourceControls 
-} from './styles'; // Usaremos os novos estilos que vamos adicionar
+    ContextMenuBody, ResourceBar, BarVisual, BarFill, ActionGrid, 
+    ResourceInput, ResourceControls 
+} from './styles';
 
 const ResourceControl = ({ label, resourceKey, value, max, color, onAction, editable }) => {
     const [currentValue, setCurrentValue] = useState(value);
@@ -18,7 +21,7 @@ const ResourceControl = ({ label, resourceKey, value, max, color, onAction, edit
     const handleBlur = () => {
         const numValue = parseInt(currentValue, 10);
         if (isNaN(numValue) || numValue === value) {
-            setCurrentValue(value); // Reseta se for inválido ou não mudou
+            setCurrentValue(value);
         } else {
             onAction('updateResource', { resource: resourceKey, value: Math.max(0, numValue) });
         }
@@ -97,6 +100,11 @@ export const TokenContextMenu = ({ token, onAction }) => {
 
             {isMaster && (
                 <ActionGrid>
+                    {token.type === 'enemy' && (
+                        <button onClick={() => onAction('rollInitiative', {})}>
+                            <FaDiceD20 /> Rolar Iniciativa
+                        </button>
+                    )}
                     <button onClick={() => onAction('toggleVisibility')}>
                         <FaEyeSlash /> {token.isVisible === false ? 'Revelar' : 'Ocultar'}
                     </button>

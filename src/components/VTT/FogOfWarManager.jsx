@@ -3,6 +3,10 @@ import React from 'react';
 import { FowToolbar, FowControls, FowActions } from './styles';
 
 export const FogOfWarManager = ({ tool, setTool, brushSize, setBrushSize, onFillAll, onClearAll }) => {
+    // CORREÇÃO: Definimos min e max como constantes para clareza.
+    const minBrushSize = 20;
+    const maxBrushSize = 2000;
+
     return (
         <FowToolbar>
             <FowControls>
@@ -14,10 +18,12 @@ export const FogOfWarManager = ({ tool, setTool, brushSize, setBrushSize, onFill
                 <label>Pincel:</label>
                 <input
                     type="range"
-                    min="20"
-                    max="1500"
+                    // CORREÇÃO: Usamos as constantes para min e max.
+                    min={minBrushSize}
+                    max={maxBrushSize}
                     value={brushSize}
                     onChange={(e) => setBrushSize(parseInt(e.target.value, 10))}
+                    style={{ flexGrow: 1 }} // Garante que o input ocupe o espaço
                 />
                 <span>{brushSize}px</span>
             </FowControls>
@@ -25,7 +31,6 @@ export const FogOfWarManager = ({ tool, setTool, brushSize, setBrushSize, onFill
                 <button onClick={onFillAll} style={{ backgroundColor: '#333', color: 'white' }}>Cobrir Tudo</button>
                 <button onClick={onClearAll} style={{ backgroundColor: '#FF3B30', color: 'white' }}>Revelar Tudo</button>
             </FowActions>
-            <p>Aperte <code>Espaço</code> para mover a tela enquanto pinta.</p>
         </FowToolbar>
     );
 };

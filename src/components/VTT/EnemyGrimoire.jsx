@@ -8,7 +8,7 @@ import { getTokenImageUrl } from '../../services/cloudinaryService';
 const newEnemyTemplate = {
     name: '', imageUrl: '', pv: 10, pm: 10, pa: 1,
     attributes: { poder: 1, habilidade: 1, resistencia: 1 },
-    rollCommand: '1d6+Poder',
+    rollCommand: '1d6+Habilidade', // Padrão mais comum
 };
 
 const EnemyItem = ({ enemy }) => {
@@ -88,13 +88,26 @@ export const EnemyGrimoire = () => {
                 </label>
                 <input id="enemy-token-upload" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                 
-                <input name="pv" type="number" value={formState.pv} onChange={handleChange} placeholder="PV" />
-                <input name="pm" type="number" value={formState.pm} onChange={handleChange} placeholder="PM" />
-                {/* CORREÇÃO: A variável aqui é 'formState', não 'form' */}
-                <input name="attr_poder" type="number" value={formState.attributes.poder} onChange={handleChange} placeholder="Poder" />
-                <input name="attr_habilidade" type="number" value={formState.attributes.habilidade} onChange={handleChange} placeholder="Habilidade" />
-                <input name="attr_resistencia" type="number" value={formState.attributes.resistencia} onChange={handleChange} placeholder="Resistência" />
-                <input name="pa" type="number" value={formState.pa} onChange={handleChange} placeholder="PA" />
+                {/* CORREÇÃO: Adicionados labels para clareza */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <label>PV</label><input name="pv" type="number" value={formState.pv} onChange={handleChange} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <label>PM</label><input name="pm" type="number" value={formState.pm} onChange={handleChange} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <label>Poder</label><input name="attr_poder" type="number" value={formState.attributes.poder} onChange={handleChange} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <label>Habilidade</label><input name="attr_habilidade" type="number" value={formState.attributes.habilidade} onChange={handleChange} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <label>Resistência</label><input name="attr_resistencia" type="number" value={formState.attributes.resistencia} onChange={handleChange} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <label>PA</label><input name="pa" type="number" value={formState.pa} onChange={handleChange} />
+                </div>
+                
                 <button onClick={handleAddEnemy}>+ Adicionar Inimigo</button>
             </EnemyForm>
 

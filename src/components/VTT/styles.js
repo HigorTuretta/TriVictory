@@ -575,4 +575,64 @@ export const ActionGrid = styled.div`
       color: ${({ theme }) => theme.onError};
     }
   }
+
+  
+`;
+
+export const JukeboxContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+export const TrackList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 40vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+`;
+
+export const TrackItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: ${({ theme }) => theme.background};
+  border-radius: 6px;
+  border-left: 4px solid ${({ theme, $isPlaying }) => $isPlaying ? theme.success : theme.border};
+`;
+
+export const TrackInfo = styled.div`
+  flex-grow: 1;
+  font-weight: 500;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const TrackControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  
+  input[type="range"] {
+    width: 80px;
+  }
+`;
+
+export const JukeboxForm = styled.div`
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${({ theme }) => theme.border};
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  input {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
 `;

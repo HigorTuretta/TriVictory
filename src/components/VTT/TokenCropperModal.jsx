@@ -96,6 +96,7 @@ export const TokenCropperModal = ({ isOpen, onClose, onComplete, imageSrc }) => 
                     max={3}
                     step={0.1}
                     onChange={(e) => setZoom(e.target.value)}
+                    style={{ width: '80%' }} // Adiciona largura para melhor visualização
                 />
                 <button onClick={handleSave} disabled={loading}>
                     {loading ? 'Enviando...' : 'Salvar Token'}
