@@ -5,6 +5,9 @@ import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUserCharacters } from '../../hooks/useUserCharacters';
 import { getTokenImageUrl } from '../../services/cloudinaryService';
+// NOVO: Importa funções do firestore para atualizar a ficha
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 import { SidebarContainer, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
 import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -49,9 +52,8 @@ export const LeftSidebar = ({ onToolSelect }) => {
         toast.success('Link de convite copiado!');
     };
 
-    const handleLinkCharacter = (character) => {
-        // CORREÇÃO: A vinculação agora apenas adiciona a referência do personagem à sala.
-        // Ela não adiciona mais o token diretamente ao mapa.
+    // CORREÇÃO: Agora, ao vincular, também adicionamos o mestre aos 'viewers' da ficha.
+    const handleLinkCharacter = async (character) => {
         const newLink = { 
             userId: currentUser.uid, 
             characterId: character.id, 
@@ -59,24 +61,39 @@ export const LeftSidebar = ({ onToolSelect }) => {
             tokenImage: character.tokenImage
         };
         const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
+        
+        // Atualiza a ficha do personagem para dar permissão ao mestre
+        const charRef = doc(db, 'characters', character.id);
+        await updateDoc(charRef, {
+            viewers: arrayUnion(room.masterId)
+        });
+
+        // Atualiza a sala
         updateRoom({ characters: [...otherLinks, newLink] });
         setIsLinkModalOpen(false);
-        toast.success(`Personagem ${character.name} vinculado! Arraste-o para o mapa para entrar em cena.`);
+        toast.success(`Personagem ${character.name} vinculado!`);
     };
     
-    const handleUnlinkCharacter = () => {
-        // CORREÇÃO: Ao desvincular, removemos tanto a referência do personagem
-        // quanto seu token do mapa, se ele existir.
+    // CORREÇÃO: Ao desvincular, removemos a permissão do mestre da ficha.
+    const handleUnlinkCharacter = async () => {
+        const myLink = room.characters?.find(c => c.userId === currentUser.uid);
+        if (myLink) {
+            // Remove a permissão do mestre da ficha
+            const charRef = doc(db, 'characters', myLink.characterId);
+            await updateDoc(charRef, {
+                viewers: arrayRemove(room.masterId)
+            });
+        }
+        
         const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
         const tokensWithoutPlayer = (room.tokens || []).filter(t => t.userId !== currentUser.uid);
         updateRoom({ characters: otherLinks, tokens: tokensWithoutPlayer });
         toast.error("Personagem desvinculado.");
     };
-    
-    // NOVO: Função para iniciar o arraste de um token de jogador.
+
     const handleDragPlayer = (e, charLink) => {
         e.dataTransfer.setData('application/vtt-player-character', JSON.stringify(charLink));
-        toast.success(`Arrastando ${charLink.characterName}...`);
+        toast.info(`Arrastando ${charLink.characterName}...`);
     };
 
     const myCharacterLink = room.characters?.find(c => c.userId === currentUser.uid);
@@ -91,8 +108,6 @@ export const LeftSidebar = ({ onToolSelect }) => {
                             {members.map(member => {
                                 const charLink = room.characters?.find(c => c.userId === member.uid);
                                 const isSelf = member.uid === currentUser.uid;
-                                
-                                // O card só é arrastável se for um personagem vinculado e for o mestre ou o próprio jogador.
                                 const isDraggable = charLink && (isMaster || isSelf);
                                 
                                 return (

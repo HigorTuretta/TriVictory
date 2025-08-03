@@ -1,5 +1,5 @@
 // src/screens/GameRoom/GameRoomUI.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCurrentPlayerCharacter } from '../../hooks/useCurrentPlayerCharacter';
@@ -10,6 +10,7 @@ import { useFogOfWar } from '../../hooks/useFogOfWar';
 import { useLinkedCharactersData } from '../../hooks/useLinkedCharactersData';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import _ from 'lodash'; // Importa o lodash para o debounce
 import { RPGLoader } from '../../components/RPGLoader';
 import { VTTLayout, MapArea } from './styles';
 import { LeftSidebar } from '../../components/VTT/LeftSidebar';
@@ -49,6 +50,17 @@ const GameRoomContent = () => {
     const activeScene = (Array.isArray(room.scenes) && room.activeSceneId) ? room.scenes.find(s => s.id === room.activeSceneId) : null;
     
     const { fillAll: fillFog, clearAll: clearFog } = useFogOfWar(activeScene?.id);
+
+    // NOVO: Função com debounce para salvar as alterações de recursos na ficha do personagem.
+    const debouncedCharacterUpdate = useCallback(_.debounce((charId, data) => {
+        if (charId) {
+            const charRef = doc(db, 'characters', charId);
+            updateDoc(charRef, data)
+              .then(() => toast.success('Ficha salva!', { id: 'save-toast', duration: 1500 }))
+              .catch(() => toast.error('Falha ao salvar ficha.', { id: 'save-toast' }));
+        }
+    }, 800), []);
+
 
     const liveContextMenuToken = useMemo(() => {
         if (!contextMenuTokenId) return null;
@@ -95,6 +107,7 @@ const GameRoomContent = () => {
                 token[payload.resource] = payload.value;
                 tokens[tokenIndex] = token;
                 updateRoom({ tokens });
+                debouncedCharacterUpdate(token.tokenId, { [payload.resource]: payload.value });
             }
             return;
         }
@@ -102,12 +115,14 @@ const GameRoomContent = () => {
         switch (action) {
             case 'updateResource':
                 token[payload.resource] = payload.value;
+                if(token.type === 'player') debouncedCharacterUpdate(token.tokenId, { [payload.resource]: payload.value });
                 break;
             case 'fillResource':
                 const resourceKey = payload.resource;
                 const maxKey = resourceKey.replace('_current', '_max');
-                // CORREÇÃO: Usa o 'liveContextMenuToken' para pegar o valor máximo correto e atualizado.
-                token[resourceKey] = liveContextMenuToken[maxKey];
+                const maxValue = liveContextMenuToken[maxKey];
+                token[resourceKey] = maxValue;
+                if(token.type === 'player') debouncedCharacterUpdate(token.tokenId, { [resourceKey]: maxValue });
                 break;
             case 'toggleVisibility':
                 token.isVisible = !(token.isVisible ?? true);
@@ -120,13 +135,13 @@ const GameRoomContent = () => {
                 break;
             case 'toggleDead':
                 const newDeadStatus = !token.isDead;
+                const newPv = newDeadStatus ? 0 : 1;
                 token.isDead = newDeadStatus;
-                if (newDeadStatus) token.pv_current = 0;
-                else token.pv_current = 1;
-                
+                token.pv_current = newPv;
+
                 if (token.type === 'player') {
                     const charRef = doc(db, 'characters', token.tokenId);
-                    updateDoc(charRef, { isDead: newDeadStatus });
+                    updateDoc(charRef, { isDead: newDeadStatus, pv_current: newPv });
                 }
                 break;
             case 'delete':
