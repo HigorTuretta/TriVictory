@@ -1,5 +1,5 @@
 // src/components/VTT/styles.js
-import styled from 'styled-components';
+import styled, { keyframes,css }from 'styled-components';
 import { motion } from 'framer-motion';
 
 // --- FloatingWindow Styles ---
@@ -384,46 +384,6 @@ export const OptionCheckbox = styled.input`
   cursor: pointer;
 `;
 
-// --- GameLog Styles ---
-export const LogContainer = styled.div`
-  display: flex;
-  flex-direction: column-reverse; /* Mostra os logs mais recentes embaixo */
-  flex-grow: 1; /* Ocupa o espaço disponível na WindowBody */
-  gap: 0.5rem; /* Espaçamento menor */
-  overflow-y: auto;
-  padding: 0.25rem;
-  background-color: ${({ theme }) => theme.background};
-  border-radius: 6px;
-  height: 100%; /* Garante que ocupe toda a altura da WindowBody */
-`;
-
-export const LogEntry = styled.div`
-  background-color: ${({ theme, $hidden }) => $hidden ? theme.border + '50' : theme.surface};
-  padding: 0.5rem 0.75rem; /* Padding menor */
-  border-radius: 6px;
-  border-left: 3px solid ${({ theme }) => theme.primary};
-  
-  p {
-    margin: 0;
-    font-size: 0.85rem; /* Fonte menor */
-  }
-`;
-export const RollResult = styled.h3` /* Mudado de h2 para h3 */
-  font-size: 1.8rem; /* Tamanho menor */
-  text-align: center;
-  margin: 0.25rem 0;
-`;
-
-export const RollBreakdown = styled.p`
-  font-family: monospace;
-  font-size: 0.8rem; /* Fonte menor */
-  text-align: center;
-  color: ${({ theme }) => theme.textSecondary};
-  word-break: break-all;
-  
-  small { font-size: 0.7rem; }
-  strong { font-weight: bold; }
-`;
 
 // --- MacroManager Styles ---
 export const MacroList = styled.div`
@@ -762,5 +722,105 @@ export const JukeboxForm = styled.div`
     font-size: 0.9rem;
     padding: 8px;
   }
+`;
+
+// --- GameLog Styles (REPAGINADO) ---
+const critGlow = keyframes`
+  0% { box-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 8px #4CAF50, 0 0 12px #4CAF50; }
+  100% { box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #4CAF50, 0 0 20px #4CAF50; }
+`;
+const fumbleGlow = keyframes`
+  0% { box-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 8px #F44336, 0 0 12px #F44336; }
+  100% { box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #F44336, 0 0 20px #F44336; }
+`;
+
+export const LogContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 1rem;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: ${({ theme }) => theme.background};
+`;
+
+export const LogItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  background-color: ${({ theme, $hidden }) => $hidden ? `${theme.surface}80` : theme.surface};
+  border-radius: 8px;
+  border: 1px solid ${({ theme }) => theme.border};
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+  
+  /* Animações de crítico e falha */
+  animation: ${({ $isAllCrits, $isFumble }) => {
+    if ($isAllCrits) return css`${critGlow} 1.5s ease-in-out infinite alternate`;
+    if ($isFumble) return css`${fumbleGlow} 1.5s ease-in-out infinite alternate`;
+    return 'none';
+  }};
+`;
+
+export const LogHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+`;
+
+export const LogInfo = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+`;
+
+export const LogCharacter = styled.strong`
+  font-weight: 600;
+  color: ${({ theme }) => theme.textPrimary};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const LogUser = styled.small`
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.textSecondary};
+  white-space: nowrap;
+`;
+
+export const LogRoll = styled.span`
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: 500;
+  color: ${({ theme }) => theme.secondary};
+  white-space: nowrap;
+`;
+
+export const LogResult = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+`;
+
+export const LogTotal = styled.h2`
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 0;
+  color: ${({ theme }) => theme.primary};
+`;
+
+export const LogBreakdown = styled.p`
+  font-family: monospace;
+  font-size: 1rem;
+  color: ${({ theme }) => theme.textSecondary};
+  background-color: ${({ theme }) => theme.background};
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  margin: 0;
+
+  .crit { color: ${({ theme }) => theme.success}; }
+  .fumble { color: ${({ theme }) => theme.error}; }
 `;
 

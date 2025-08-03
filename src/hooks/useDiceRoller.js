@@ -55,7 +55,8 @@ export const useDiceRoller = (character, updateCharacter) => {
     const [currentRoll, setCurrentRoll] = useState(null);
     const [modifierModal, setModifierModal] = useState({ isOpen: false, resolve: null });
 
-    const executeRoll = useCallback(async (baseCommand, baseModifiers = [], onComplete) => {
+    // MODIFICADO: A função agora aceita `macroName`
+    const executeRoll = useCallback(async (baseCommand, baseModifiers = [], onComplete, macroName = null) => {
         const charForRoll = character || { attributes: {}, pa_current: 0 };
         const userMods = await new Promise(resolve => { setModifierModal({ isOpen: true, resolve }); });
         
@@ -67,9 +68,7 @@ export const useDiceRoller = (character, updateCharacter) => {
         let finalDice = numDice;
         let results = [];
         let tempModifiers = [...baseModifiers, ...commandModifiers];
-
-        // CORREÇÃO: A atualização do PA só acontece se a função 'updateCharacter' for fornecida.
-        // Isso garante que apenas o jogador logado possa gastar seu próprio PA.
+        
         if (userMods.spendPA && charForRoll.pa_current > 0 && updateCharacter) {
             finalDice -= 1;
             results.push(6);
@@ -91,35 +90,36 @@ export const useDiceRoller = (character, updateCharacter) => {
         
         const critThreshold = userMods.critOnFive ? 5 : 6;
         const crits = results.filter(r => r >= critThreshold).length;
+        const fumbles = results.filter(r => r === 1).length;
 
         const localRollData = {
-            command: baseCommand, individualResults: results, modifiers: tempModifiers, total,
-            critThreshold, isCrit: crits > 0, isFumble: results.includes(1),
+            command: baseCommand, 
+            macroName: macroName, // NOVO: Salva o nome do macro
+            individualResults: results, 
+            modifiers: tempModifiers, 
+            total,
+            critThreshold, 
+            isAllCrits: crits > 0 && crits === results.length, // NOVO: Flag para crítico total
+            isFumble: fumbles > 0, // Ajustado para ser mais genérico
             hidden: isMaster ? userMods.isHidden : false,
             user: {
-                uid: currentUser.uid, name: currentUser.nickname,
+                uid: currentUser.uid, 
+                name: currentUser.nickname,
                 character: charForRoll.name || (isMaster ? 'Mestre' : null),
             }
         };
 
         setCurrentRoll(localRollData);
         setIsRolling(true);
-
         const firestoreRollData = { ...localRollData, timestamp: serverTimestamp() };
-
         try {
             await addDoc(collection(db, 'rooms', roomId, 'rolls'), firestoreRollData);
         } catch (error) {
-            console.error("Erro ao salvar rolagem no Firestore:", error);
             toast.error("Falha ao registrar a rolagem.");
             setIsRolling(false);
             return;
         }
-        
-        if (onComplete) {
-            onComplete(localRollData);
-        }
-        
+        if (onComplete) onComplete(localRollData);
     }, [roomId, currentUser, character, isMaster, updateCharacter]);
 
     const onAnimationComplete = useCallback(() => setIsRolling(false), []);
