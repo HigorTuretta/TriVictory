@@ -9,7 +9,8 @@ import deathCharAnimation from '../../assets/lotties/deathChar.json';
 import HeroPlaceholder from '../../assets/HeroPlaceholder.png';
 import { RPGLoader } from '../../components/RPGLoader';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { getTokenImageUrl } from '../../services/cloudinaryService';
+// CORREÇÃO: Importa a função `getMainImageUrl` além da `getTokenImageUrl`.
+import { getMainImageUrl, getTokenImageUrl } from '../../services/cloudinaryService';
 import {
     PageWrapper, HeaderContainer, Title, SearchWrapper, SearchInput, SearchIcon,
     CharacterGrid as GridContainer, CardWrapper, CardBackgroundImage, CardGradientOverlay, CardContent,
@@ -56,7 +57,8 @@ const CharacterCard = ({ char, onSelect, onDelete }) => {
             whileHover={{ scale: 1.05, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
             transition={{ duration: 0.2 }}
         >
-            <CardBackgroundImage src={getTokenImageUrl(char.tokenImage) || HeroPlaceholder} $isDead={char.isDead} />
+            {/* CORREÇÃO: Usa `getMainImageUrl` com `char.portraitImage` para a imagem de fundo de alta qualidade. */}
+            <CardBackgroundImage src={getMainImageUrl(char.portraitImage) || HeroPlaceholder} $isDead={char.isDead} />
             <CardGradientOverlay />
             <AnimatePresence>
                 {isHovered && !char.isDead && (
@@ -97,7 +99,7 @@ export const CharacterSelect = () => {
     const [currentPage, setCurrentPage] = useState(1);
     
     const filteredCharacters = useMemo(() => {
-        setCurrentPage(1); // Reseta a página a cada nova busca
+        setCurrentPage(1);
         if (!searchTerm.trim()) return sortedCharacters;
         const term = searchTerm.toLowerCase();
         return sortedCharacters.filter(c => c.name.toLowerCase().includes(term));

@@ -7,7 +7,7 @@ import Lottie from 'lottie-react';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { CharacterProvider, useCharacter } from '../../contexts/CharacterContext';
-import { getMainImageUrl } from '../../services/cloudinaryService'; // Importa o helper
+import { getMainImageUrl } from '../../services/cloudinaryService';
 
 // Componentes de UI
 import { CharacterSheetHeader } from '../../components/CharacterSheetHeader';
@@ -26,7 +26,6 @@ import {
   SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
 } from './styles';
 
-// Hook e subcomponentes permanecem os mesmos da refatoração anterior
 const useCharacterSheetUI = () => {
     const [modals, setModals] = useState({ imageCropper: false, lightbox: false, confirmDeath: false, confirmResurrection: false });
     const [lightboxImageUrl, setLightboxImageUrl] = useState('');
@@ -36,9 +35,73 @@ const useCharacterSheetUI = () => {
     return { modals, openModal, closeModal, lightboxImageUrl, openLightbox };
 };
 
-const FloatingActions = ({ isOwner, isEditing, onEditToggle, onDeathToggle, isDead }) => { /* ...código omitido... */ };
-const SheetModals = ({ character, modals, closeModal, lightboxImageUrl, updateCharacter }) => { /* ...código omitido... */ };
+// --- CORREÇÃO: Implementação completa do componente FloatingActions ---
+const FloatingActions = ({ isOwner, isEditing, onEditToggle, onDeathToggle, isDead }) => {
+    // Regra 1: Só o dono da ficha pode ver o botão.
+    if (!isOwner) {
+        return null;
+    }
 
+    // Regra 2: Se o personagem está morto, o botão serve para ressuscitar.
+    if (isDead) {
+        return (
+            <FloatingActionButton
+                onClick={onDeathToggle}
+                title="Ressuscitar Personagem"
+                $isDead={true}
+            >
+                <FaHeartbeat />
+            </FloatingActionButton>
+        );
+    }
+
+    // Regra 3: Se o personagem está vivo, o botão alterna o modo de edição.
+    return (
+        <FloatingActionButton
+            onClick={onEditToggle}
+            title={isEditing ? 'Salvar Alterações' : 'Habilitar Edição'}
+            $isEditing={isEditing}
+        >
+            {isEditing ? <FaSave /> : <FaPencilAlt />}
+        </FloatingActionButton>
+    );
+};
+
+// O componente de Modais permanece como estava
+const SheetModals = ({ character, modals, closeModal, lightboxImageUrl, updateCharacter }) => {
+    const handleDeathConfirm = () => {
+        updateCharacter({ isDead: true });
+        toast.error(`${character.name} tombou em batalha...`);
+        closeModal('confirmDeath');
+    };
+    const handleResurrectionConfirm = () => {
+        updateCharacter({ isDead: false });
+        toast.success(`${character.name} voltou dos mortos!`, { icon: '😇' });
+        closeModal('confirmResurrection');
+    };
+
+    return (
+        <>
+            <ImageLightbox isOpen={modals.lightbox} onClose={() => closeModal('lightbox')} imageUrl={lightboxImageUrl} />
+            <ConfirmModal
+                isOpen={modals.confirmDeath}
+                onClose={() => closeModal('confirmDeath')}
+                onConfirm={handleDeathConfirm}
+                title={`Matar ${character.name}?`}
+                message="Isso marcará o personagem como morto e irá desabilitar a edição. Você poderá ressuscitá-lo depois."
+                confirmVariant="confirm"
+            />
+            <ConfirmModal
+                isOpen={modals.confirmResurrection}
+                onClose={() => closeModal('confirmResurrection')}
+                onConfirm={handleResurrectionConfirm}
+                title={`Ressuscitar ${character.name}?`}
+                message="O personagem voltará à vida e a ficha poderá ser editada novamente."
+                confirmVariant="resurrect"
+            />
+        </>
+    );
+};
 
 /* --------------------- Conteúdo Principal da Tela ------------------------- */
 const CharacterSheetContent = () => {
@@ -59,12 +122,10 @@ const CharacterSheetContent = () => {
     const isOwner = currentUser?.uid === character?.ownerId;
     const { resources, points, lockedItems, itemCounts } = actions;
 
-    // Prepara a imagem para o cropper, garantindo que seja sempre uma URL válida.
     const imageForCropper = character?.portraitImage ? getMainImageUrl(character.portraitImage) : '';
 
     return (
         <SheetContainer $isDead={character.isDead}>
-            {/* O componente de modais foi movido para fora da renderização principal para clareza */}
             <SheetModals 
                 character={character} 
                 modals={modals} 
@@ -137,7 +198,6 @@ const CharacterSheetContent = () => {
                 handleUpdate={updateCharacter}
             />
 
-             {/* CORREÇÃO: Passa a URL da imagem já processada para o modal de corte */}
             <ImageCropperModal
                 open={modals.imageCropper}
                 onClose={() => closeModal('imageCropper')}
