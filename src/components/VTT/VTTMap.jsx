@@ -17,7 +17,11 @@ const FOG_COLOR = "#0a0a0c";
 
 const SceneBackground = ({ imageUrl, onLoad }) => {
     const [img] = useImage(imageUrl, 'anonymous');
-    useEffect(() => { if (img) onLoad({ width: img.width, height: img.height }); }, [img, onLoad]);
+    useEffect(() => {
+        if (img) {
+            onLoad({ width: img.width, height: img.height });
+        }
+    }, [img, onLoad]);
     return <KonvaImage image={img} x={0} y={0} listening={false} />;
 };
 
@@ -153,7 +157,6 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             if (e.code.startsWith('Arrow')) {
                 if (!selectedTokenId) return;
                 const tokenToMove = sceneTokens.find(t => t.tokenId === selectedTokenId);
-                // CORREÇÃO CRÍTICA: Bloqueia o movimento pelo teclado se estiver imobilizado.
                 if (!tokenToMove || (tokenToMove.isImmobilized && !isMaster)) return;
                 
                 e.preventDefault();
@@ -176,12 +179,23 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
     }, [isPanningWithSpace, selectedTokenId, sceneTokens, updateTokenPosition, isMaster]);
     
+    // CORREÇÃO: Lógica de clique reimplementada para maior clareza e correção.
     const handleTokenClick = (e, token) => {
-        const myCharId = room.characters?.find(c => c.userId === currentUser.uid)?.characterId;
-        const canSelect = isMaster || (token.type === 'player' && token.tokenId === myCharId);
-        if (!canSelect) return;
-        if (e.evt.button === 2 || e.evt.ctrlKey) { e.preventDefault(); onTokenContextMenu(e, token); } 
-        else { onTokenSelect(token); }
+        const isOwnPlayerToken = token.type === 'player' && token.userId === currentUser.uid;
+
+        // Ação de abrir menu (botão direito ou ctrl+clique)
+        if (e.evt.button === 2 || e.evt.ctrlKey) {
+            e.evt.preventDefault();
+            if (isMaster || isOwnPlayerToken) {
+                onTokenContextMenu(e, token);
+            }
+            return;
+        }
+
+        // Ação de selecionar (clique esquerdo)
+        if (isMaster || isOwnPlayerToken) {
+            onTokenSelect(token);
+        }
     };
     
     const getDropPosition = (e) => {
@@ -213,7 +227,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             updateRoom({ tokens: [...currentTokens, newToken] });
         } else if (playerDataString) {
             const playerLink = JSON.parse(playerDataString);
-            if (currentTokens.some(t => t.tokenId === playerLink.characterId)) return toast.info(`${playerLink.characterName} já está no mapa.`);
+            if (currentTokens.some(t => t.tokenId === playerLink.characterId)) return toast(`${playerLink.characterName} já está no mapa. 🫡`);
             const fullCharData = allPlayerCharacters.find(c => c.id === playerLink.characterId);
             if (!fullCharData) return toast.error("Não foi possível carregar os dados completos do personagem.");
 
@@ -286,9 +300,8 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
                 <FogOfWarLayer paths={fogPaths} playerTokens={playerVisionSources} isMaster={isMaster} visionSettings={roomSettings} mapSize={mapSize} />
                 <Layer>
                     {visibleTokens.map(token => {
-                        // CORREÇÃO: Jogador não pode arrastar se estiver imobilizado. Mestre pode.
                         const canDrag = isMaster || (token.userId === currentUser.uid && !token.isImmobilized);
-                        return (<Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => onTokenContextMenu(e, token)} isDraggable={canDrag} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} />);
+                        return (<Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => handleTokenClick(e, token)} isDraggable={canDrag} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} />);
                     })}
                 </Layer>
                 {isMaster && fowTool && !isPanningWithSpace && (
