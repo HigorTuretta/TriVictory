@@ -1,32 +1,52 @@
 // src/components/VTT/SceneManager.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRoom } from '../../contexts/RoomContext';
 import { SceneList, SceneItem, SceneForm } from './styles';
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
+import { uploadImage } from '../../services/cloudinaryService';
 
 export const SceneManager = () => {
     const { room, updateRoom } = useRoom();
     const [newSceneName, setNewSceneName] = useState('');
     const [newSceneUrl, setNewSceneUrl] = useState('');
+    const [newSceneFile, setNewSceneFile] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
-    const handleAddScene = () => {
-        if (!newSceneName.trim() || !newSceneUrl.trim()) {
-            return toast.error("Nome da cena e URL da imagem são obrigatórios.");
+    const handleAddScene = async () => {
+        if (!newSceneName.trim()) {
+            return toast.error("O nome da cena é obrigatório.");
         }
-        
-        const newScene = { id: uuidv4(), name: newSceneName.trim(), imageUrl: newSceneUrl.trim() };
-        
-        // CORREÇÃO CRÍTICA: Garante que 'scenes' seja sempre um array.
-        // Se 'room.scenes' não existir ou não for um array, ele inicia um novo array com a cena.
-        const currentScenes = Array.isArray(room.scenes) ? room.scenes : [];
-        const updatedScenes = [...currentScenes, newScene];
-        
-        updateRoom({ scenes: updatedScenes });
-        
-        toast.success(`Cena "${newScene.name}" adicionada!`);
-        setNewSceneName('');
-        setNewSceneUrl('');
+        if (!newSceneUrl.trim() && !newSceneFile) {
+            return toast.error("Forneça uma URL ou uma imagem para a cena.");
+        }
+
+        setIsUploading(true);
+        let finalImageUrl = newSceneUrl;
+
+        try {
+            if (newSceneFile) {
+                const uploadResult = await uploadImage(newSceneFile);
+                finalImageUrl = uploadResult.secure_url; // Usamos a URL segura retornada
+            }
+
+            const newScene = { id: uuidv4(), name: newSceneName.trim(), imageUrl: finalImageUrl.trim() };
+            const currentScenes = Array.isArray(room.scenes) ? room.scenes : [];
+            const updatedScenes = [...currentScenes, newScene];
+            
+            updateRoom({ scenes: updatedScenes });
+            
+            toast.success(`Cena "${newScene.name}" adicionada!`);
+            setNewSceneName('');
+            setNewSceneUrl('');
+            setNewSceneFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = null; // Limpa o input do arquivo
+        } catch (error) {
+            toast.error("Falha ao enviar a imagem da cena.");
+        } finally {
+            setIsUploading(false);
+        }
     };
     
     const handleSetActive = (sceneId) => {
@@ -37,7 +57,6 @@ export const SceneManager = () => {
         const updatedScenes = (room.scenes || []).filter(s => s.id !== sceneId);
         const updateData = { scenes: updatedScenes };
 
-        // Se a cena deletada era a ativa, desativa a cena.
         if (room.activeSceneId === sceneId) {
             updateData.activeSceneId = null;
         }
@@ -66,8 +85,24 @@ export const SceneManager = () => {
             
             <SceneForm>
                 <input value={newSceneName} onChange={e => setNewSceneName(e.target.value)} placeholder="Nome da Cena" />
-                <input value={newSceneUrl} onChange={e => setNewSceneUrl(e.target.value)} placeholder="URL da Imagem do Mapa" />
-                <button onClick={handleAddScene}>+ Adicionar Cena</button>
+                <input value={newSceneUrl} onChange={e => setNewSceneUrl(e.target.value)} placeholder="Cole a URL da Imagem do Mapa" disabled={!!newSceneFile} />
+                
+                <label htmlFor="scene-file-upload" style={{textAlign: 'center', margin: '0.5rem 0', fontWeight: 'bold' }}>OU</label>
+                
+                <input 
+                    id="scene-file-upload"
+                    type="file" 
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={(e) => {
+                        setNewSceneFile(e.target.files[0]);
+                        setNewSceneUrl(''); // Limpa a URL se um arquivo for selecionado
+                    }} 
+                />
+
+                <button onClick={handleAddScene} disabled={isUploading}>
+                    {isUploading ? 'Enviando...' : '+ Adicionar Cena'}
+                </button>
             </SceneForm>
         </div>
     );

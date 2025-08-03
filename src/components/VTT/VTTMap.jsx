@@ -8,13 +8,13 @@ import { MapContainer } from './styles';
 import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
+// CORREÇÃO: Importa a função para construir URLs do Cloudinary.
 import { getTokenImageUrl } from '../../services/cloudinaryService';
 import toast from 'react-hot-toast';
 
 const GRID_SIZE = 70;
 const FOG_COLOR = "#0a0a0c";
 
-// MODIFICADO: O componente agora aceita um callback 'onLoad' para informar suas dimensões.
 const SceneBackground = ({ imageUrl, onLoad }) => {
     const [img] = useImage(imageUrl, 'anonymous');
     
@@ -28,6 +28,7 @@ const SceneBackground = ({ imageUrl, onLoad }) => {
 };
 
 const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMaster, isSelected, theme, isTurn }) => {
+    // CORREÇÃO: A URL da imagem do token já virá pronta para ser consumida.
     const [img] = useImage(tokenData.imageUrl, 'anonymous');
     const shapeRef = useRef(null);
 
@@ -90,13 +91,11 @@ const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMa
     );
 };
 
-// MODIFICADO: O componente agora recebe 'mapSize' para se dimensionar corretamente.
 const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings, mapSize }) => {
     const opacity = isMaster ? 0.7 : 1;
 
     return (
         <Layer listening={false}>
-            {/* CORREÇÃO: O retângulo da névoa agora usa o tamanho real do mapa, com um fallback. */}
             <Rect 
                 x={0} y={0} 
                 width={mapSize.width || 5000} 
@@ -147,8 +146,6 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
     const lastLine = useRef(null);
     const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
     const [isPanningWithSpace, setIsPanningWithSpace] = useState(false);
-    
-    // NOVO: Estado para armazenar as dimensões da imagem do mapa.
     const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
 
     const roomSettings = room.roomSettings || { playerVision: true, visionRadius: 3.5 };
@@ -163,49 +160,59 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         return sceneTokens.filter(t => t.type === 'player' && t.isVisible !== false);
     }, [sceneTokens, activeScene]);
 
-    // NOVO: Quando a cena ativa mudar, reseta o tamanho do mapa para evitar piscar.
     useEffect(() => {
         if (activeScene) {
             setMapSize({ width: 0, height: 0 });
         }
     }, [activeScene?.id]);
 
-    useEffect(() => {
-        const handleSpacebar = (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                setIsPanningWithSpace(e.type === 'keydown');
-            }
-        };
-        window.addEventListener('keydown', handleSpacebar);
-        window.addEventListener('keyup', handleSpacebar);
-        return () => {
-            window.removeEventListener('keydown', handleSpacebar);
-            window.removeEventListener('keyup', handleSpacebar);
-        };
-    }, []);
-
+    // CORREÇÃO: Unifica todos os event listeners de teclado em um único useEffect para evitar conflitos.
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (!selectedTokenId || e.code.startsWith('Arrow') === false) return;
-            e.preventDefault();
-            const tokenToMove = sceneTokens.find(t => t.tokenId === selectedTokenId);
-            if (!tokenToMove) return;
-            let newPos = { x: tokenToMove.x, y: tokenToMove.y };
-            switch (e.key) {
-                case 'ArrowUp': newPos.y -= GRID_SIZE; break;
-                case 'ArrowDown': newPos.y += GRID_SIZE; break;
-                case 'ArrowLeft': newPos.x -= GRID_SIZE; break;
-                case 'ArrowRight': newPos.x += GRID_SIZE; break;
-                default: break;
+            // Lógica da barra de espaço
+            if (e.code === 'Space') {
+                if (!isPanningWithSpace) {
+                    e.preventDefault();
+                    setIsPanningWithSpace(true);
+                }
+                return; // Impede que o código das setas seja executado
             }
-            newPos.x = Math.max(0, newPos.x);
-            newPos.y = Math.max(0, newPos.y);
-            updateTokenPosition(selectedTokenId, newPos);
+            
+            // Lógica das teclas de seta
+            if (e.code.startsWith('Arrow')) {
+                if (!selectedTokenId) return;
+                e.preventDefault();
+                const tokenToMove = sceneTokens.find(t => t.tokenId === selectedTokenId);
+                if (!tokenToMove) return;
+
+                let newPos = { x: tokenToMove.x, y: tokenToMove.y };
+                switch (e.key) {
+                    case 'ArrowUp': newPos.y -= GRID_SIZE; break;
+                    case 'ArrowDown': newPos.y += GRID_SIZE; break;
+                    case 'ArrowLeft': newPos.x -= GRID_SIZE; break;
+                    case 'ArrowRight': newPos.x += GRID_SIZE; break;
+                    default: return;
+                }
+                newPos.x = Math.max(0, newPos.x);
+                newPos.y = Math.max(0, newPos.y);
+                updateTokenPosition(selectedTokenId, newPos);
+            }
         };
+
+        const handleKeyUp = (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                setIsPanningWithSpace(false);
+            }
+        };
+
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedTokenId, sceneTokens, updateTokenPosition]);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, [isPanningWithSpace, selectedTokenId, sceneTokens, updateTokenPosition]);
     
     const handleTokenClick = (e, token) => {
         const myCharId = room.characters?.find(c => c.userId === currentUser.uid)?.characterId;
@@ -242,7 +249,21 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             const enemy = JSON.parse(enemyDataString);
             const sameNameCount = currentTokens.filter(t => t.grimoireId === enemy.id && t.sceneId === activeScene.id).length;
             const tokenName = sameNameCount > 0 ? `${enemy.name} ${sameNameCount + 1}` : enemy.name;
-            const newToken = { ...enemy, tokenId: uuidv4(), grimoireId: enemy.id, type: 'enemy', sceneId: activeScene.id, name: tokenName, x, y, color: '#FF3B30', isVisible: true, isDead: false };
+            const newToken = {
+                ...enemy,
+                tokenId: uuidv4(),
+                grimoireId: enemy.id,
+                type: 'enemy',
+                sceneId: activeScene.id,
+                name: tokenName,
+                x, y,
+                color: '#FF3B30',
+                // CORREÇÃO: Constrói a URL completa para o token do inimigo.
+                imageUrl: getTokenImageUrl(enemy.imageUrl),
+                // MUDANÇA: Inimigos agora entram invisíveis por padrão.
+                isVisible: false,
+                isDead: false
+            };
             delete newToken.id;
             updateRoom({ tokens: [...currentTokens, newToken] });
         } else if (playerDataString) {
@@ -317,7 +338,6 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
                 onContextMenu={(e) => e.evt.preventDefault()}
             >
                 <Layer>
-                    {/* MODIFICADO: Passa o callback para obter as dimensões do mapa. */}
                     {activeScene?.imageUrl && <SceneBackground imageUrl={activeScene.imageUrl} onLoad={setMapSize} />}
                 </Layer>
                 <FogOfWarLayer
@@ -325,7 +345,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
                     playerTokens={playerVisionSources}
                     isMaster={isMaster}
                     visionSettings={roomSettings}
-                    mapSize={mapSize} // MODIFICADO: Passa as dimensões para a camada FoW.
+                    mapSize={mapSize}
                 />
                 <Layer>
                     {visibleTokens.map(token => <Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => handleTokenClick(e, token)} isDraggable={isMaster || token.userId === currentUser.uid} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} />)}
