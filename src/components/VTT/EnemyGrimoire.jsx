@@ -1,8 +1,11 @@
 // src/components/VTT/EnemyGrimoire.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGrimoire } from '../../hooks/useGrimoire';
-import { GrimoireList, EnemyCard, EnemyTokenPreview, EnemyInfo, EnemyForm } from './styles';
+import { useRoom } from '../../contexts/RoomContext';
+import { FaTrash } from 'react-icons/fa';
+import { GrimoireList, EnemyCard, DeleteEnemyButton, EnemyTokenPreview, EnemyInfo, EnemyForm } from './styles';
 import { TokenCropperModal } from './TokenCropperModal';
+import { ConfirmModal } from '../ConfirmModal';
 import { getTokenImageUrl } from '../../services/cloudinaryService';
 
 const newEnemyTemplate = {
@@ -11,10 +14,15 @@ const newEnemyTemplate = {
     rollCommand: '1d6+Habilidade',
 };
 
-const EnemyItem = ({ enemy }) => {
+const EnemyItem = ({ enemy, onDeleteRequest }) => {
     const handleDragStart = (e) => {
         const enemyData = JSON.stringify(enemy);
         e.dataTransfer.setData('application/vtt-enemy', enemyData);
+    };
+
+    const handleDeleteClick = (e) => {
+        e.stopPropagation(); // Impede que o clique inicie um drag-and-drop
+        onDeleteRequest(enemy);
     };
 
     return (
@@ -24,19 +32,33 @@ const EnemyItem = ({ enemy }) => {
                 <p>{enemy.name}</p>
                 <span>PV: {enemy.pv} | PM: {enemy.pm} | PA: {enemy.pa}</span>
             </EnemyInfo>
+            <DeleteEnemyButton onClick={handleDeleteClick} title="Deletar Inimigo">
+                <FaTrash size={14} />
+            </DeleteEnemyButton>
         </EnemyCard>
     );
 };
 
 export const EnemyGrimoire = () => {
-    const { enemies, loading, addEnemy } = useGrimoire();
+    const { enemies, loading, addEnemy, deleteEnemy } = useGrimoire();
+    const { room, updateRoom } = useRoom();
     const [formState, setFormState] = useState(newEnemyTemplate);
     const [isCropperOpen, setIsCropperOpen] = useState(false);
     const [imageToCrop, setImageToCrop] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+
+    useEffect(() => {
+        const { poder, habilidade, resistencia } = formState.attributes;
+        setFormState(prev => ({
+            ...prev,
+            pa: poder,
+            pm: habilidade * 5,
+            pv: resistencia * 5,
+        }));
+    }, [formState.attributes]);
 
     const handleChange = (e) => {
         const { name, value, type } = e.target;
-        
         if (name.startsWith('attr_')) {
             const attr = name.split('_')[1];
             setFormState(prev => ({ ...prev, attributes: { ...prev.attributes, [attr]: parseInt(value) || 0 } }));
@@ -49,10 +71,7 @@ export const EnemyGrimoire = () => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = () => {
-                setImageToCrop(reader.result);
-                setIsCropperOpen(true);
-            };
+            reader.onload = () => { setImageToCrop(reader.result); setIsCropperOpen(true); };
             reader.readAsDataURL(file);
         }
     };
@@ -67,13 +86,21 @@ export const EnemyGrimoire = () => {
         setFormState(newEnemyTemplate);
     };
 
+    const handleDeleteConfirm = async () => {
+        if (!deleteTarget) return;
+        await deleteEnemy(deleteTarget.id);
+        const tokensWithoutEnemy = (room.tokens || []).filter(t => t.grimoireId !== deleteTarget.id);
+        updateRoom({ tokens: tokensWithoutEnemy });
+        setDeleteTarget(null);
+    };
+
     if (loading) return <p>Carregando grimório...</p>;
 
     return (
         <>
             <GrimoireList>
                 {enemies.length > 0 ? (
-                    enemies.map(enemy => <EnemyItem key={enemy.id} enemy={enemy} />)
+                    enemies.map(enemy => <EnemyItem key={enemy.id} enemy={enemy} onDeleteRequest={setDeleteTarget} />)
                 ) : (
                     <p>Nenhum inimigo no grimório. Adicione um abaixo!</p>
                 )}
@@ -88,12 +115,14 @@ export const EnemyGrimoire = () => {
                 </label>
                 <input id="enemy-token-upload" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}><label>PV</label><input name="pv" type="number" value={formState.pv} onChange={handleChange} /></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}><label>PM</label><input name="pm" type="number" value={formState.pm} onChange={handleChange} /></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}><label>Poder</label><input name="attr_poder" type="number" value={formState.attributes.poder} onChange={handleChange} /></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}><label>Habilidade</label><input name="attr_habilidade" type="number" value={formState.attributes.habilidade} onChange={handleChange} /></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}><label>Resistência</label><input name="attr_resistencia" type="number" value={formState.attributes.resistencia} onChange={handleChange} /></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}><label>PA</label><input name="pa" type="number" value={formState.pa} onChange={handleChange} /></div>
+                <div><label>Poder</label><input name="attr_poder" type="number" value={formState.attributes.poder} onChange={handleChange} /></div>
+                <div><label>PA (Automático)</label><input name="pa" type="number" value={formState.pa} onChange={handleChange} /></div>
+
+                <div><label>Habilidade</label><input name="attr_habilidade" type="number" value={formState.attributes.habilidade} onChange={handleChange} /></div>
+                <div><label>PM (Automático)</label><input name="pm" type="number" value={formState.pm} onChange={handleChange} /></div>
+
+                <div><label>Resistência</label><input name="attr_resistencia" type="number" value={formState.attributes.resistencia} onChange={handleChange} /></div>
+                <div><label>PV (Automático)</label><input name="pv" type="number" value={formState.pv} onChange={handleChange} /></div>
                 
                 <button onClick={handleAddEnemy}>+ Adicionar Inimigo</button>
             </EnemyForm>
@@ -106,6 +135,14 @@ export const EnemyGrimoire = () => {
                     imageSrc={imageToCrop}
                 />
             )}
+            
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={handleDeleteConfirm}
+                title={`Deletar ${deleteTarget?.name}?`}
+                message="Isso removerá o inimigo do grimório e todos os seus tokens do mapa permanentemente."
+            />
         </>
     );
 };

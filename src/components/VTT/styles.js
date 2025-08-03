@@ -182,22 +182,106 @@ export const SceneForm = styled.div`
     button { background-color: ${({ theme }) => theme.success}; color: white; font-weight: 600; }
 `;
 // --- EnemyGrimoire Styles ---
-export const GrimoireList = styled.div`display: flex; flex-direction: column; gap: 0.75rem; max-height: 40vh; overflow-y: auto; padding-right: 0.5rem;`;
-export const EnemyCard = styled.div`
-  display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background-color: ${({ theme }) => theme.background}; border-radius: 6px; cursor: grab;
-  &:active { cursor: grabbing; }
+export const GrimoireList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 40vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
 `;
-export const EnemyTokenPreview = styled.img`width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid ${({ theme }) => theme.border}; background-color: ${({ theme }) => theme.surface};`;
+export const EnemyCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background-color: ${({ theme }) => theme.background};
+  border-radius: 6px;
+  cursor: grab;
+  transition: background-color 0.2s ease;
+
+  &:active { cursor: grabbing; }
+
+  /* O botão de deletar dentro do card só aparece no hover do card */
+  &:hover button {
+    opacity: 1;
+    visibility: visible;
+  }
+`;
+export const DeleteEnemyButton = styled.button`
+    background: transparent;
+    border: none;
+    color: ${({ theme }) => theme.textSecondary};
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    
+    &:hover {
+        color: ${({ theme }) => theme.error};
+        background-color: ${({ theme }) => theme.error}20;
+        transform: scale(1.1);
+    }
+`;
+
+export const EnemyTokenPreview = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid ${({ theme }) => theme.border};
+  background-color: ${({ theme }) => theme.surface};
+`;
 export const EnemyInfo = styled.div`
   flex-grow: 1;
+  min-width: 0; /* Previne que o texto empurre os outros elementos */
+  
   p { margin: 0; font-weight: 600; color: ${({ theme }) => theme.textPrimary}; }
   span { font-size: 0.8rem; color: ${({ theme }) => theme.textSecondary}; }
 `;
 export const EnemyForm = styled.div`
-    margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid ${({ theme }) => theme.border}; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
-    input { font-size: 0.9rem; padding: 8px; }
-    input[name="name"], input[name="imageUrl"] { grid-column: 1 / -1; }
-    button { grid-column: 1 / -1; background-color: ${({ theme }) => theme.success}; color: white; font-weight: 600; }
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid ${({ theme }) => theme.border};
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+
+    input[name="name"], 
+    input[name="imageUrl"],
+    .file-upload-button,
+    button {
+        grid-column: 1 / -1;
+    }
+    
+    div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: ${({ theme }) => theme.textSecondary};
+        }
+    }
+
+    input {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+
+    button {
+        background-color: ${({ theme }) => theme.success};
+        color: white;
+        font-weight: 600;
+    }
 `;
 
 // --- InitiativeTracker Styles ---
