@@ -568,21 +568,28 @@ export const ToggleSwitch = styled.input.attrs({ type: 'checkbox' })`
   }
 `;
 export const ContextMenuBody = styled.div`
-  padding: 0.5rem; /* Menor padding pois a WindowBody já tem */
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 `;
 
 export const ResourceBar = styled.div`
   display: grid;
-  grid-template-columns: 30px 1fr 50px auto;
+  grid-template-columns: 30px 1fr 55px auto auto; 
   align-items: center;
   gap: 0.75rem;
-  
+  justify-content: safe;
   label {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9rem;
+    color: ${({ theme }) => theme.textSecondary};
+    text-transform: uppercase;
+  }
+
+  span {
+    color: ${({ theme }) => theme.textSecondary};
+    font-family: monospace;
   }
 `;
 
@@ -591,31 +598,49 @@ export const ResourceInput = styled.input`
     text-align: center;
     background-color: ${({ theme }) => theme.background};
     font-size: 0.9rem;
-    padding: 4px;
+    font-weight: 500;
+    padding: 6px;
     border: 1px solid ${({ theme }) => theme.border};
     border-radius: 4px;
+    transition: all 0.2s ease;
+
+    &:focus {
+        outline: none;
+        border-color: ${({ theme }) => theme.primary};
+        box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
+    }
 
     &:disabled {
         background-color: transparent;
         border-color: transparent;
+        color: ${({ theme }) => theme.textPrimary};
     }
 `;
 
 export const ResourceControls = styled.div`
     display: flex;
-    gap: 0.25rem;
-
+    gap: 0.3rem;
+    margin-left: 0.5rem;
     button {
-        width: 24px;
-        height: 24px;
-        border-radius: 4px;
+        width: 28px;
+        height: 28px;
+        border: 1px solid ${({ theme }) => theme.border};
+        border-radius: 50%;
         background: ${({ theme }) => theme.surfaceVariant};
         color: ${({ theme }) => theme.textSecondary};
         transition: all 0.2s ease;
         
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        line-height: 0;
+        
         &:hover:not(:disabled) {
             background: ${({ theme }) => theme.primary};
             color: white;
+            transform: scale(1.1);
         }
 
         &:disabled {
@@ -631,7 +656,7 @@ export const BarVisual = styled.div`
   background-color: ${({ theme }) => theme.background};
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid ${({ theme }) => theme.border};
+  min-width: 150px;
 `;
 
 export const BarFill = styled.div`
@@ -644,23 +669,41 @@ export const BarFill = styled.div`
 export const ActionGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-top: 0.5rem;
   border-top: 1px solid ${({ theme }) => theme.border};
   padding-top: 1rem;
 
   button {
-    font-size: 0.8rem;
-    padding: 8px 10px;
-    font-weight: 500;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: ${({ theme }) => theme.surfaceVariant};
+    color: ${({ theme }) => theme.textPrimary};
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+
+    &:hover:not(:disabled) {
+        background-color: ${({ theme }) => theme.primary};
+        color: ${({ theme }) => theme.onPrimary};
+        transform: translateY(-2px);
+    }
     
-    &.danger {
+    &.danger:hover:not(:disabled) {
       background-color: ${({ theme }) => theme.error};
       color: ${({ theme }) => theme.onError};
     }
-  }
 
-  
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+  }
 `;
 
 export const JukeboxContainer = styled.div`
