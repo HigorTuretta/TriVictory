@@ -1,11 +1,10 @@
 // src/components/VTT/FogOfWarManager.jsx
 import React from 'react';
-import { FowToolbar, FowControls, FowActions } from './styles';
+import { FowToolbar, FowControls, FowActions,} from './styles';
 
 export const FogOfWarManager = ({ tool, setTool, brushSize, setBrushSize, onFillAll, onClearAll }) => {
-    // CORREÇÃO: Definimos min e max como constantes para clareza.
     const minBrushSize = 20;
-    const maxBrushSize = 2000;
+    const maxBrushSize = 200;
 
     return (
         <FowToolbar>
@@ -18,12 +17,10 @@ export const FogOfWarManager = ({ tool, setTool, brushSize, setBrushSize, onFill
                 <label>Pincel:</label>
                 <input
                     type="range"
-                    // CORREÇÃO: Usamos as constantes para min e max.
                     min={minBrushSize}
                     max={maxBrushSize}
                     value={brushSize}
                     onChange={(e) => setBrushSize(parseInt(e.target.value, 10))}
-                    style={{ flexGrow: 1 }} // Garante que o input ocupe o espaço
                 />
                 <span>{brushSize}px</span>
             </FowControls>

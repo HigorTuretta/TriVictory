@@ -25,6 +25,8 @@ import { InitiativeTracker } from '../../components/VTT/InitiativeTracker';
 import { GameLog } from '../../components/VTT/GameLog';
 import { TokenContextMenu } from '../../components/VTT/TokenContextMenu';
 import { RoomSettings } from '../../components/VTT/RoomSettings';
+import { JukeboxManager } from '../../components/VTT/JukeboxManager';
+import { JukeboxPlayer } from '../../components/VTT/JukeboxPlayer';
 import toast from 'react-hot-toast';
 import { FogOfWarManager } from '../../components/VTT/FogOfWarManager';
 import { MacroManager } from '../../components/VTT/MacroManager';
@@ -54,9 +56,7 @@ const GameRoomContent = () => {
     const debouncedCharacterUpdate = useCallback(_.debounce((charId, data) => {
         if (charId) {
             const charRef = doc(db, 'characters', charId);
-            updateDoc(charRef, data)
-              .then(() => toast.success('Ficha salva!', { id: 'save-toast', duration: 1500 }))
-              .catch(() => toast.error('Falha ao salvar ficha.', { id: 'save-toast' }));
+            updateDoc(charRef, data).then(() => toast.success('Ficha salva!', { id: 'save-toast', duration: 1500 })).catch(() => toast.error('Falha ao salvar ficha.', { id: 'save-toast' }));
         }
     }, 800), []);
 
@@ -86,10 +86,7 @@ const GameRoomContent = () => {
     const handlePlayerRollInitiative = () => {
         if (!character) { toast.error("Vincule um personagem para rolar iniciativa."); return; }
         const playerToken = room.tokens.find(t => t.tokenId === character.id);
-        if (!playerToken) {
-            toast.error("Você precisa colocar seu personagem no mapa para rolar iniciativa.");
-            return;
-        }
+        if (!playerToken) { toast.error("Você precisa colocar seu personagem no mapa para rolar iniciativa."); return; }
         handleRollInitiativeFor(playerToken);
     };
     
@@ -97,7 +94,6 @@ const GameRoomContent = () => {
         const tokens = [...(room.tokens || [])];
         const tokenIndex = tokens.findIndex(t => t.tokenId === payload.tokenId);
         if (tokenIndex === -1) return;
-    
         let token = { ...tokens[tokenIndex] };
     
         if (!isMaster) {
@@ -112,9 +108,7 @@ const GameRoomContent = () => {
     
         switch (action) {
             case 'rollInitiative':
-                if (token.type === 'enemy') {
-                    handleRollInitiativeFor(token);
-                }
+                if (token.type === 'enemy') { handleRollInitiativeFor(token); }
                 return;
             case 'updateResource':
                 token[payload.resource] = payload.value;
@@ -141,7 +135,6 @@ const GameRoomContent = () => {
                 const newPv = newDeadStatus ? 0 : 1;
                 token.isDead = newDeadStatus;
                 token.pv_current = newPv;
-
                 if (token.type === 'player') {
                     const charRef = doc(db, 'characters', token.tokenId);
                     updateDoc(charRef, { isDead: newDeadStatus, pv_current: newPv });
@@ -175,6 +168,7 @@ const GameRoomContent = () => {
 
     return (
         <>
+            <JukeboxPlayer />
             <VTTLayout>
                 <LeftSidebar onToolSelect={toggleWindow} />
                 <MapArea>
@@ -187,9 +181,7 @@ const GameRoomContent = () => {
                         fowTool={isMaster && windows.fogOfWar ? fowTool : null}
                     />
                 </MapArea>
-                <DiceToolbar 
-                    macros={macros} onRoll={executeRoll} onOpenMacroManager={() => toggleWindow('macroManager')} 
-                />
+                <DiceToolbar macros={macros} onRoll={executeRoll} onOpenMacroManager={() => toggleWindow('macroManager')} />
             </VTTLayout>
 
             <DiceRoller isVisible={isRolling} rollData={currentRoll} onAnimationComplete={onAnimationComplete} />
@@ -208,9 +200,8 @@ const GameRoomContent = () => {
                     onClearAll={clearFog}
                 />
             </FloatingWindow>
-            <FloatingWindow title="Configurações da Sala" isOpen={windows.roomSettings} onClose={() => toggleWindow('roomSettings')}>
-                <RoomSettings />
-            </FloatingWindow>
+            <FloatingWindow title="Configurações da Sala" isOpen={windows.roomSettings} onClose={() => toggleWindow('roomSettings')}><RoomSettings /></FloatingWindow>
+            <FloatingWindow title="Jukebox da Cena" isOpen={windows.jukebox} onClose={() => toggleWindow('jukebox')}><JukeboxManager activeSceneId={activeScene?.id} /></FloatingWindow>
 
             {liveContextMenuToken && (
                  <FloatingWindow
