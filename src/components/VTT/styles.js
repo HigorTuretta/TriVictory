@@ -70,6 +70,7 @@ export const SidebarContainer = styled(motion.aside)`
   z-index: 100;
 `;
 export const ToolSection = styled.div`
+
   h4 {
     font-size: 0.8rem;
     font-weight: 700;
@@ -93,7 +94,7 @@ export const ToolButton = styled.button`
     background-color: ${({ theme }) => theme.surfaceVariant};
     color: ${({ theme }) => theme.textPrimary};
     border-radius: 6px;
-    
+    margin-top: 0.3rem;
     &:hover {
         background-color: ${({ theme }) => theme.primary};
         color: ${({ theme }) => theme.onPrimary};
