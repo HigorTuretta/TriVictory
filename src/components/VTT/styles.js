@@ -483,3 +483,96 @@ export const ToggleSwitch = styled.input.attrs({ type: 'checkbox' })`
     transform: translateX(18px);
   }
 `;
+export const ContextMenuBody = styled.div`
+  padding: 0.5rem; /* Menor padding pois a WindowBody já tem */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+export const ResourceBar = styled.div`
+  display: grid;
+  grid-template-columns: 30px 1fr 50px auto;
+  align-items: center;
+  gap: 0.75rem;
+  
+  label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+`;
+
+export const ResourceInput = styled.input`
+    width: 100%;
+    text-align: center;
+    background-color: ${({ theme }) => theme.background};
+    font-size: 0.9rem;
+    padding: 4px;
+    border: 1px solid ${({ theme }) => theme.border};
+    border-radius: 4px;
+
+    &:disabled {
+        background-color: transparent;
+        border-color: transparent;
+    }
+`;
+
+export const ResourceControls = styled.div`
+    display: flex;
+    gap: 0.25rem;
+
+    button {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        background: ${({ theme }) => theme.surfaceVariant};
+        color: ${({ theme }) => theme.textSecondary};
+        transition: all 0.2s ease;
+        
+        &:hover:not(:disabled) {
+            background: ${({ theme }) => theme.primary};
+            color: white;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+`;
+
+export const BarVisual = styled.div`
+  flex-grow: 1;
+  height: 12px;
+  background-color: ${({ theme }) => theme.background};
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid ${({ theme }) => theme.border};
+`;
+
+export const BarFill = styled.div`
+  width: ${({ width }) => width}%;
+  height: 100%;
+  background-color: ${({ color }) => color};
+  transition: width 0.3s ease-out;
+`;
+
+export const ActionGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid ${({ theme }) => theme.border};
+  padding-top: 1rem;
+
+  button {
+    font-size: 0.8rem;
+    padding: 8px 10px;
+    font-weight: 500;
+    
+    &.danger {
+      background-color: ${({ theme }) => theme.error};
+      color: ${({ theme }) => theme.onError};
+    }
+  }
+`;

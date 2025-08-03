@@ -1,5 +1,5 @@
 // src/screens/GameRoom/GameRoomUI.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCurrentPlayerCharacter } from '../../hooks/useCurrentPlayerCharacter';
@@ -7,6 +7,9 @@ import { useDiceRoller } from '../../hooks/useDiceRoller';
 import { useInitiative } from '../../hooks/useInitiative';
 import { useRollMacros } from '../../hooks/useRollMacros';
 import { useFogOfWar } from '../../hooks/useFogOfWar';
+import { useLinkedCharactersData } from '../../hooks/useLinkedCharactersData';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 import { RPGLoader } from '../../components/RPGLoader';
 import { VTTLayout, MapArea } from './styles';
 import { LeftSidebar } from '../../components/VTT/LeftSidebar';
@@ -21,7 +24,6 @@ import { InitiativeTracker } from '../../components/VTT/InitiativeTracker';
 import { GameLog } from '../../components/VTT/GameLog';
 import { TokenContextMenu } from '../../components/VTT/TokenContextMenu';
 import { RoomSettings } from '../../components/VTT/RoomSettings';
-import { AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { FogOfWarManager } from '../../components/VTT/FogOfWarManager';
 import { MacroManager } from '../../components/VTT/MacroManager';
@@ -29,23 +31,36 @@ import { MacroManager } from '../../components/VTT/MacroManager';
 const GameRoomContent = () => {
     const { room, updateRoom } = useRoom();
     const { currentUser } = useAuth();
-    const { character, updateCharacter } = useCurrentPlayerCharacter();
-    const { executeRoll, isRolling, currentRoll, onAnimationComplete, isModifierModalOpen, closeModifierModal } = useDiceRoller(character, updateCharacter);
+    const { character } = useCurrentPlayerCharacter();
+    const { executeRoll, isRolling, currentRoll, onAnimationComplete, isModifierModalOpen, closeModifierModal } = useDiceRoller(character);
     const { addToInitiative, initiativeOrder, currentIndex, isRunning } = useInitiative();
     const { macros, addMacro, updateMacro, deleteMacro } = useRollMacros();
+    const { charactersData, loading: charactersLoading } = useLinkedCharactersData();
     
     const [windows, setWindows] = useState({
         sceneManager: false, initiativeTracker: false, enemyGrimoire: false,
         gameLog: true, macroManager: false, fogOfWar: false, roomSettings: false,
     });
     const [selectedTokenId, setSelectedTokenId] = useState(null);
-    const [contextMenu, setContextMenu] = useState({ token: null, x: 0, y: 0 });
+    const [contextMenuTokenId, setContextMenuTokenId] = useState(null);
     const [fowTool, setFowTool] = useState({ tool: 'eraser', brushSize: 70 });
 
     const isMaster = room.masterId === currentUser.uid;
     const activeScene = (Array.isArray(room.scenes) && room.activeSceneId) ? room.scenes.find(s => s.id === room.activeSceneId) : null;
     
     const { fillAll: fillFog, clearAll: clearFog } = useFogOfWar(activeScene?.id);
+
+    const liveContextMenuToken = useMemo(() => {
+        if (!contextMenuTokenId) return null;
+        const tokenFromRoom = room.tokens.find(t => t.tokenId === contextMenuTokenId);
+        if (!tokenFromRoom) return null;
+        if (tokenFromRoom.type === 'player' && charactersData[tokenFromRoom.tokenId]) {
+            const fullCharData = charactersData[tokenFromRoom.tokenId];
+            const { poder = 0, habilidade = 0, resistencia = 0 } = fullCharData.attributes || {};
+            return { ...tokenFromRoom, pv_max: resistencia * 5 || 1, pm_max: habilidade * 5 || 1, pa_max: poder || 1, };
+        }
+        return tokenFromRoom;
+    }, [contextMenuTokenId, room.tokens, charactersData]);
 
     const toggleWindow = (windowName) => setWindows(prev => ({ ...prev, [windowName]: !prev[windowName] }));
     
@@ -60,59 +75,85 @@ const GameRoomContent = () => {
 
     const handlePlayerRollInitiative = () => {
         if (!character) { toast.error("Vincule um personagem para rolar iniciativa."); return; }
-        const playerAsToken = { tokenId: character.id, name: character.name, type: 'player' };
-        handleRollInitiativeFor(playerAsToken);
+        const playerToken = room.tokens.find(t => t.tokenId === character.id);
+        if (!playerToken) {
+            toast.error("Você precisa colocar seu personagem no mapa para rolar iniciativa.");
+            return;
+        }
+        handleRollInitiativeFor(playerToken);
     };
-
-    const handleContextMenuAction = (action, token) => {
-        if (!isMaster) return;
-
-        const currentTokens = room.tokens || [];
-        let updatePayload = {};
-
+    
+    const handleContextMenuAction = (action, payload) => {
+        const tokens = [...(room.tokens || [])];
+        const tokenIndex = tokens.findIndex(t => t.tokenId === payload.tokenId);
+        if (tokenIndex === -1) return;
+    
+        let token = { ...tokens[tokenIndex] };
+    
+        if (!isMaster) {
+            if (action === 'updateResource' && token.userId === currentUser.uid) {
+                token[payload.resource] = payload.value;
+                tokens[tokenIndex] = token;
+                updateRoom({ tokens });
+            }
+            return;
+        }
+    
         switch (action) {
-            case 'rollInitiative':
-                handleRollInitiativeFor(token);
-                return; // Retorna para evitar a chamada a updateRoom
-            case 'delete':
-                // CORREÇÃO: A lógica de remoção agora é única e simples.
-                // Sempre removemos o token do array `room.tokens`.
-                updatePayload = { tokens: currentTokens.filter(t => t.tokenId !== token.tokenId) };
-                toast.error(`Token "${token.name}" removido do mapa.`);
+            case 'updateResource':
+                token[payload.resource] = payload.value;
                 break;
-            case 'kill':
-                updatePayload = { 
-                    tokens: currentTokens.map(t => t.tokenId === token.tokenId ? { ...t, isDead: !t.isDead } : t) 
-                };
-                toast.info(`Status de morte de "${token.name}" alterado.`);
+            case 'fillResource':
+                const resourceKey = payload.resource;
+                const maxKey = resourceKey.replace('_current', '_max');
+                // CORREÇÃO: Usa o 'liveContextMenuToken' para pegar o valor máximo correto e atualizado.
+                token[resourceKey] = liveContextMenuToken[maxKey];
                 break;
             case 'toggleVisibility':
-                 updatePayload = {
-                     tokens: currentTokens.map(t => t.tokenId === token.tokenId ? { ...t, isVisible: !(t.isVisible ?? true) } : t)
-                 };
+                token.isVisible = !(token.isVisible ?? true);
                 break;
+            case 'toggleImmobilized':
+                token.isImmobilized = !token.isImmobilized;
+                break;
+            case 'toggleKnockedOut':
+                token.isKnockedOut = !token.isKnockedOut;
+                break;
+            case 'toggleDead':
+                const newDeadStatus = !token.isDead;
+                token.isDead = newDeadStatus;
+                if (newDeadStatus) token.pv_current = 0;
+                else token.pv_current = 1;
+                
+                if (token.type === 'player') {
+                    const charRef = doc(db, 'characters', token.tokenId);
+                    updateDoc(charRef, { isDead: newDeadStatus });
+                }
+                break;
+            case 'delete':
+                updateRoom({ tokens: tokens.filter(t => t.tokenId !== payload.tokenId) });
+                setContextMenuTokenId(null);
+                toast.error(`Token "${token.name}" removido.`);
+                return;
             default: return;
         }
-        updateRoom(updatePayload);
+        tokens[tokenIndex] = token;
+        updateRoom({ tokens });
     };
 
     const handleTokenSelect = (token) => {
         setSelectedTokenId(token ? token.tokenId : null);
-        setContextMenu({ token: null, x: 0, y: 0 });
+        setContextMenuTokenId(null);
     };
 
     const handleTokenContextMenu = (e, token) => {
-        if (!token) { setContextMenu({ token: null, x: 0, y: 0 }); return; }
-        const container = e.target.getStage()?.container();
-        if (!container) return;
-        const rect = container.getBoundingClientRect();
-        const x = e.evt.clientX - rect.left;
-        const y = e.evt.clientY - rect.top;
-        setContextMenu(prev => (prev.token?.tokenId === token.tokenId ? { token: null, x: 0, y: 0 } : { token, x, y }));
+        if (!token) { setContextMenuTokenId(null); return; }
+        setContextMenuTokenId(token.tokenId);
         setSelectedTokenId(null);
     };
     
     const activeTurnTokenId = (initiativeOrder[currentIndex] || null)?.tokenId;
+
+    if (charactersLoading) return <RPGLoader />;
 
     return (
         <>
@@ -127,9 +168,6 @@ const GameRoomContent = () => {
                         activeTurnTokenId={activeTurnTokenId}
                         fowTool={isMaster && windows.fogOfWar ? fowTool : null}
                     />
-                    <AnimatePresence>
-                        {contextMenu.token && <TokenContextMenu token={contextMenu.token} x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu({ token: null, x: 0, y: 0 })} onAction={handleContextMenuAction} />}
-                    </AnimatePresence>
                 </MapArea>
                 <DiceToolbar 
                     macros={macros} onRoll={executeRoll} onOpenMacroManager={() => toggleWindow('macroManager')} 
@@ -155,6 +193,20 @@ const GameRoomContent = () => {
             <FloatingWindow title="Configurações da Sala" isOpen={windows.roomSettings} onClose={() => toggleWindow('roomSettings')}>
                 <RoomSettings />
             </FloatingWindow>
+
+            {liveContextMenuToken && (
+                 <FloatingWindow
+                    title={`Controle: ${liveContextMenuToken.name}`}
+                    isOpen={!!liveContextMenuToken}
+                    onClose={() => setContextMenuTokenId(null)}
+                    initialPosition={{ x: window.innerWidth / 2 - 200, y: 100 }}
+                 >
+                    <TokenContextMenu
+                        token={liveContextMenuToken}
+                        onAction={(action, data) => handleContextMenuAction(action, { ...data, tokenId: liveContextMenuToken.tokenId })}
+                    />
+                </FloatingWindow>
+            )}
         </>
     );
 };

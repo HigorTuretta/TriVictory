@@ -1,109 +1,119 @@
 // src/components/VTT/TokenContextMenu.jsx
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaTrash, FaSkull, FaEye, FaEyeSlash, FaDiceD6, FaTimes } from 'react-icons/fa';
-import styled, { useTheme } from 'styled-components';
+import React, { useState, useEffect } from 'react';
+import { FaTimes, FaTrash, FaEyeSlash, FaBed, FaRunning, FaSkullCrossbones, FaPlus, FaMinus, FaArrowUp } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
+import { useRoom } from '../../contexts/RoomContext';
+import { 
+    ContextMenuBody, ResourceBar, BarVisual, 
+    BarFill, ActionGrid, ResourceInput, ResourceControls 
+} from './styles'; // Usaremos os novos estilos que vamos adicionar
 
-const MenuOverlay = styled(motion.div)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2000;
-  pointer-events: auto; /* Habilita o clique no overlay para fechar */
-`;
+const ResourceControl = ({ label, resourceKey, value, max, color, onAction, editable }) => {
+    const [currentValue, setCurrentValue] = useState(value);
 
-const MenuContainer = styled.div`
-  position: absolute;
-  top: ${({ y }) => y}px;
-  left: ${({ x }) => x}px;
-  pointer-events: none;
-`;
+    useEffect(() => {
+        setCurrentValue(value);
+    }, [value]);
 
-const MenuItem = styled(motion.div)`
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: ${({ theme }) => theme.secondary};
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  cursor: pointer;
-  pointer-events: all;
-  box-shadow: ${({ theme }) => theme.shadows.medium};
-  border: 2px solid ${({ theme }) => theme.surface};
-  transform: translate(-50%, -50%);
-  
-  &:hover {
-    background-color: ${({ theme }) => theme.primary};
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-`;
-
-const CenterButton = styled(motion.div)`
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: ${({ theme }) => theme.primary};
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    cursor: pointer;
-    pointer-events: all;
-    box-shadow: ${({ theme }) => theme.shadows.small};
-    transform: translate(-50%, -50%);
-`;
-
-export const TokenContextMenu = ({ token, x, y, onClose, onAction }) => {
-    const theme = useTheme();
-
-    if (!token) return null;
-
-    const actions = [
-        { id: 'delete', Icon: FaTrash, title: 'Remover' },
-        { id: 'kill', Icon: FaSkull, title: token.isDead ? 'Reviver' : 'Matar' },
-        { id: 'toggleVisibility', Icon: token.isVisible === false ? FaEye : FaEyeSlash, title: token.isVisible === false ? 'Revelar' : 'Ocultar' },
-        { id: 'rollInitiative', Icon: FaDiceD6, title: 'Rolar Iniciativa' },
-    ];
+    const handleBlur = () => {
+        const numValue = parseInt(currentValue, 10);
+        if (isNaN(numValue) || numValue === value) {
+            setCurrentValue(value); // Reseta se for inválido ou não mudou
+        } else {
+            onAction('updateResource', { resource: resourceKey, value: Math.max(0, numValue) });
+        }
+    };
     
-    const distance = 90;
-    const angleIncrement = 360 / actions.length;
+    const handleQuickChange = (amount) => {
+        const newValue = Math.max(0, value + amount);
+        onAction('updateResource', { resource: resourceKey, value: newValue });
+    };
 
     return (
-        <MenuOverlay
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose}
-        >
-            <MenuContainer x={x} y={y}>
-                <AnimatePresence>
-                    {actions.map((action, index) => {
-                        const angle = angleIncrement * index;
-                        const radians = angle * (Math.PI / 180);
-                        return (
-                            <MenuItem
-                                key={action.id}
-                                theme={theme}
-                                title={action.title}
-                                onClick={(e) => { e.stopPropagation(); onAction(action.id, token); onClose(); }}
-                                initial={{ scale: 0, x: 0, y: 0 }}
-                                animate={{ scale: 1, x: distance * Math.cos(radians), y: distance * Math.sin(radians) }}
-                                exit={{ scale: 0, x: 0, y: 0 }}
-                                transition={{ type: 'spring', stiffness: 400, damping: 20, delay: index * 0.05 }}
-                            >
-                                <action.Icon />
-                            </MenuItem>
-                        );
-                    })}
-                </AnimatePresence>
-                <CenterButton theme={theme} onClick={onClose}><FaTimes /></CenterButton>
-            </MenuContainer>
-        </MenuOverlay>
+        <ResourceBar>
+            <label>{label}</label>
+            <BarVisual>
+                <BarFill color={color} width={max > 0 ? (value / max) * 100 : 0} />
+            </BarVisual>
+            <ResourceInput 
+                type="number"
+                value={currentValue}
+                onChange={(e) => setCurrentValue(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={(e) => e.key === 'Enter' && handleBlur()}
+                disabled={!editable}
+            />
+            <span>/ {max}</span>
+            {editable && (
+                 <ResourceControls>
+                    <button onClick={() => handleQuickChange(-1)} disabled={value <= 0}>-</button>
+                    <button onClick={() => handleQuickChange(1)} disabled={value >= max}>+</button>
+                    <button onClick={() => onAction('fillResource', { resource: resourceKey })} title={`Encher ${label}`}><FaArrowUp /></button>
+                </ResourceControls>
+            )}
+        </ResourceBar>
+    );
+};
+
+export const TokenContextMenu = ({ token, onAction }) => {
+    const { room } = useRoom();
+    const { currentUser } = useAuth();
+    
+    if (!token) return null;
+    
+    const isMaster = room.masterId === currentUser.uid;
+    const isOwner = token.userId === currentUser.uid;
+    const canEditResources = isMaster || isOwner;
+
+    return (
+        <ContextMenuBody>
+            <ResourceControl 
+                label="PV"
+                resourceKey="pv_current"
+                value={token.pv_current || 0}
+                max={token.pv_max || 1}
+                color="#4CAF50"
+                editable={canEditResources}
+                onAction={onAction}
+            />
+            <ResourceControl 
+                label="PM"
+                resourceKey="pm_current"
+                value={token.pm_current || 0}
+                max={token.pm_max || 1}
+                color="#2196F3"
+                editable={canEditResources}
+                onAction={onAction}
+            />
+            <ResourceControl 
+                label="PA"
+                resourceKey="pa_current"
+                value={token.pa_current || 0}
+                max={token.pa_max || 1}
+                color="#FFC107"
+                editable={canEditResources}
+                onAction={onAction}
+            />
+
+            {isMaster && (
+                <ActionGrid>
+                    <button onClick={() => onAction('toggleVisibility')}>
+                        <FaEyeSlash /> {token.isVisible === false ? 'Revelar' : 'Ocultar'}
+                    </button>
+                     <button onClick={() => onAction('toggleImmobilized')}>
+                        <FaRunning /> {token.isImmobilized ? 'Liberar' : 'Imobilizar'}
+                    </button>
+                     <button onClick={() => onAction('toggleKnockedOut')}>
+                        <FaBed /> {token.isKnockedOut ? 'Acordar' : 'Nocautear'}
+                    </button>
+                     <button onClick={() => onAction('toggleDead')} className="danger">
+                        <FaSkullCrossbones /> {token.isDead ? 'Reviver' : 'Matar'}
+                    </button>
+                     <button onClick={() => onAction('delete')} className="danger">
+                        <FaTrash /> Remover
+                    </button>
+                </ActionGrid>
+            )}
+        </ContextMenuBody>
     );
 };

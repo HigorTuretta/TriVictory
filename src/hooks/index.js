@@ -14,3 +14,4 @@ export * from './useGrimoire';
 export * from './useInitiative';
 export * from './useRollMacros';
 export * from './useFogOfWar';
+export * from './useLinkedCharactersData';
