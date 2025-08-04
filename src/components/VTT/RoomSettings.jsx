@@ -7,12 +7,27 @@ export const RoomSettings = () => {
     const { room, updateRoom } = useRoom();
 
     // Adiciona 'gridSize' com um valor padrão de 70px.
-    const settings = room.roomSettings || { playerVision: true, visionRadius: 3.5, showGrid: true, gridSize: 70 };
+ // Adiciona gridSize e gridOffset com valores padrão.
+    const settings = room.roomSettings || { 
+        playerVision: true, 
+        visionRadius: 3.5, 
+        showGrid: true, 
+        gridSize: 70,
+        gridOffset: { x: 0, y: 0 } 
+    };
 
     const handleSettingChange = (key, value) => {
         const newSettings = { ...settings, [key]: value };
         updateRoom({ roomSettings: newSettings });
     };
+
+    // Handler específico para o offset, que é um objeto aninhado.
+    const handleOffsetChange = (axis, value) => {
+        const newOffset = { ...settings.gridOffset, [axis]: value };
+        handleSettingChange('gridOffset', newOffset);
+    };
+
+
 
     return (
         <SettingsContainer>
@@ -75,6 +90,23 @@ export const RoomSettings = () => {
                         style={{width: '120px'}}
                     />
                     <span>{settings.gridSize || 70}px</span>
+                </div>
+            </SettingRow>
+
+                        <SettingRow style={{flexDirection: 'column', alignItems: 'flex-start'}}>
+                <SettingLabel>
+                    Ajuste Fino da Grade (Offset)
+                    <span>Use para alinhar a grade da VTT com a grade desenhada no mapa.</span>
+                </SettingLabel>
+                <div style={{display: 'flex', gap: '1.5rem', marginTop: '0.5rem'}}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                        <label htmlFor="gridOffsetX">X:</label>
+                        <input type="number" id="gridOffsetX" value={settings.gridOffset?.x || 0} onChange={(e) => handleOffsetChange('x', parseInt(e.target.value, 10))} style={{ width: '70px' }} />
+                    </div>
+                     <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                        <label htmlFor="gridOffsetY">Y:</label>
+                        <input type="number" id="gridOffsetY" value={settings.gridOffset?.y || 0} onChange={(e) => handleOffsetChange('y', parseInt(e.target.value, 10))} style={{ width: '70px' }} />
+                    </div>
                 </div>
             </SettingRow>
         </SettingsContainer>

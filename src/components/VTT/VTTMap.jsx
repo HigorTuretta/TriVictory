@@ -83,13 +83,16 @@ const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings, mapSize,
     );
 };
 
-const GridLayer = ({ width, height, gridSize, theme }) => {
+const GridLayer = ({ width, height, gridSize, offset, theme }) => {
     const lines = [];
-    for (let i = 0; i < width / gridSize; i++) {
-        lines.push(<Line key={`v-${i}`} points={[Math.round(i * gridSize) + 0.5, 0, Math.round(i * gridSize) + 0.5, height]} stroke={theme.border} strokeWidth={1} opacity={0.5} />);
+    const offsetX = offset.x % gridSize;
+    const offsetY = offset.y % gridSize;
+
+    for (let i = -1; i < width / gridSize + 1; i++) {
+        lines.push(<Line key={`v-${i}`} points={[Math.round(i * gridSize) + offsetX, 0, Math.round(i * gridSize) + offsetX, height]} stroke={theme.border} strokeWidth={1} opacity={0.8}/>);
     }
-    for (let j = 0; j < height / gridSize; j++) {
-        lines.push(<Line key={`h-${j}`} points={[0, Math.round(j * gridSize) + 0.5, width, Math.round(j * gridSize) + 0.5]} stroke={theme.border} strokeWidth={1} opacity={0.5} />);
+    for (let j = -1; j < height / gridSize + 1; j++) {
+        lines.push(<Line key={`h-${j}`} points={[0, Math.round(j * gridSize) + offsetY, width, Math.round(j * gridSize) + offsetY]} stroke={theme.border} strokeWidth={1} opacity={0.8} />);
     }
     return <Layer listening={false}>{lines}</Layer>;
 };
@@ -122,8 +125,9 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
     const [scale, setScale] = useState(1);
     const { characters: allPlayerCharacters } = useUserCharacters();
 
-    const roomSettings = room.roomSettings || { playerVision: true, visionRadius: 3.5, showGrid: true, gridSize: 70 };
+    const roomSettings = room.roomSettings || { playerVision: true, visionRadius: 3.5, showGrid: true, gridSize: 70, gridOffset: { x: 0, y: 0 } };
     const gridSize = roomSettings.gridSize || 70;
+    const gridOffset = roomSettings.gridOffset || { x: 0, y: 0 };
 
     const sceneTokens = useMemo(() => {
         if (!Array.isArray(room.tokens) || !activeScene) return [];
@@ -197,8 +201,8 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         const position = stageRef.current.getPointerPosition();
         const stage = stageRef.current;
         return {
-            x: Math.round((position.x - stage.x()) / stage.scaleX() / gridSize) * gridSize,
-            y: Math.round((position.y - stage.y()) / stage.scaleY() / gridSize) * gridSize,
+            x: Math.round(((position.x - stage.x()) / stage.scaleX() - gridOffset.x) / gridSize) * gridSize + gridOffset.x,
+            y: Math.round(((position.y - stage.y()) / stage.scaleY() - gridOffset.y) / gridSize) * gridSize + gridOffset.y,
         };
     };
 
@@ -290,7 +294,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             <Stage width={mapContainerRef.current?.clientWidth || window.innerWidth - 280} height={mapContainerRef.current?.clientHeight || window.innerHeight} onWheel={handleWheel} draggable={isDraggable} onClick={handleStageClick} ref={stageRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onContextMenu={(e) => e.evt.preventDefault()} scaleX={scale} scaleY={scale}>
                 <Layer><SceneBackground imageUrl={activeScene?.imageUrl} onLoad={setMapSize} /></Layer>
                 {roomSettings.showGrid && mapSize.width > 0 && (
-                    <GridLayer width={mapSize.width} height={mapSize.height} gridSize={gridSize} theme={theme} />
+                    <GridLayer width={mapSize.width} height={mapSize.height} gridSize={gridSize} offset={gridOffset} theme={theme} />
                 )}
                 <FogOfWarLayer paths={room.fogOfWar?.[activeScene?.id]?.fogPaths || []} playerTokens={playerVisionSources} isMaster={isMaster} visionSettings={roomSettings} mapSize={mapSize} gridSize={gridSize} />
                 <Layer>
