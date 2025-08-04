@@ -21,12 +21,18 @@ const comicPhrases = [
 
 const formatResult = (roll) => {
     if (!roll || !roll.individualResults) return '';
+
     const dicePart = roll.individualResults.map(r => {
         if (r === 1) return `<strong class="fumble">${r}</strong>`;
         if (r >= roll.critThreshold) return `<strong class="crit">${r}</strong>`;
         return r.toString();
     }).join(' + ');
-    const modsPart = (roll.modifiers || []).map(m => ` ${m.value >= 0 ? '+' : ''} ${m.value}`).join('');
+
+    const modsPart = (roll.modifiers || [])
+        .filter(m => m.value !== 0)
+        .map(m => ` ${m.value > 0 ? '+' : '-'} ${Math.abs(m.value)} <small>(${m.label})</small>`)
+        .join('');
+
     return `[${dicePart}]${modsPart}`;
 };
 
@@ -61,7 +67,6 @@ export const GameLog = () => {
              logContainerRef.current.scrollTop = 0;
         }
     }, [visibleLogsCount]);
-
 
     const toggleVisibility = async (logId, currentVisibility) => {
         const logRef = doc(db, 'rooms', roomId, 'rolls', logId);
@@ -105,13 +110,13 @@ export const GameLog = () => {
                                             <LogTotal>{log.total}</LogTotal>
                                         </LogResult>
                                         <Timestamp>{formatTimestamp(log.timestamp)}</Timestamp>
+                                        
+                                        {isMaster && (
+                                            <VisibilityToggle onClick={() => toggleVisibility(log.id, log.hidden)} title={log.hidden ? "Revelar aos jogadores" : "Ocultar dos jogadores"}>
+                                                {log.hidden ? <FaEyeSlash size={12}/> : <FaEye size={12}/>}
+                                            </VisibilityToggle>
+                                        )}
                                     </>
-                                )}
-                                {/* CORREÇÃO: O botão agora é filho direto de LogItem */}
-                                {isMaster && !isPlayerViewingHiddenRoll && (
-                                    <VisibilityToggle onClick={() => toggleVisibility(log.id, log.hidden)} title={log.hidden ? "Revelar aos jogadores" : "Ocultar dos jogadores"}>
-                                        {log.hidden ? <FaEyeSlash size={12}/> : <FaEye size={12}/>}
-                                    </VisibilityToggle>
                                 )}
                             </LogItem>
                         );

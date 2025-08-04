@@ -1,5 +1,6 @@
 // src/screens/GameRoom/GameRoomUI.jsx
-import React, { useState, useMemo, useCallback } from 'react';
+
+import { useState, useMemo, useCallback } from 'react';
 import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCurrentPlayerCharacter } from '../../hooks/useCurrentPlayerCharacter';
@@ -40,7 +41,7 @@ const GameRoomContent = () => {
     const { macros, addMacro, updateMacro, deleteMacro } = useRollMacros();
     const { charactersData, loading: charactersLoading } = useLinkedCharactersData();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
+    
     const [windows, setWindows] = useState({
         sceneManager: false, initiativeTracker: false, enemyGrimoire: false,
         gameLog: true, macroManager: false, fogOfWar: false, roomSettings: false, jukebox: false,
@@ -51,7 +52,7 @@ const GameRoomContent = () => {
 
     const isMaster = room.masterId === currentUser.uid;
     const activeScene = (Array.isArray(room.scenes) && room.activeSceneId) ? room.scenes.find(s => s.id === room.activeSceneId) : null;
-
+    
     const { fillAll: fillFog, clearAll: clearFog } = useFogOfWar(activeScene?.id);
 
     const debouncedCharacterUpdate = useCallback(_.debounce((charId, data) => {
@@ -74,13 +75,20 @@ const GameRoomContent = () => {
     }, [contextMenuTokenId, room.tokens, charactersData]);
 
     const toggleWindow = (windowName) => setWindows(prev => ({ ...prev, [windowName]: !prev[windowName] }));
-
+    
     const handleRollInitiativeFor = (token) => {
-        const onRollComplete = (rollData) => { addToInitiative(token, rollData.total); };
+        const onRollComplete = (rollData) => {
+            addToInitiative(token, rollData.total);
+            setContextMenuTokenId(null); 
+        };
+
         const tokenDataSource = room.tokens.find(t => t.tokenId === token.tokenId);
         const habilidade = tokenDataSource?.attributes?.habilidade || 0;
-        const command = `1d6+${habilidade}`;
+        
+        // CORREÇÃO: Comando limpo, modificador passado separadamente.
+        const command = '1d6';
         const baseModifiers = [{ label: 'Habilidade', value: habilidade }];
+        
         executeRoll(command, baseModifiers, onRollComplete);
     };
 
@@ -90,13 +98,13 @@ const GameRoomContent = () => {
         if (!playerToken) { toast.error("Você precisa colocar seu personagem no mapa para rolar iniciativa."); return; }
         handleRollInitiativeFor(playerToken);
     };
-
+    
     const handleContextMenuAction = (action, payload) => {
         const tokens = [...(room.tokens || [])];
         const tokenIndex = tokens.findIndex(t => t.tokenId === payload.tokenId);
         if (tokenIndex === -1) return;
         let token = { ...tokens[tokenIndex] };
-
+    
         if (!isMaster) {
             if (action === 'updateResource' && token.userId === currentUser.uid) {
                 token[payload.resource] = payload.value;
@@ -106,7 +114,7 @@ const GameRoomContent = () => {
             }
             return;
         }
-
+    
         switch (action) {
             case 'rollInitiative':
                 if (token.type === 'enemy') { handleRollInitiativeFor(token); }
@@ -162,7 +170,7 @@ const GameRoomContent = () => {
         setContextMenuTokenId(token.tokenId);
         setSelectedTokenId(null);
     };
-
+    
     const activeTurnTokenId = (initiativeOrder[currentIndex] || null)?.tokenId;
 
     if (charactersLoading) return <RPGLoader />;
@@ -171,12 +179,12 @@ const GameRoomContent = () => {
         <>
             <JukeboxPlayer />
             <VTTLayout $isSidebarCollapsed={isSidebarCollapsed}>
-                <LeftSidebar
+                <LeftSidebar 
                     onToolSelect={toggleWindow}
-                    isCollapsed={isSidebarCollapsed}
-                    onToggleCollapse={setIsSidebarCollapsed}
+                    onToggleCollapse={setIsSidebarCollapsed} 
                 />
                 <MapArea>
+            
                     <VTTMap
                         activeScene={activeScene}
                         selectedTokenId={selectedTokenId}
@@ -192,7 +200,7 @@ const GameRoomContent = () => {
 
             <DiceRoller isVisible={isRolling} rollData={currentRoll} onAnimationComplete={onAnimationComplete} />
             <DiceModifierModal isOpen={isModifierModalOpen} onClose={closeModifierModal} />
-
+            
             <FloatingWindow title="Gerenciador de Cenas" isOpen={windows.sceneManager} onClose={() => toggleWindow('sceneManager')}><SceneManager /></FloatingWindow>
             <FloatingWindow title="Grimório" isOpen={windows.enemyGrimoire} onClose={() => toggleWindow('enemyGrimoire')}><EnemyGrimoire /></FloatingWindow>
             <FloatingWindow title="Ordem de Iniciativa" isOpen={windows.initiativeTracker || isRunning} onClose={() => toggleWindow('initiativeTracker')}><InitiativeTracker onPlayerRoll={handlePlayerRollInitiative} /></FloatingWindow>
@@ -205,17 +213,17 @@ const GameRoomContent = () => {
                     onFillAll={fillFog}
                     onClearAll={clearFog}
                 />
-            </FloatingWindow>
+            </FloatingWindow>           
             <FloatingWindow title="Configurações da Sala" isOpen={windows.roomSettings} onClose={() => toggleWindow('roomSettings')}><RoomSettings /></FloatingWindow>
             <FloatingWindow title="Jukebox da Cena" isOpen={windows.jukebox} onClose={() => toggleWindow('jukebox')}><JukeboxManager activeSceneId={activeScene?.id} /></FloatingWindow>
 
             {liveContextMenuToken && (
-                <FloatingWindow
+                 <FloatingWindow
                     title={`Controle: ${liveContextMenuToken.name}`}
                     isOpen={!!liveContextMenuToken}
                     onClose={() => setContextMenuTokenId(null)}
                     initialPosition={{ x: window.innerWidth / 2 - 200, y: 100 }}
-                >
+                 >
                     <TokenContextMenu
                         token={liveContextMenuToken}
                         onAction={(action, data) => handleContextMenuAction(action, { ...data, tokenId: liveContextMenuToken.tokenId })}
