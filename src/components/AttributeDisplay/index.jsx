@@ -7,7 +7,7 @@ import {
 import { FaHeart, FaStar, FaBolt, FaArrowUp } from 'react-icons/fa';
 
 // --- Subcomponente: Modo de Edição ---
-const EditView = ({ attributes, points, onAttributeChange }) => {
+const EditView = ({ attributes, points, onAttributeChange, resources }) => {
     const canIncreaseAttribute = (attr) => {
         if (!points) return true;
         return points.remaining > 0 && attributes[attr] < 5;
@@ -22,7 +22,7 @@ const EditView = ({ attributes, points, onAttributeChange }) => {
             <AttributeCard>
                 <CardValue>{attributes.poder}</CardValue>
                 <CardLabel>💪 Poder</CardLabel>
-                <CardResource>PA Máximo: {attributes.poder || 1}</CardResource>
+                <CardResource>PA Máximo: {resources.pa}</CardResource>
                 <ControlWrapper>
                     <ControlButton 
                         onClick={() => onAttributeChange('poder', attributes.poder - 1)}
@@ -48,7 +48,7 @@ const EditView = ({ attributes, points, onAttributeChange }) => {
             <AttributeCard>
                 <CardValue>{attributes.habilidade}</CardValue>
                 <CardLabel>🧠 Habilidade</CardLabel>
-                <CardResource>PM Máximo: {(attributes.habilidade || 0) * 5 || 1}</CardResource>
+                <CardResource>PM Máximo: {resources.pm}</CardResource>
                 <ControlWrapper>
                     <ControlButton 
                         onClick={() => onAttributeChange('habilidade', attributes.habilidade - 1)}
@@ -74,7 +74,7 @@ const EditView = ({ attributes, points, onAttributeChange }) => {
             <AttributeCard>
                 <CardValue>{attributes.resistencia}</CardValue>
                 <CardLabel>🛡️ Resistência</CardLabel>
-                <CardResource>PV Máximo: {(attributes.resistencia || 0) * 5 || 1}</CardResource>
+                <CardResource>PV Máximo: {resources.pv}</CardResource>
                 <ControlWrapper>
                     <ControlButton 
                         onClick={() => onAttributeChange('resistencia', attributes.resistencia - 1)}
@@ -109,12 +109,12 @@ const DisplayView = ({ attributes, resources, currentResources, onResourceChange
         if(isDead) return;
         const newValue = Math.max(0, Math.min(max, currentValue + amount));
         onResourceChange(resourceKey, newValue);
-    }
+    };
     
     const handleSetToMax = (resourceKey, max) => {
         if(isDead) return;
         onResourceChange(resourceKey, max);
-    }
+    };
 
     const startHold = useCallback((callback) => {
         callback();
@@ -139,11 +139,9 @@ const DisplayView = ({ attributes, resources, currentResources, onResourceChange
             {resourceConfig.map(res => {
                 const current = currentResources[`${res.key}_current`];
                 const max = resources[res.key];
-                
                 return (
                     <CompactCard key={res.key}>
                         <res.icon color={res.color} title={res.title} size={24} />
-                        
                         <ResourceColumn>
                             <AttributeText>
                                 {res.attrLabel} <strong>{attributes[res.attrKey]}</strong>
@@ -153,7 +151,6 @@ const DisplayView = ({ attributes, resources, currentResources, onResourceChange
                                 <ResourceText>{current} / {max}</ResourceText>
                             </ResourceBar>
                         </ResourceColumn>
-                        
                         <ResourceControls>
                             <ResourceButton onMouseDown={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, -1, max))} onMouseUp={stopHold} onMouseLeave={stopHold} onTouchStart={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, -1, max))} onTouchEnd={stopHold} disabled={isDead || current <= 0} title={`Diminuir ${res.key.toUpperCase()}`}>-</ResourceButton>
                             <ResourceButton onMouseDown={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, 1, max))} onMouseUp={stopHold} onMouseLeave={stopHold} onTouchStart={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, 1, max))} onTouchEnd={stopHold} disabled={isDead || current >= max} title={`Aumentar ${res.key.toUpperCase()}`}>+</ResourceButton>
@@ -178,7 +175,8 @@ export const AttributeDisplay = ({
     points 
 }) => {
     if (isEditing) {
-        return <EditView attributes={attributes} points={points} onAttributeChange={onAttributeChange} />;
+        // CORREÇÃO: Passa a prop 'resources' para o componente EditView.
+        return <EditView attributes={attributes} points={points} onAttributeChange={onAttributeChange} resources={resources} />;
     }
     return <DisplayView attributes={attributes} resources={resources} currentResources={currentResources} onResourceChange={onResourceChange} isDead={isDead} />;
 };

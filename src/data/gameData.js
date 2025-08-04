@@ -1,4 +1,3 @@
-// src/data/gameData.js
 export const pericias = [
   { nome: 'Animais', custo: 1, descricao: 'Você sabe cuidar, adestrar, cavalgar e lidar com animais e outras criaturas irracionais. Concede +1D em testes que envolvam essas ações.' },
   { nome: 'Arte', custo: 1, descricao: 'Você sabe realizar performances artísticas como cantar, dançar, tocar música, cozinhar, etc. Concede +1D em testes que envolvam essas ações.' },
@@ -166,20 +165,22 @@ export const desvantagens = [
     { nome: 'Transtorno', custo: -1, repetivel: true, descricao: 'Você lida com um transtorno mental que afeta seu comportamento.', opcoes: ['Cleptomania', 'Compulsão', 'Distração', 'Fantasia', 'Fobia', 'Megalomania', 'Mitomania', 'Paranoia'] },
     { nome: 'Utensílio', custo: -1, custos: [-1, -2], descricao: 'Você precisa de um item para usar seus poderes. -1pt: sem o item, não consegue críticos com uma perícia. -2pt: sem o item, não pode usar vantagens ou técnicas que gastam PM.' },
 ];
+
 export const arquetipos = [
     { nome: 'Humano', custo: 0, poderes: ['Mais Além: Uma vez por cena, gaste 2PM para ter Ganho em um teste.'] },
-    { nome: 'Aberrante', custo: 1, poderes: ['Deformidade: +1 no atributo de uma perícia à sua escolha.', 'Teratismo: Recebe uma Técnica Comum grátis.', 'Monstruoso (desvantagem).'] },
-    { nome: 'Abissal', custo: 1, poderes: ['Ágil (vantagem).', 'Desfavor: Gaste 3PM e uma ação para impor Perda a um alvo.', 'Infame (desvantagem).'], vantagensGratuitas: ['Ágil'] },
+    { nome: 'Aberrante', custo: 1, poderes: ['Deformidade: +1 no atributo de uma perícia à sua escolha.', 'Teratismo: Recebe uma Técnica Comum grátis.', 'Monstruoso (desvantagem).'], desvantagensGratuitas: ['Monstruoso'] },
+    { nome: 'Abissal', custo: 1, poderes: ['Ágil (vantagem).', 'Desfavor: Gaste 3PM e uma ação para impor Perda a um alvo.', 'Infame (desvantagem).'], vantagensGratuitas: ['Ágil'], desvantagensGratuitas: ['Infame'] },
     { 
         nome: 'Alien', 
         custo: 1, 
         poderes: ['Talento: Aliens têm aptidões físicas ou mentais superiores.', 'Xenobiologia: Uma vantagem sua custa metade dos PM.', 'Inculto (desvantagem).'],
+        desvantagensGratuitas: ['Inculto'],
         escolhas: [{
             id: 'alien_talento', tipo: 'vantagem', listaFiltro: ['Ágil', 'Carismático', 'Forte', 'Gênio', 'Resoluto', 'Vigoroso'], mensagem: 'Como Alien, escolha seu Talento inato.'
         }]
     },
-    { nome: 'Anão', custo: 1, poderes: ['Abascanto: Ganho em testes de R para evitar efeitos ruins.', 'A Ferro e Fogo: +1 em Máquinas e Sentido (Infravisão).', 'Lento (desvantagem).'] },
-    { nome: 'Anfíbio', custo: 1, poderes: ['Imune (Anfíbio).', 'Vigoroso (vantagem).', 'Ambiente (água) (desvantagem).'], vantagensGratuitas: ['Vigoroso'] },
+    { nome: 'Anão', custo: 1, poderes: ['Abascanto: Ganho em testes de R para evitar efeitos ruins.', 'A Ferro e Fogo: +1 em Máquinas e Sentido (Infravisão).', 'Lento (desvantagem).'], desvantagensGratuitas: ['Lento'] },
+    { nome: 'Anfíbio', custo: 1, poderes: ['Imune (Anfíbio).', 'Vigoroso (vantagem).', 'Ambiente (água) (desvantagem).'], vantagensGratuitas: ['Vigoroso'], desvantagensGratuitas: ['Ambiente'] },
     { 
         nome: 'Celestial', 
         custo: 1, 
@@ -189,7 +190,7 @@ export const arquetipos = [
             id: 'celestial_codigo', tipo: 'desvantagem', nomeFiltro: 'Código', mensagem: "Como um Celestial, você deve ser guiado por um Código de Conduta."
         }]
     },
-    { nome: 'Centauro', custo: 2, poderes: ['Corpo Táurico: Gaste 1PM para crítico com 5 ou 6 em testes de P físico e H para correr.', 'Vigoroso (vantagem).', 'Diferente (desvantagem).'], vantagensGratuitas: ['Vigoroso'] },
+    { nome: 'Centauro', custo: 2, poderes: ['Corpo Táurico: Gaste 1PM para crítico com 5 ou 6 em testes de P físico e H para correr.', 'Vigoroso (vantagem).', 'Diferente (desvantagem).'], vantagensGratuitas: ['Vigoroso'], desvantagensGratuitas: ['Diferente'] },
     { 
         nome: 'Ciborgue', 
         custo: 2, 
@@ -198,12 +199,13 @@ export const arquetipos = [
             id: 'ciborgue_diretriz', tipo: 'desvantagem', listaFiltro: ['Código', 'Transtorno'], mensagem: "Como um Ciborgue, você deve escolher uma Diretriz (Código ou Transtorno)."
         }]
     },
-    { nome: 'Construto', custo: 1, poderes: ['Imune (Abiótico, Doenças, Resiliente, Sem Mente).', 'Bateria (desvantagem).', 'Sem Vida (desvantagem).'] },
-    { nome: 'Dahllan', custo: 1, poderes: ['Benção da Natureza: Gaste 2PM e um movimento para Ganho em Defesa por um turno.', 'Empatia Selvagem: +1 em Animais.', 'Código Dahllan (desvantagem).'] },
+    { nome: 'Construto', custo: 1, poderes: ['Imune (Abiótico, Doenças, Resiliente, Sem Mente).', 'Bateria (desvantagem).', 'Sem Vida (desvantagem).'], desvantagensGratuitas: ['Bateria', 'Sem Vida'] },
+    { nome: 'Dahllan', custo: 1, poderes: ['Benção da Natureza: Gaste 2PM e um movimento para Ganho em Defesa por um turno.', 'Empatia Selvagem: +1 em Animais.', 'Código Dahllan (desvantagem).'], desvantagensGratuitas: ['Código'] },
     { 
         nome: 'Elfo', 
         custo: 1, 
         poderes: ['Impecável: Elfos são elegantes.', 'Natureza Mística: +1 em Mística.', 'Frágil (desvantagem).'],
+        desvantagensGratuitas: ['Frágil'],
         escolhas: [{
             id: 'elfo_impecavel', tipo: 'vantagem', listaFiltro: ['Ágil', 'Carismático', 'Gênio'], mensagem: 'Como Elfo, escolha sua característica Impecável.'
         }]
@@ -212,18 +214,20 @@ export const arquetipos = [
         nome: 'Fada', 
         custo: 1, 
         poderes: ['Magia das Fadas: Você pode usar Magia ou Ilusão com -1PM de custo.', 'Infame (desvantagem).', 'Delicada: Escolha entre Diferente ou Frágil (desvantagem).'],
+        desvantagensGratuitas: ['Infame'],
         escolhas: [
             { id: 'fada_magia', tipo: 'vantagem', listaFiltro: ['Magia', 'Ilusão'], mensagem: 'Como Fada, escolha seu dom mágico principal.' },
             { id: 'fada_delicada', tipo: 'desvantagem', listaFiltro: ['Diferente', 'Frágil'], mensagem: 'Como Fada, escolha sua delicadeza.' },
         ]
     },
-    { nome: 'Fantasma', custo: 2, poderes: ['Espírito: Sempre incorpóreo, gasta PM para se tornar sólido. Imune e Sem Vida.', 'Paralisia (vantagem).', 'Devoto (desvantagem).'], vantagensGratuitas: ['Paralisia'] },
-    { nome: 'Goblin', custo: 1, poderes: ['Espertalhão: +1 em Manha.', 'Subterrâneo: Sentido (Infravisão) e Ganho em testes de R contra doenças e venenos.', 'Diferente (desvantagem).'] },
-    { nome: 'Hynne', custo: 1, poderes: ['Atirador: Gaste 2PM para Ganho em ataques à distância.', 'Encantador: +1 em Influência.', 'Diferente (desvantagem).'] },
+    { nome: 'Fantasma', custo: 2, poderes: ['Espírito: Sempre incorpóreo, gasta PM para se tornar sólido. Imune e Sem Vida.', 'Paralisia (vantagem).', 'Devoto (desvantagem).'], vantagensGratuitas: ['Paralisia'], desvantagensGratuitas: ['Devoto', 'Sem Vida'] },
+    { nome: 'Goblin', custo: 1, poderes: ['Espertalhão: +1 em Manha.', 'Subterrâneo: Sentido (Infravisão) e Ganho em testes de R contra doenças e venenos.', 'Diferente (desvantagem).'], desvantagensGratuitas: ['Diferente'] },
+    { nome: 'Hynne', custo: 1, poderes: ['Atirador: Gaste 2PM para Ganho em ataques à distância.', 'Encantador: +1 em Influência.', 'Diferente (desvantagem).'], desvantagensGratuitas: ['Diferente'] },
     { 
         nome: 'Kallyanach', 
         custo: 2, 
         poderes: ['Baforada: Recebe um Ataque Especial (Área, Distante ou Potente) que custa -1PM.', 'Poder Dracônico: Dragões são poderosos.', 'Código dos Dragões (desvantagem).'],
+        desvantagensGratuitas: ['Código'],
         escolhas: [{
             id: 'kally_poder', tipo: 'vantagem', listaFiltro: ['Forte', 'Carismático'], mensagem: 'Como Kallyanach, escolha seu Poder Dracônico.'
         }]
@@ -237,17 +241,18 @@ export const arquetipos = [
             { id: 'kemono_cacoete', tipo: 'desvantagem', listaFiltro: ['Antipático', 'Atrapalhado', 'Fracote', 'Frágil', 'Indeciso', 'Tapado'], mensagem: "Escolha o Cacoete do seu Kemono (não conta para o limite de pontos)." }
         ]
     },
-    { nome: 'Medusa', custo: 1, poderes: ['Carismático (vantagem).', 'Olhar Atordoante: Gaste 3PM para forçar um teste de R. Se falhar, alvo não faz ações e tem Perda na defesa por um turno.', 'Fracote (desvantagem).'], vantagensGratuitas: ['Carismático'] },
-    { nome: 'Minotauro', custo: 1, poderes: ['Atlético: +1 em Esporte.', 'Sentido Labiríntico: Nunca se perde e Ganho em testes de Percepção para farejar.', 'Transtorno (Fobia de altura) (desvantagem).'] },
-    { nome: 'Ogro', custo: 1, poderes: ['Destruidor: Gaste 2PM em um crítico para somar Poder mais uma vez.', 'Intimidador: Ganho em testes de Influência para intimidar.', 'Diferente (desvantagem).'] },
-    { nome: 'Osteon', custo: 2, poderes: ['Imune (Abiótico, Doenças, Resiliente).', 'Memória Póstuma: +1 em uma perícia à sua escolha.', 'Sem Vida (desvantagem).'] },
-    { nome: 'Qareen', custo: 2, poderes: ['Desejos: Tem a vantagem Magia. Quando lança uma magia que outra pessoa pediu, o custo diminui em -2PM.', 'Carismático (vantagem).', 'Código da Gratidão (desvantagem).'], vantagensGratuitas: ['Magia', 'Carismático'] },
-    { nome: 'Sauroide', custo: 2, poderes: ['Cascudo: Recebe Resoluto e Vigoroso.', 'Camuflagem: Ganho em testes para se esconder.', 'Fraqueza (Frio) (desvantagem).'], vantagensGratuitas: ['Resoluto', 'Vigoroso'] },
+    { nome: 'Medusa', custo: 1, poderes: ['Carismático (vantagem).', 'Olhar Atordoante: Gaste 3PM para forçar um teste de R. Se falhar, alvo não faz ações e tem Perda na defesa por um turno.', 'Fracote (desvantagem).'], vantagensGratuitas: ['Carismático'], desvantagensGratuitas: ['Fracote'] },
+    { nome: 'Minotauro', custo: 1, poderes: ['Atlético: +1 em Esporte.', 'Sentido Labiríntico: Nunca se perde e Ganho em testes de Percepção para farejar.', 'Transtorno (Fobia) (desvantagem).'], desvantagensGratuitas: ['Transtorno'] },
+    { nome: 'Ogro', custo: 1, poderes: ['Destruidor: Gaste 2PM em um crítico para somar Poder mais uma vez.', 'Intimidador: Ganho em testes de Influência para intimidar.', 'Diferente (desvantagem).'], desvantagensGratuitas: ['Diferente'] },
+    { nome: 'Osteon', custo: 2, poderes: ['Imune (Abiótico, Doenças, Resiliente).', 'Memória Póstuma: +1 em uma perícia à sua escolha.', 'Sem Vida (desvantagem).'], desvantagensGratuitas: ['Sem Vida'] },
+    { nome: 'Qareen', custo: 2, poderes: ['Desejos: Tem a vantagem Magia. Quando lança uma magia que outra pessoa pediu, o custo diminui em -2PM.', 'Carismático (vantagem).', 'Código da Gratidão (desvantagem).'], vantagensGratuitas: ['Magia', 'Carismático'], desvantagensGratuitas: ['Código'] },
+    { nome: 'Sauroide', custo: 2, poderes: ['Cascudo: Recebe Resoluto e Vigoroso.', 'Camuflagem: Ganho em testes para se esconder.', 'Fraqueza (Frio) (desvantagem).'], vantagensGratuitas: ['Resoluto', 'Vigoroso'], desvantagensGratuitas: ['Fraqueza'] },
     { 
         nome: 'Vampiro', 
         custo: 1, 
         poderes: ['Talento: Vampiros têm aptidões superiores.', 'Imortal (vantagem).', 'Fraqueza (Luz do dia) (desvantagem).'],
         vantagensGratuitas: ['Imortal'],
+        desvantagensGratuitas: ['Fraqueza', 'Dependência'],
         escolhas: [{
             id: 'vampiro_talento', tipo: 'vantagem', listaFiltro: ['Ágil', 'Carismático', 'Forte', 'Gênio', 'Resoluto', 'Vigoroso'], mensagem: "Como Vampiro, escolha seu Talento profano."
         }]
@@ -264,10 +269,12 @@ export const classes = [
       "Tempo é dinheiro!: seu primeiro teste de compra na sessão recebe Ganho, e o segundo não sofre Perda."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
+      {
+        "tipo": "ou", "opcoes": [
           { "tipo": "pericia", "nome": "Influência" },
           { "tipo": "pericia", "nome": "Manha" }
-      ]},
+        ]
+      },
       { "tipo": "vantagem", "nome": "Riqueza" }
     ]
   },
@@ -280,10 +287,12 @@ export const classes = [
       "Plano de ação: gaste um movimento e 2 PM para receber H+2 até o fim da cena."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "pericia", "nome": "Manha" },
-        { "tipo": "pericia", "nome": "Percepção" }
-      ]},
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "pericia", "nome": "Manha" },
+          { "tipo": "pericia", "nome": "Percepção" }
+        ]
+      },
       { "tipo": "vantagem", "nome": "Patrono" }
     ]
   },
@@ -361,10 +370,12 @@ export const classes = [
     ],
     "exigencias": [
       { "tipo": "pericia", "nome": "Percepção" },
-      { "tipo": "ou", "opcoes": [
+      {
+        "tipo": "ou", "opcoes": [
           { "tipo": "pericia", "nome": "Manha" },
           { "tipo": "pericia", "nome": "Sobrevivência" }
-      ]}
+        ]
+      }
     ]
   },
   {
@@ -390,10 +401,12 @@ export const classes = [
       "Inspirar aliado: gaste 1 PM e uma ação para dar Ganho em um teste para um aliado no próximo turno dele."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "vantagem", "nome": "Resoluto" },
-        { "tipo": "vantagem", "nome": "Vigoroso" }
-      ]},
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "vantagem", "nome": "Resoluto" },
+          { "tipo": "vantagem", "nome": "Vigoroso" }
+        ]
+      },
       { "tipo": "desvantagem", "nome": "Código (qualquer)" }
     ]
   },
@@ -573,10 +586,12 @@ export const classes = [
     ],
     "exigencias": [
       { "tipo": "vantagem", "nome": "Imune" },
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "vantagem", "nome": "+Mana" },
-        { "tipo": "vantagem", "nome": "+Vida" }
-      ]}
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "vantagem", "nome": "+Mana" },
+          { "tipo": "vantagem", "nome": "+Vida" }
+        ]
+      }
     ]
   },
   {
@@ -589,11 +604,13 @@ export const classes = [
     ],
     "exigencias": [
       { "tipo": "pericia", "nome": "Manha" },
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "vantagem", "nome": "Ágil" },
-        { "tipo": "vantagem", "nome": "Carismático" },
-        { "tipo": "vantagem", "nome": "Gênio" }
-      ]}
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "vantagem", "nome": "Ágil" },
+          { "tipo": "vantagem", "nome": "Carismático" },
+          { "tipo": "vantagem", "nome": "Gênio" }
+        ]
+      }
     ]
   },
   {
@@ -633,10 +650,12 @@ export const classes = [
     ],
     "exigencias": [
       { "tipo": "pericia", "nome": "Luta" },
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "vantagem", "nome": "Ataque Especial" },
-        { "tipo": "vantagem", "nome": "Defesa Especial" }
-      ]}
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "vantagem", "nome": "Ataque Especial" },
+          { "tipo": "vantagem", "nome": "Defesa Especial" }
+        ]
+      }
     ]
   },
   {
@@ -676,11 +695,13 @@ export const classes = [
       "Ilusão autônoma: crie uma ilusão que age sozinha pelo custo normal, sem gastar seus movimentos."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "pericia", "nome": "Arte" },
-        { "tipo": "pericia", "nome": "Mística" },
-        { "tipo": "vantagem", "nome": "Telepata" }
-      ]},
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "pericia", "nome": "Arte" },
+          { "tipo": "pericia", "nome": "Mística" },
+          { "tipo": "vantagem", "nome": "Telepata" }
+        ]
+      },
       { "tipo": "vantagem", "nome": "Ilusão" }
     ]
   },
@@ -706,10 +727,12 @@ export const classes = [
       "Sempre a postos: aprenda perícias com Improviso por 2 PM em vez de 3, e mantenha até duas perícias ao mesmo tempo."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "pericia", "nome": "Arte" },
-        { "tipo": "pericia", "nome": "Sobrevivência" }
-      ]},
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "pericia", "nome": "Arte" },
+          { "tipo": "pericia", "nome": "Sobrevivência" }
+        ]
+      },
       { "tipo": "vantagem", "nome": "Improviso" }
     ]
   },
@@ -723,10 +746,12 @@ export const classes = [
     ],
     "exigencias": [
       { "tipo": "pericia", "nome": "Manha" },
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "vantagem", "nome": "Ágil" },
-        { "tipo": "vantagem", "nome": "Gênio" }
-      ]}
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "vantagem", "nome": "Ágil" },
+          { "tipo": "vantagem", "nome": "Gênio" }
+        ]
+      }
     ]
   },
   {
@@ -764,11 +789,13 @@ export const classes = [
       "Audiência generosa: com um teste de Arte ou Influência (9), receba Ganho em um teste de compra."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "pericia", "nome": "Arte" },
-        { "tipo": "pericia", "nome": "Influência" },
-        { "tipo": "vantagem", "nome": "Carismático" }
-      ]},
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "pericia", "nome": "Arte" },
+          { "tipo": "pericia", "nome": "Influência" },
+          { "tipo": "vantagem", "nome": "Carismático" }
+        ]
+      },
       { "tipo": "vantagem", "nome": "Famoso" }
     ]
   },
@@ -795,10 +822,12 @@ export const classes = [
       "Despensa cheia: comece cada sessão com um número de refeições básicas igual à sua Habilidade."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "pericia", "nome": "Arte" },
-        { "tipo": "pericia", "nome": "Sobrevivência" }
-      ]}
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "pericia", "nome": "Arte" },
+          { "tipo": "pericia", "nome": "Sobrevivência" }
+        ]
+      }
     ]
   },
   {
@@ -811,10 +840,12 @@ export const classes = [
     ],
     "exigencias": [
       { "tipo": "vantagem", "nome": "Ágil" },
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "vantagem", "nome": "Resoluto" },
-        { "tipo": "vantagem", "nome": "Vigoroso" }
-      ]},
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "vantagem", "nome": "Resoluto" },
+          { "tipo": "vantagem", "nome": "Vigoroso" }
+        ]
+      },
       { "tipo": "desvantagem", "nome": "1ª Lei de Asimov" }
     ]
   },
@@ -988,10 +1019,12 @@ export const classes = [
       "Guerreiro honrado: receba 1 Ponto de Ação extra para cada Patrono e Código que possuir."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "vantagem", "nome": "Patrono" },
-        { "tipo": "desvantagem", "nome": "Código" }
-      ]}
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "vantagem", "nome": "Patrono" },
+          { "tipo": "desvantagem", "nome": "Código" }
+        ]
+      }
     ]
   },
   {
@@ -1041,14 +1074,16 @@ export const classes = [
       "Herói de ação: você tem 2 Pontos de Ação extras."
     ],
     "exigencias": [
-      { "tipo": "ou", "opcoes": [
-        { "tipo": "vantagem", "nome": "Ágil" },
-        { "tipo": "vantagem", "nome": "Carismático" },
-        { "tipo": "vantagem", "nome": "Forte" },
-        { "tipo": "vantagem", "nome": "Gênio" },
-        { "tipo": "vantagem", "nome": "Resoluto" },
-        { "tipo": "vantagem", "nome": "Vigoroso" }
-      ]},
+      {
+        "tipo": "ou", "opcoes": [
+          { "tipo": "vantagem", "nome": "Ágil" },
+          { "tipo": "vantagem", "nome": "Carismático" },
+          { "tipo": "vantagem", "nome": "Forte" },
+          { "tipo": "vantagem", "nome": "Gênio" },
+          { "tipo": "vantagem", "nome": "Resoluto" },
+          { "tipo": "vantagem", "nome": "Vigoroso" }
+        ]
+      },
       { "tipo": "desvantagem", "nome": "Código dos Heróis" }
     ]
   },
@@ -1942,27 +1977,27 @@ export const tecnicas = [
 ]
 
 export const moedas = [
-    // Fantasia
-    { nome: 'Moedas de Ouro', sigla: 'MO' },
-    { nome: 'Peças de Prata', sigla: 'PP' },
-    { nome: 'Gemas Preciosas', sigla: 'Gemas' },
-    { nome: 'Dracmas', sigla: 'Ð' },
-    // Sci-Fi
-    { nome: 'Créditos Galácticos', sigla: 'CR' },
-    { nome: 'Uni-Chips', sigla: 'UC' },
-    { nome: 'Fragmentos de Dados', sigla: 'Data' },
-    // Moderno
-    { nome: 'Dólares', sigla: '$' },
-    { nome: 'Reais', sigla: 'R$' },
-    { nome: 'Euros', sigla: '€' },
-    // Pós-Apocalíptico
-    { nome: 'Tampinhas de Garrafa', sigla: 'Tampas' },
-    { nome: 'Cápsulas', sigla: 'Caps' },
-    { nome: 'Rações', sigla: 'Rações' },
-    // Genérico / Gamer
-    { nome: 'Zenny', sigla: 'Z' },
-    { nome: 'Gil', sigla: 'G' },
-    { nome: 'Pontos de Reputação', sigla: 'Rep' }
+  // Fantasia
+  { nome: 'Moedas de Ouro', sigla: 'MO' },
+  { nome: 'Peças de Prata', sigla: 'PP' },
+  { nome: 'Gemas Preciosas', sigla: 'Gemas' },
+  { nome: 'Dracmas', sigla: 'Ð' },
+  // Sci-Fi
+  { nome: 'Créditos Galácticos', sigla: 'CR' },
+  { nome: 'Uni-Chips', sigla: 'UC' },
+  { nome: 'Fragmentos de Dados', sigla: 'Data' },
+  // Moderno
+  { nome: 'Dólares', sigla: '$' },
+  { nome: 'Reais', sigla: 'R$' },
+  { nome: 'Euros', sigla: '€' },
+  // Pós-Apocalíptico
+  { nome: 'Tampinhas de Garrafa', sigla: 'Tampas' },
+  { nome: 'Cápsulas', sigla: 'Caps' },
+  { nome: 'Rações', sigla: 'Rações' },
+  // Genérico / Gamer
+  { nome: 'Zenny', sigla: 'Z' },
+  { nome: 'Gil', sigla: 'G' },
+  { nome: 'Pontos de Reputação', sigla: 'Rep' }
 ];
 
 export const qualidadesDeArtefatos = [
