@@ -10,7 +10,7 @@ import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { SidebarContainer, CollapseButton, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
 import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog, FaChevronLeft, FaChevronRight, FaMusic } from 'react-icons/fa';
-
+import toast from 'react-hot-toast';
 import { Modal } from '../Modal';
 
 const LinkCharacterModal = ({ isOpen, onClose, onLink }) => {

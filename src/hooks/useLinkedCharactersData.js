@@ -13,6 +13,7 @@ export const useLinkedCharactersData = () => {
     const [charactersData, setCharactersData] = useState({});
     const [loading, setLoading] = useState(true);
 
+    // Memoiza a lista de links para evitar re-execuções desnecessárias
     const characterLinks = useMemo(() => room?.characters || [], [room?.characters]);
 
     useEffect(() => {
@@ -36,14 +37,14 @@ export const useLinkedCharactersData = () => {
             });
         });
         
-        // Define loading como false após as subscrições iniciais
         const timer = setTimeout(() => setLoading(false), 500);
 
+        // Função de limpeza para parar de ouvir as atualizações quando o componente for desmontado
         return () => {
             clearTimeout(timer);
             unsubscribers.forEach(unsub => unsub());
         };
-    // Usamos uma string serializada dos IDs para uma dependência estável
+    // Depende de uma string dos IDs para estabilidade
     }, [JSON.stringify(characterLinks.map(c => c.characterId))]);
 
     return { charactersData, loading };
