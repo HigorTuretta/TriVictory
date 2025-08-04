@@ -5,12 +5,6 @@ import toast from 'react-hot-toast';
 import { uploadImage } from '../services/cloudinaryService';
 
 // --- Função Auxiliar Pura ---
-/**
- * Gera um objeto Blob a partir de uma imagem e coordenadas de corte.
- * @param {string} imageSrc - A URL da imagem (pode ser um data URL).
- * @param {object} pixelCrop - O objeto com as dimensões e posição do corte (x, y, width, height).
- * @returns {Promise<Blob|null>} O Blob da imagem cortada.
- */
 const getCroppedBlob = async (imageSrc, pixelCrop) => {
     if (!pixelCrop || !imageSrc) return null;
 
@@ -27,13 +21,7 @@ const getCroppedBlob = async (imageSrc, pixelCrop) => {
     canvas.height = pixelCrop.height;
     const ctx = canvas.getContext('2d');
 
-    ctx.drawImage(
-        image,
-        pixelCrop.x, pixelCrop.y,
-        pixelCrop.width, pixelCrop.height,
-        0, 0,
-        pixelCrop.width, pixelCrop.height
-    );
+    ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
 
     return new Promise((resolve) => {
         canvas.toBlob(resolve, 'image/jpeg', 0.9);
@@ -41,89 +29,89 @@ const getCroppedBlob = async (imageSrc, pixelCrop) => {
 };
 
 
-/**
- * Hook customizado para gerenciar a lógica complexa do modal de corte de imagem.
- * Encapsula o estado, as funções de manipulação e o processo de upload.
- * @param {string} initialImage - A imagem existente do personagem, se houver.
- * @param {function} onDone - Callback a ser executado com os dados da imagem após o upload bem-sucedido.
- * @param {function} onClose - Callback para fechar o modal.
- * @returns {object} - A API do hook com estados e manipuladores para a UI.
- */
-export const useImageCropper = (initialImage, onDone, onClose) => {
-    const [view, setView] = useState('menu');
+export const useImageCropper = (onDone, onClose) => {
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [originalSrc, setOriginalSrc] = useState(null);
+    const [croppedPortraitUrl, setCroppedPortraitUrl] = useState(null);
     
-    // Estado unificado para todos os dados de corte
     const [cropState, setCropState] = useState({
-        portrait: { crop: { x: 0, y: 0 }, zoom: 1, pixels: null, blobUrl: null },
+        portrait: { crop: { x: 0, y: 0 }, zoom: 1, pixels: null },
         banner: { crop: { x: 0, y: 0 }, pixels: null },
         token: { crop: { x: 0, y: 0 }, zoom: 1, pixels: null },
         borderColor: '#7b3ff1',
     });
 
-    // Função auxiliar para atualizar o estado de corte de forma segura
-    const updateCropState = (type, newValues) => {
-        setCropState(prev => ({
-            ...prev,
-            [type]: { ...prev[type], ...newValues },
-        }));
+const updateCropState = (type, newValues) => {
+        setCropState(prev => {
+            // Se for a cor da borda, apenas atualiza esse valor
+            if (type === 'borderColor') {
+                return { ...prev, borderColor: newValues.borderColor };
+            }
+            // Senão, mescla os valores do tipo específico (portrait, banner, etc.)
+            return { ...prev, [type]: { ...prev[type], ...newValues } };
+        });
     };
-    
-    // Função para resetar todo o estado interno
     const resetState = useCallback(() => {
         setOriginalSrc(null);
-        if (cropState.portrait.blobUrl) {
-            URL.revokeObjectURL(cropState.portrait.blobUrl);
-        }
+        if (croppedPortraitUrl) URL.revokeObjectURL(croppedPortraitUrl);
+        setCroppedPortraitUrl(null);
         setCropState({
-            portrait: { crop: { x: 0, y: 0 }, zoom: 1, pixels: null, blobUrl: null },
+            portrait: { crop: { x: 0, y: 0 }, zoom: 1, pixels: null },
             banner: { crop: { x: 0, y: 0 }, pixels: null },
             token: { crop: { x: 0, y: 0 }, zoom: 1, pixels: null },
             borderColor: '#7b3ff1',
         });
         setStep(0);
-        setView(initialImage ? 'menu' : 'upload');
-    }, [cropState.portrait.blobUrl, initialImage]);
+    }, [croppedPortraitUrl]);
 
-    // Função de callback para o dropzone
     const onDrop = useCallback((acceptedFiles) => {
         const file = acceptedFiles[0];
         if (file) {
             resetState();
             const reader = new FileReader();
-            reader.onload = () => {
-                setOriginalSrc(reader.result);
-                setView('cropping');
-            };
+            reader.onload = () => setOriginalSrc(reader.result);
             reader.readAsDataURL(file);
         }
     }, [resetState]);
+    
+    const proceedToBanner = async () => {
+        if (!cropState.portrait.pixels) return;
+        try {
+            const blob = await getCroppedBlob(originalSrc, cropState.portrait.pixels);
+            if (croppedPortraitUrl) URL.revokeObjectURL(croppedPortraitUrl);
+            setCroppedPortraitUrl(URL.createObjectURL(blob));
+            setStep(1);
+        } catch (err) {
+            toast.error("Erro ao processar imagem.");
+        }
+    };
 
-    // Função para salvar e fazer upload das imagens
     const handleSave = async () => {
         try {
             setLoading(true);
 
-            // Processa e faz upload do retrato
             const portraitBlob = await getCroppedBlob(originalSrc, cropState.portrait.pixels);
             const portraitOptimized = await imageCompression(portraitBlob, { maxWidthOrHeight: 1024, useWebWorker: true });
             const portraitRes = await uploadImage(portraitOptimized);
             
-            // Processa e faz upload do token
             const tokenBlob = await getCroppedBlob(originalSrc, cropState.token.pixels);
             const tokenOptimized = await imageCompression(tokenBlob, { maxWidthOrHeight: 280, useWebWorker: true });
             const tokenRes = await uploadImage(tokenOptimized);
+            
+            const portraitHeight = cropState.portrait.pixels.height;
+            const bannerHeight = cropState.banner.pixels.height;
+            const bannerY = cropState.banner.pixels.y;
+            // Garante que a divisão por zero não ocorra se o banner ocupar toda a altura
+            const bannerPositionPercent = portraitHeight > bannerHeight 
+                ? (bannerY / (portraitHeight - bannerHeight)) * 100 
+                : 50;
 
-            // Calcula a posição do banner (em porcentagem)
-            const bannerYPercent = (cropState.banner.pixels.y / (cropState.portrait.pixels.height - cropState.banner.pixels.height)) * 100;
 
-            // Chama o callback onDone com os public_ids do Cloudinary
             onDone({
                 portraitImage: portraitRes.public_id,
                 tokenImage: tokenRes.public_id,
-                bannerPosition: Math.round(bannerYPercent),
+                bannerPosition: Math.round(bannerPositionPercent),
                 tokenBorderColor: cropState.borderColor,
             });
 
@@ -131,21 +119,16 @@ export const useImageCropper = (initialImage, onDone, onClose) => {
             onClose();
         } catch (err) {
             console.error(err);
-            toast.error('Falha ao enviar as imagens. Tente novamente.');
+            toast.error('Falha ao enviar as imagens.');
         } finally {
             setLoading(false);
         }
     };
     
-    // Retorna a "API" do hook para ser consumida pelo componente de UI
     return {
-        view, setView,
-        step, setStep,
-        loading,
-        originalSrc, setOriginalSrc,
-        cropState, updateCropState,
-        resetState,
-        onDrop,
+        step, setStep, loading, originalSrc, onDrop,
+        cropState, updateCropState, resetState,
+        croppedPortraitUrl, proceedToBanner,
         handleSave,
     };
 };

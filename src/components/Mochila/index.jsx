@@ -32,12 +32,13 @@ const ItemDetailsModal = ({ item, onClose }) => {
 // --- Subcomponente para cada Item do Inventário ---
 const InventoryItem = ({ item, onQuantityChange, onDelete, onShowDetails, isDead }) => (
   <ItemCard onClick={onShowDetails}>
-    <ItemInfo>
+     <ItemInfo>
       <ItemName>{item.name} {item.quantity > 1 ? `(x${item.quantity})` : ''}</ItemName>
       <ItemDetails>
         {item.weight > 0 ? `${item.weight.toFixed(1)}kg` : 'Peso leve'}
         {item.rarity && item.rarity !== 'Nenhum' && (
-          <RarityBadge rarity={item.rarity}>{item.rarity}</RarityBadge>
+          // CORREÇÃO: Passa a prop como `$rarity`
+          <RarityBadge $rarity={item.rarity}>{item.rarity}</RarityBadge>
         )}
       </ItemDetails>
     </ItemInfo>

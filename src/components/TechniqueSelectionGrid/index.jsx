@@ -33,10 +33,11 @@ const TechniqueGrid = ({ techniques, onCardClick }) => (
         <TechniqueCard
           key={tech.nome}
           onClick={() => onCardClick(tech)}
-          category={tech.categoria}
+          // CORREÇÃO: Passa a prop como `$category`
+          $category={tech.categoria}
         >
           <TechniqueName>{tech.nome}</TechniqueName>
-          <CategoryBadge category={tech.categoria}>{tech.categoria}</CategoryBadge>
+          <CategoryBadge $category={tech.categoria}>{tech.categoria}</CategoryBadge>
         </TechniqueCard>
       ))}
     </Grid>

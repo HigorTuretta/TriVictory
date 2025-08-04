@@ -26,8 +26,8 @@ export const TechniqueCard = styled.div`
   min-height: 80px;
   transition: all 0.2s ease-in-out;
   
-  border-left: 4px solid ${({ category, theme }) => {
-    switch (category) {
+ border-left: 4px solid ${({ $category, theme }) => {
+    switch ($category) {
       case 'Truques': return theme.success;
       case 'Técnicas Comuns': return theme.secondary;
       case 'Técnicas Lendárias': return theme.primary;
@@ -38,8 +38,8 @@ export const TechniqueCard = styled.div`
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-color: ${({ category, theme }) => {
-      switch (category) {
+    border-color: ${({  $category, theme }) => {
+      switch ( $category) {
         case 'Truques': return theme.success;
         case 'Técnicas Comuns': return theme.secondary;
         case 'Técnicas Lendárias': return theme.primary;
@@ -63,8 +63,8 @@ export const CategoryBadge = styled.span`
   font-size: 0.75rem;
   font-weight: bold;
   color: white;
-  background-color: ${({ category, theme }) => {
-    switch (category) {
+  background-color: ${({  $category, theme }) => {
+    switch ( $category) {
       case 'Truques': return theme.success;
       case 'Técnicas Comuns': return theme.secondary;
       case 'Técnicas Lendárias': return theme.primary;

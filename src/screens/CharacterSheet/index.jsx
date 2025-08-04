@@ -1,15 +1,13 @@
-// src/screens/CharacterSheet/index.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { FaPencilAlt, FaSave, FaSkull, FaHeartbeat } from 'react-icons/fa';
+import { FaPencilAlt, FaSave, FaHeartbeat } from 'react-icons/fa';
 import Lottie from 'lottie-react';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { CharacterProvider, useCharacter } from '../../contexts/CharacterContext';
 import { getMainImageUrl } from '../../services/cloudinaryService';
 
-// Componentes de UI
 import { CharacterSheetHeader } from '../../components/CharacterSheetHeader';
 import { ImageCropperModal } from '../../components/ImageCropperModal';
 import { ImageLightbox } from '../../components/ImageLightbox';
@@ -22,9 +20,10 @@ import { RPGLoader } from '../../components/RPGLoader';
 
 import deathAnimation from '../../assets/lotties/deathAnimation.json';
 import {
-  SheetContainer, BackButton, HeaderPanel, Section, SectionTitle,
-  SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
+    SheetContainer, BackButton, HeaderPanel, Section, SectionTitle,
+    SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
 } from './styles';
+
 
 const useCharacterSheetUI = () => {
     const [modals, setModals] = useState({ imageCropper: false, lightbox: false, confirmDeath: false, confirmResurrection: false });
@@ -122,18 +121,18 @@ const CharacterSheetContent = () => {
     const isOwner = currentUser?.uid === character?.ownerId;
     const { resources, points, lockedItems, itemCounts } = actions;
 
-    const imageForCropper = character?.portraitImage ? getMainImageUrl(character.portraitImage) : '';
+    // CORREÇÃO: Passa o public_id diretamente, pois o modal não precisa mais da URL completa.
+    const imageForCropper = character?.portraitImage || '';
 
     return (
         <SheetContainer $isDead={character.isDead}>
-            <SheetModals 
-                character={character} 
-                modals={modals} 
-                closeModal={closeModal} 
-                lightboxImageUrl={lightboxImageUrl} 
-                updateCharacter={updateCharacter} 
+            <SheetModals
+                character={character}
+                modals={modals}
+                closeModal={closeModal}
+                lightboxImageUrl={lightboxImageUrl}
+                updateCharacter={updateCharacter}
             />
-
             {character.isDead && <DeathAnimationOverlay><Lottie animationData={deathAnimation} loop /></DeathAnimationOverlay>}
             <BackButton onClick={() => navigate(-1)}>← Voltar</BackButton>
 
@@ -182,7 +181,6 @@ const CharacterSheetContent = () => {
                     onConsume={actions.handleConsume}
                 />
             </SheetLayoutGrid>
-
             <SheetFooter
                 character={character}
                 isEditing={isEditing}
@@ -216,7 +214,6 @@ const CharacterSheetContent = () => {
     );
 };
 
-/* ------- Componente Wrapper com o Provider -------------- */
 export const CharacterSheet = () => {
     const { characterId } = useParams();
     return (

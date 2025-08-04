@@ -92,7 +92,7 @@ export const LeftSidebar = ({ onToolSelect }) => {
 
     const handleDragPlayer = (e, charLink) => {
         e.dataTransfer.setData('application/vtt-player-character', JSON.stringify(charLink));
-        toast.info(`Arrastando ${charLink.characterName}...`);
+        toast(`Arrastando ${charLink.characterName}...`);
     };
 
     const myCharacterLink = room.characters?.find(c => c.userId === currentUser.uid);

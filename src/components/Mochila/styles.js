@@ -154,8 +154,8 @@ export const RarityBadge = styled.span`
   border-radius: 8px;
   color: white;
   font-weight: bold;
-  background-color: ${({ rarity, theme }) => {
-    switch (rarity) {
+  background-color: ${({ $rarity, theme }) => {
+    switch ($rarity) {
       case 'Comum': return '#888';
       case 'Incomum': return theme.secondary;
       case 'Raro': return theme.primary;
@@ -163,6 +163,6 @@ export const RarityBadge = styled.span`
       default: return 'transparent';
     }
   }};
-  animation: ${({ rarity }) => rarity === 'Lendário' ? css`${goldenGlow} 2s ease-in-out infinite alternate` : 'none'};
-  box-shadow: ${({ rarity }) => rarity === 'Lendário' ? '0 0 5px gold' : 'none'};
+  animation: ${({ $rarity }) => $rarity === 'Lendário' ? css`${goldenGlow} 2s ease-in-out infinite alternate` : 'none'};
+  box-shadow: ${({ $rarity }) => $rarity === 'Lendário' ? '0 0 5px gold' : 'none'};
 `;

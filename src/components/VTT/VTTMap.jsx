@@ -179,23 +179,14 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
     }, [isPanningWithSpace, selectedTokenId, sceneTokens, updateTokenPosition, isMaster]);
     
-    // CORREÇÃO: Lógica de clique reimplementada para maior clareza e correção.
     const handleTokenClick = (e, token) => {
         const isOwnPlayerToken = token.type === 'player' && token.userId === currentUser.uid;
-
-        // Ação de abrir menu (botão direito ou ctrl+clique)
         if (e.evt.button === 2 || e.evt.ctrlKey) {
             e.evt.preventDefault();
-            if (isMaster || isOwnPlayerToken) {
-                onTokenContextMenu(e, token);
-            }
+            if (isMaster || isOwnPlayerToken) { onTokenContextMenu(e, token); }
             return;
         }
-
-        // Ação de selecionar (clique esquerdo)
-        if (isMaster || isOwnPlayerToken) {
-            onTokenSelect(token);
-        }
+        if (isMaster || isOwnPlayerToken) { onTokenSelect(token); }
     };
     
     const getDropPosition = (e) => {
@@ -227,7 +218,11 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             updateRoom({ tokens: [...currentTokens, newToken] });
         } else if (playerDataString) {
             const playerLink = JSON.parse(playerDataString);
-            if (currentTokens.some(t => t.tokenId === playerLink.characterId)) return toast(`${playerLink.characterName} já está no mapa. 🫡`);
+            // CORREÇÃO: A verificação agora inclui o ID da cena ativa.
+            if (currentTokens.some(t => t.tokenId === playerLink.characterId && t.sceneId === activeScene.id)) {
+                return toast(`${playerLink.characterName} já está nesta cena.`);
+            }
+            
             const fullCharData = allPlayerCharacters.find(c => c.id === playerLink.characterId);
             if (!fullCharData) return toast.error("Não foi possível carregar os dados completos do personagem.");
 
