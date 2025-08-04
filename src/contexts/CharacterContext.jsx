@@ -82,14 +82,12 @@ export const useCharacter = () => {
     }
     
     const { character, updateCharacter } = context;
-
-    // 1. Pega os dados calculados
+    
     const { points, resources, lockedItems, itemCounts } = useCharacterCalculations(character);
     
-    // 2. Pega as funções de ação
-    const actions = useCharacterActions(character, updateCharacter, resources, lockedItems);
+    // CORREÇÃO: Passa o objeto 'points' para o hook de ações.
+    const actions = useCharacterActions(character, updateCharacter, resources, lockedItems, points);
 
-    // 3. Retorna tudo junto em uma API unificada e fácil de usar
     return {
         ...context,
         points,

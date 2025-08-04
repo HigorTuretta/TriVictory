@@ -96,7 +96,7 @@ export const SelectionGrid = ({
     items, selectedItems = [], lockedItems = new Set(), itemCounts = {},
     onAddItem, onRemoveItem, listName, isEditing,
     onAddCustomItem, onUpdateCustomItem, onDeleteCustomItem,
-    characterSkills = []
+    characterSkills = [],  points = { remaining: 0 }
 }) => {
     const [activeModal, setActiveModal] = useState({ type: null, data: null });
     const [searchTerm, setSearchTerm] = useState('');
@@ -205,22 +205,29 @@ export const SelectionGrid = ({
 
             <GridContainer>
                 <Grid>
-                    {filteredItems.map(item => (
-                        <GridItem
-                            key={item.nome}
-                            item={item}
-                            count={itemCounts[item.nome] || 0}
-                            isDisabled={lockedItems.has(item.nome) || (itemCounts[item.nome] > 0 && !item.repetivel)}
-                            isLocked={lockedItems.has(item.nome)}
-                            isEditing={isEditing}
-                            onClick={handleItemClick}
-                            onContextMenu={(data) => setActiveModal({ type: 'details', data })}
-                            onEdit={(data) => setActiveModal({ type: 'customEdit', data })}
-                            onDelete={(data) => setActiveModal({ type: 'customDelete', data })}
-                        />
-                    ))}
+                    {filteredItems.map(item => {
+                        // CORREÇÃO: Lógica de desabilitação agora inclui a verificação de pontos.
+                        const cantAfford = isEditing && item.custo > 0 && points.remaining < item.custo;
+                        const isDisabled = lockedItems.has(item.nome) || (itemCounts[item.nome] > 0 && !item.repetivel) || cantAfford;
+
+                        return (
+                            <GridItem
+                                key={item.nome}
+                                item={item}
+                                count={itemCounts[item.nome] || 0}
+                                isDisabled={isDisabled}
+                                isLocked={lockedItems.has(item.nome)}
+                                isEditing={isEditing}
+                                onClick={handleItemClick}
+                                onContextMenu={(data) => setActiveModal({ type: 'details', data })}
+                                onEdit={(data) => setActiveModal({ type: 'customEdit', data })}
+                                onDelete={(data) => setActiveModal({ type: 'customDelete', data })}
+                            />
+                        );
+                    })}
                 </Grid>
             </GridContainer>
+            
 
             <HintText><b>Botão esquerdo:</b> selecionar item. <b>Botão direito:</b> ver detalhes.</HintText>
             

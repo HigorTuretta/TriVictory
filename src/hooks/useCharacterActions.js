@@ -7,18 +7,18 @@ import * as gameData from '../data/gameData';
 const findAdv = (name) => gameData.vantagens.find((a) => a.nome === name);
 const hasReqItem = (arr = [], reqName) => arr.some((i) => i.nome === reqName);
 const checkReq = (char, req) => {
-  switch (req.tipo) {
-    case 'pericia': return hasReqItem(char.skills, req.nome);
-    case 'vantagem': return hasReqItem(char.advantages, req.nome);
-    case 'desvantagem': return hasReqItem(char.disadvantages, req.nome);
-    case 'ou': return req.opcoes.some((r) => checkReq(char, r));
-    default: return true;
-  }
+    switch (req.tipo) {
+        case 'pericia': return hasReqItem(char.skills, req.nome);
+        case 'vantagem': return hasReqItem(char.advantages, req.nome);
+        case 'desvantagem': return hasReqItem(char.disadvantages, req.nome);
+        case 'ou': return req.opcoes.some((r) => checkReq(char, r));
+        default: return true;
+    }
 };
 const unmetReqsForClass = (char, kit) => {
-  const list = [];
-  kit?.exigencias?.forEach((req) => !checkReq(char, req) && list.push(req));
-  return list;
+    const list = [];
+    kit?.exigencias?.forEach((req) => !checkReq(char, req) && list.push(req));
+    return list;
 };
 
 const CONSUMABLE_EFFECTS = {
@@ -46,20 +46,25 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const sanitizedValue = Math.max(0, Math.min(5, value));
         updateCharacter({ attributes: { ...character.attributes, [attr]: sanitizedValue } });
     };
-    
+
     const handleResourceChange = (key, value) => {
         updateCharacter({ [key]: value });
     };
-
     const addItem = (listKey, item, subOption = null, custoOverride = null) => {
         const list = character[listKey] || [];
         if (list.some(i => i.nome === item.nome && !item.repetivel)) {
             return toast.error(`${item.nome} já foi adicionado(a).`);
         }
-        const finalCost = custoOverride !== null ? custoOverride : item.custo;
-        const newItem = { ...item, id: uuidv4(), subOption, custo: finalCost };
 
-        // CORREÇÃO: Usa o mapa de tradução para a mensagem do toast.
+        const finalCost = custoOverride !== null ? custoOverride : item.custo;
+
+        // CORREÇÃO: Validação de pontos. Impede a adição se não houver pontos suficientes.
+        // Desvantagens (custo negativo) sempre podem ser adicionadas.
+        if (finalCost > 0 && points.remaining < finalCost) {
+            return toast.error("Pontos de personagem insuficientes!");
+        }
+
+        const newItem = { ...item, id: uuidv4(), subOption, custo: finalCost };
         const itemNameSingular = KEY_TO_NAME_MAP[listKey] || 'Item';
         updateCharacter({ [listKey]: [...list, newItem] });
         toast.success(`${itemNameSingular} "${item.nome}${subOption ? ` (${subOption})` : ''}" adicionada!`);
@@ -84,7 +89,7 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const newArchetype = gameData.arquetipos.find(a => a.nome === newName) || null;
         let advantages = (character.advantages || []).filter(v => !v.fromArchetype);
         let disadvantages = (character.disadvantages || []).filter(d => !d.fromArchetype);
-        
+
         newArchetype?.vantagensGratuitas?.forEach(advName => {
             if (!hasReqItem(advantages, advName)) {
                 const advData = findAdv(advName);
@@ -98,15 +103,15 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
     const handleMakeChoice = (choice, chosenItem, subOption = null) => {
         const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true };
         const listToUpdate = choice.tipo === 'vantagem' ? 'advantages' : 'disadvantages';
-        
+
         const updates = {
-          archetypeChoices: { ...character.archetypeChoices, [choice.id]: newItem },
-          [listToUpdate]: [...(character[listToUpdate] || []), newItem]
+            archetypeChoices: { ...character.archetypeChoices, [choice.id]: newItem },
+            [listToUpdate]: [...(character[listToUpdate] || []), newItem]
         };
         updateCharacter(updates);
         toast.success(`${newItem.nome}${subOption ? ` (${subOption})` : ''} definido como escolha de arquétipo!`);
     };
-    
+
     const handleAddKit = (kitName) => {
         if (!kitName) return;
         const kitData = gameData.classes.find(c => c.nome === kitName);
@@ -117,7 +122,7 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
             setUnmetClassReqs(unmet);
             return toast.error('Kit indisponível — veja os requisitos pendentes.');
         }
-        
+
         const advantages = [...(character.advantages || [])];
         kitData.vantagensGratuitas?.forEach(advName => {
             if (!hasReqItem(advantages, advName)) {
@@ -125,7 +130,7 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
                 if (advData) advantages.push({ ...advData, id: uuidv4(), fromClass: true, fromKit: kitData.nome });
             }
         });
-        
+
         setUnmetClassReqs([]);
         updateCharacter({ kits: [...(character.kits || []), kitData], advantages });
         toast.success(`Kit "${kitData.nome}" adicionado!`);
@@ -156,7 +161,7 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         });
         return { meets: unmetReqs.length === 0, unmet: unmetReqs };
     }, [character]);
-    
+
     const handleAddTechnique = (technique, variation) => {
         const currentTechniques = character.techniques || [];
         const subOption = variation ? variation.nome : null;
@@ -187,11 +192,11 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const { resource, amount, toast: effectToast } = effect;
         const resourceKey = `${resource}_current`;
         const maxResource = resources[resource];
-        
+
         const updates = { [resourceKey]: Math.min(maxResource, (character[resourceKey] || 0) + amount) };
         inventory[itemIndex].quantity -= 1;
         updates.inventory = inventory.filter(i => i.quantity > 0);
-        
+
         updateCharacter(updates);
         toast.success(`"${itemName}" consumido. ${effectToast}`);
     };

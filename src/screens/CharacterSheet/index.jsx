@@ -194,6 +194,7 @@ const CharacterSheetContent = () => {
                 isBackstoryVisible={isBackstoryVisible}
                 setIsBackstoryVisible={setIsBackstoryVisible}
                 handleUpdate={updateCharacter}
+                points={points}
             />
 
             <ImageCropperModal

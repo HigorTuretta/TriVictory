@@ -63,7 +63,7 @@ const BackstorySection = ({ character, isEditing, isVisible, onVisibilityToggle,
 export const SheetFooter = ({
   isEditing, character, lockedItems, itemCounts, addItem, removeItem,
   onAddTechnique, onRemoveTechnique, checkTechniqueRequirements,
-  isBackstoryVisible, setIsBackstoryVisible, handleUpdate
+  isBackstoryVisible, setIsBackstoryVisible, handleUpdate,  points
 }) => {
 
   const renderSectionContent = (section) => {
@@ -93,7 +93,8 @@ export const SheetFooter = ({
         onRemoveItem={(id) => removeItem(section.key, id)}
         listName={section.title}
         isEditing={isEditing}
-        characterSkills={character.skills || []} // Passa as perícias atuais do personagem
+        characterSkills={character.skills || []}
+         points={points}
       />
     ) : (
       <FinalizedView items={selectedItems} />
