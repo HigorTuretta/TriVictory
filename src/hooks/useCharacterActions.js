@@ -39,7 +39,7 @@ const KEY_TO_NAME_MAP = {
     kits: 'Kit'
 };
 
-export const useCharacterActions = (character, updateCharacter, resources, lockedItems) => {
+export const useCharacterActions = (character, updateCharacter, resources, lockedItems, points) => {
     const [unmetClassReqs, setUnmetClassReqs] = useState([]);
 
     const handleAttributeChange = (attr, value) => {

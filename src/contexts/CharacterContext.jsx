@@ -83,7 +83,7 @@ export const useCharacter = () => {
     
     const { character, updateCharacter } = context;
     
-    const { points, resources, lockedItems, itemCounts } = useCharacterCalculations(character);
+   const { points, resources, lockedItems, itemCounts } = useCharacterCalculations(character);
     
     // CORREÇÃO: Passa o objeto 'points' para o hook de ações.
     const actions = useCharacterActions(character, updateCharacter, resources, lockedItems, points);
