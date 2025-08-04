@@ -65,12 +65,30 @@ export const SidebarContainer = styled(motion.aside)`
   border-right: 1px solid ${({ theme }) => theme.border};
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  align-items: ${({ $isCollapsed }) => ($isCollapsed ? 'center' : 'stretch')};
+  
+  padding: ${({ $isCollapsed }) => ($isCollapsed ? '0.5rem 0.25rem' : '1rem')};
   gap: 1.5rem;
   z-index: 100;
-`;
-export const ToolSection = styled.div`
+  position: relative;
 
+`;
+export const CollapseButton = styled.button`
+  position: absolute;
+  top: 2rem;
+  right: -16px;
+  transform: translateY(-50%);
+  width: 32px; height: 32px; border-radius: 50%;
+  background: ${({ theme }) => theme.primary};
+  color: white; border: 2px solid ${({ theme }) => theme.surface};
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 101; cursor: pointer;
+  &:hover { transform: translateY(-50%) scale(1.1); }
+  svg { width: 14px; height: 14px; display: block; flex-shrink: 0; }
+`;
+
+export const ToolSection = styled.div`
   h4 {
     font-size: 0.8rem;
     font-weight: 700;
@@ -79,26 +97,40 @@ export const ToolSection = styled.div`
     margin-bottom: 0.75rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid ${({ theme }) => theme.border};
+    transition: opacity 0.2s ease, height 0.2s ease, margin-bottom 0.2s, padding-bottom 0.2s;
+    opacity: ${({ $isCollapsed }) => $isCollapsed ? 0 : 1};
+    height: ${({ $isCollapsed }) => $isCollapsed ? '0' : 'auto'};
+    margin-bottom: ${({ $isCollapsed }) => $isCollapsed ? '0' : '0.75rem'};
+    padding-bottom: ${({ $isCollapsed }) => $isCollapsed ? '0' : '0.5rem'};
+    overflow: hidden;
+    white-space: nowrap;
   }
 `;
 // O estilo que faltava ser aplicado
 export const ToolButton = styled.button`
-    width: 100%;
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    padding: 0.75rem;
+  inline-size: ${({ $isCollapsed }) => ($isCollapsed ? '44px' : '100%')};
+  block-size: 44px;
+  margin-inline: ${({ $isCollapsed }) => ($isCollapsed ? 'auto' : '0')};
+  padding: ${({ $isCollapsed }) => ($isCollapsed ? '0' : '0.75rem')};
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: ${({ $isCollapsed }) => ($isCollapsed ? 'center' : 'flex-start')};
+  gap: 0.75rem;
+  margin-bottom: .5rem;
+  background-color: ${({ theme }) => theme.surfaceVariant};
+  color: ${({ theme }) => theme.textPrimary};
+  border-radius: 6px;
+  overflow: hidden;
+
+  & > svg { width: 22px; height: 22px; flex: 0 0 auto; }
+
+  span {
+    ${({ $isCollapsed }) => $isCollapsed && 'display:none;'}
     font-size: 0.9rem;
-    font-weight: 500;
-    text-align: left;
-    background-color: ${({ theme }) => theme.surfaceVariant};
-    color: ${({ theme }) => theme.textPrimary};
-    border-radius: 6px;
-    margin-top: 0.3rem;
-    &:hover {
-        background-color: ${({ theme }) => theme.primary};
-        color: ${({ theme }) => theme.onPrimary};
-    }
+  }
+
+  &:hover { background-color: ${({ theme }) => theme.primary}; color: ${({ theme }) => theme.onPrimary}; }
 `;
 export const PlayerList = styled.ul`
   list-style: none;
@@ -106,25 +138,31 @@ export const PlayerList = styled.ul`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-`;
-export const PlayerCard = styled.li`
-  display: flex;
-  align-items: center;
+`; export const PlayerCard = styled.li`
+  inline-size: ${({ $isCollapsed }) => ($isCollapsed ? '44px' : '100%')};
+  block-size: 44px;
+  margin-inline: ${({ $isCollapsed }) => ($isCollapsed ? 'auto' : '0')};
+  padding: ${({ $isCollapsed }) => ($isCollapsed ? '0' : '0.5rem')};
+
+  display: flex; align-items: center;
+  justify-content: ${({ $isCollapsed }) => ($isCollapsed ? 'center' : 'flex-start')};
   gap: 0.75rem;
+
   background-color: ${({ theme }) => theme.surfaceVariant};
-  padding: 0.5rem;
-  border-radius: 6px;
+  border-radius: 6px; overflow: hidden;
 `;
+
 export const PlayerAvatar = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
+  width: 40px; height: 40px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
 `;
+
 export const PlayerInfo = styled.div`
-  flex-grow: 1;
-  min-width: 0;
+  flex-grow: 1; min-width: 0;
+  ${({ $isCollapsed }) => $isCollapsed && 'display:none;'}
 `;
+
+
 export const PlayerName = styled.p`
   font-weight: 600;
   margin: 0;
@@ -141,21 +179,20 @@ export const CharacterName = styled.p`
   text-overflow: ellipsis;
 `;
 export const LinkButton = styled.button`
-  font-size: 0.9rem;
-  padding: 8px 12px;
-  background-color: ${({ theme }) => theme.primary};
-  color: white;
-  width: 100%;
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-weight: 500;
+  inline-size: ${({ $isCollapsed }) => ($isCollapsed ? '44px' : '100%')};
+  block-size: 44px;
+  margin-inline: ${({ $isCollapsed }) => ($isCollapsed ? 'auto' : '0')};
+  padding: ${({ $isCollapsed }) => ($isCollapsed ? '0' : '8px 12px')};
 
-  &:hover {
-    filter: brightness(1.1);
-  }
+  display: inline-flex; align-items: center;
+  justify-content: ${({ $isCollapsed }) => ($isCollapsed ? 'center' : 'center')};
+  gap: 0.5rem;
+
+  background-color: ${({ theme }) => theme.primary};
+  color: white; border-radius: 6px;
+
+  span { 
+    ${({ $isCollapsed }) => $isCollapsed && 'display:none;'} }
 `;
 
 export const MapContainer = styled.div`width: 100%; height: 100%; cursor: grab; &:active { cursor: grabbing; }`;

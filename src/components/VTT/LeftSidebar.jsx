@@ -8,8 +8,9 @@ import { getTokenImageUrl } from '../../services/cloudinaryService';
 // NOVO: Importa funções do firestore para atualizar a ficha
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { SidebarContainer, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
-import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog, FaMusic } from 'react-icons/fa';import toast from 'react-hot-toast';
+import { SidebarContainer, CollapseButton, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
+import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog, FaChevronLeft, FaChevronRight, FaMusic } from 'react-icons/fa';
+
 import { Modal } from '../Modal';
 
 const LinkCharacterModal = ({ isOpen, onClose, onLink }) => {
@@ -20,28 +21,29 @@ const LinkCharacterModal = ({ isOpen, onClose, onLink }) => {
             <h3>Vincular Personagem à Sala</h3>
             {loading ? <p>Carregando seus personagens...</p> :
                 characters.length === 0 ? <p>Você ainda não criou nenhum personagem.</p> :
-                <PlayerList>
-                    {characters.map(char => (
-                        <PlayerCard key={char.id} onClick={() => onLink(char)} style={{cursor: 'pointer'}}>
-                            <PlayerAvatar src={getTokenImageUrl(char.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${char.name}`} />
-                            <PlayerInfo>
-                                <PlayerName>{char.name}</PlayerName>
-                                <CharacterName>Nível {char.level || 0}</CharacterName>
-                            </PlayerInfo>
-                        </PlayerCard>
-                    ))}
-                </PlayerList>
+                    <PlayerList>
+                        {characters.map(char => (
+                            <PlayerCard key={char.id} onClick={() => onLink(char)} style={{ cursor: 'pointer' }}>
+                                <PlayerAvatar src={getTokenImageUrl(char.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${char.name}`} />
+                                <PlayerInfo>
+                                    <PlayerName>{char.name}</PlayerName>
+                                    <CharacterName>Nível {char.level || 0}</CharacterName>
+                                </PlayerInfo>
+                            </PlayerCard>
+                        ))}
+                    </PlayerList>
             }
         </Modal>
     );
 };
 
-export const LeftSidebar = ({ onToolSelect }) => {
+export const LeftSidebar = ({ onToolSelect, onToggleCollapse }) => {
     const { room, roomId, updateRoom } = useRoom();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-    
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
     const isMaster = room.masterId === currentUser.uid;
     const members = room.members || [];
 
@@ -51,16 +53,22 @@ export const LeftSidebar = ({ onToolSelect }) => {
         toast.success('Link de convite copiado!');
     };
 
+    const handleToggleCollapse = () => {
+        const newState = !isCollapsed;
+        setIsCollapsed(newState);
+        onToggleCollapse(newState); // Informa o componente pai da mudança
+    };
+
     // CORREÇÃO: Agora, ao vincular, também adicionamos o mestre aos 'viewers' da ficha.
     const handleLinkCharacter = async (character) => {
-        const newLink = { 
-            userId: currentUser.uid, 
-            characterId: character.id, 
-            characterName: character.name, 
+        const newLink = {
+            userId: currentUser.uid,
+            characterId: character.id,
+            characterName: character.name,
             tokenImage: character.tokenImage
         };
         const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
-        
+
         // Atualiza a ficha do personagem para dar permissão ao mestre
         const charRef = doc(db, 'characters', character.id);
         await updateDoc(charRef, {
@@ -72,7 +80,7 @@ export const LeftSidebar = ({ onToolSelect }) => {
         setIsLinkModalOpen(false);
         toast.success(`Personagem ${character.name} vinculado!`);
     };
-    
+
     // CORREÇÃO: Ao desvincular, removemos a permissão do mestre da ficha.
     const handleUnlinkCharacter = async () => {
         const myLink = room.characters?.find(c => c.userId === currentUser.uid);
@@ -83,7 +91,7 @@ export const LeftSidebar = ({ onToolSelect }) => {
                 viewers: arrayRemove(room.masterId)
             });
         }
-        
+
         const otherLinks = (room.characters || []).filter(c => c.userId !== currentUser.uid);
         const tokensWithoutPlayer = (room.tokens || []).filter(t => t.userId !== currentUser.uid);
         updateRoom({ characters: otherLinks, tokens: tokensWithoutPlayer });
@@ -100,7 +108,10 @@ export const LeftSidebar = ({ onToolSelect }) => {
     return (
         <>
             <SidebarContainer>
-                <ToolSection>
+                <CollapseButton onClick={handleToggleCollapse} title={isCollapsed ? "Expandir Barra Lateral" : "Recolher Barra Lateral"}>
+                    {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+                </CollapseButton>
+                <ToolSection $isCollapsed={isCollapsed}>
                     <h4>Jogadores</h4>
                     {members.length > 0 ? (
                         <PlayerList>
@@ -108,17 +119,10 @@ export const LeftSidebar = ({ onToolSelect }) => {
                                 const charLink = room.characters?.find(c => c.userId === member.uid);
                                 const isSelf = member.uid === currentUser.uid;
                                 const isDraggable = charLink && (isMaster || isSelf);
-                                
                                 return (
-                                    <PlayerCard 
-                                        key={member.uid} 
-                                        draggable={isDraggable}
-                                        onDragStart={isDraggable ? (e) => handleDragPlayer(e, charLink) : undefined}
-                                        style={{ cursor: isDraggable ? 'grab' : 'default' }}
-                                        title={isDraggable ? `Arraste para adicionar ${charLink.characterName} ao mapa` : ''}
-                                    >
+                                    <PlayerCard key={member.uid} $isCollapsed={isCollapsed} draggable={isDraggable} onDragStart={isDraggable ? (e) => handleDragPlayer(e, charLink) : undefined} style={{ cursor: isDraggable ? 'grab' : 'default' }} title={isDraggable ? `Arraste ${charLink.characterName}` : ''}>
                                         <PlayerAvatar src={getTokenImageUrl(charLink?.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${member.nickname}`} />
-                                        <PlayerInfo>
+                                        <PlayerInfo $isCollapsed={isCollapsed}>
                                             <PlayerName>{member.nickname} {room.masterId === member.uid && ' (Mestre)'}</PlayerName>
                                             <CharacterName>{charLink?.characterName || 'Sem personagem'}</CharacterName>
                                         </PlayerInfo>
@@ -126,38 +130,37 @@ export const LeftSidebar = ({ onToolSelect }) => {
                                 )
                             })}
                         </PlayerList>
-                    ) : <p>Nenhum jogador na sala.</p>}
+                    ) : (!isCollapsed && <p>Nenhum jogador na sala.</p>)}
 
                     {!isMaster && (
-                        myCharacterLink ? 
-                        <LinkButton onClick={handleUnlinkCharacter}><FaUnlink /> Desvincular Personagem</LinkButton> :
-                        <LinkButton onClick={() => setIsLinkModalOpen(true)}><FaLink /> Vincular Personagem</LinkButton>
+                        myCharacterLink ?
+                            <LinkButton onClick={handleUnlinkCharacter} $isCollapsed={isCollapsed}><FaUnlink /> <span>Desvincular Personagem</span></LinkButton> :
+                            <LinkButton onClick={() => setIsLinkModalOpen(true)} $isCollapsed={isCollapsed}><FaLink /> <span>Vincular Personagem</span></LinkButton>
                     )}
                 </ToolSection>
 
                 {isMaster && (
-                    <ToolSection>
+                    <ToolSection $isCollapsed={isCollapsed}>
                         <h4>Ferramentas do Mestre</h4>
-                        <ToolButton onClick={() => onToolSelect('sceneManager')}><FaMap /> Gerenciar Cenas</ToolButton>
-                        <ToolButton onClick={() => onToolSelect('fogOfWar')}><FaEye /> Fog of War</ToolButton>
-                        <ToolButton onClick={() => onToolSelect('enemyGrimoire')}><FaSkull /> Grimório</ToolButton>
-                        <ToolButton onClick={() => onToolSelect('jukebox')}><FaMusic /> Jukebox</ToolButton>
-                        <ToolButton onClick={() => onToolSelect('roomSettings')}><FaCog /> Configurações da Sala</ToolButton>                        
+                        <ToolButton onClick={() => onToolSelect('sceneManager')} $isCollapsed={isCollapsed}><FaMap /> <span>Gerenciar Cenas</span></ToolButton>
+                        <ToolButton onClick={() => onToolSelect('fogOfWar')} $isCollapsed={isCollapsed}><FaEye /> <span>Fog of War</span></ToolButton>
+                        <ToolButton onClick={() => onToolSelect('enemyGrimoire')} $isCollapsed={isCollapsed}><FaSkull /> <span>Grimório</span></ToolButton>
+                        <ToolButton onClick={() => onToolSelect('jukebox')} $isCollapsed={isCollapsed}><FaMusic /> <span>Jukebox</span></ToolButton>
+                        <ToolButton onClick={() => onToolSelect('roomSettings')} $isCollapsed={isCollapsed}><FaCog /> <span>Configurações</span></ToolButton>
                     </ToolSection>
                 )}
-                
-                <ToolSection>
+
+                <ToolSection $isCollapsed={isCollapsed}>
                     <h4>Ferramentas Gerais</h4>
-                    <ToolButton onClick={() => onToolSelect('initiativeTracker')}><FaUsers /> Iniciativa</ToolButton>
-                    <ToolButton onClick={() => onToolSelect('gameLog')}><FaScroll /> Log de Rolagens</ToolButton>
+                    <ToolButton onClick={() => onToolSelect('initiativeTracker')} $isCollapsed={isCollapsed}><FaUsers /> <span>Iniciativa</span></ToolButton>
+                    <ToolButton onClick={() => onToolSelect('gameLog')} $isCollapsed={isCollapsed}><FaScroll /> <span>Log de Rolagens</span></ToolButton>
                 </ToolSection>
 
                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <ToolButton onClick={copyInviteLink}><FaCopy /> Copiar Convite</ToolButton>
-                    <ToolButton onClick={() => navigate('/rooms')}><FaSignOutAlt /> Sair da Sala</ToolButton>
+                    <ToolButton onClick={copyInviteLink} $isCollapsed={isCollapsed}><FaCopy /> <span>Copiar Convite</span></ToolButton>
+                    <ToolButton onClick={() => navigate('/rooms')} $isCollapsed={isCollapsed}><FaSignOutAlt /> <span>Sair da Sala</span></ToolButton>
                 </div>
             </SidebarContainer>
-
             <LinkCharacterModal isOpen={isLinkModalOpen} onClose={() => setIsLinkModalOpen(false)} onLink={handleLinkCharacter} />
         </>
     );

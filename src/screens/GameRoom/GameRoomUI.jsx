@@ -39,7 +39,8 @@ const GameRoomContent = () => {
     const { addToInitiative, initiativeOrder, currentIndex, isRunning } = useInitiative();
     const { macros, addMacro, updateMacro, deleteMacro } = useRollMacros();
     const { charactersData, loading: charactersLoading } = useLinkedCharactersData();
-    
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
     const [windows, setWindows] = useState({
         sceneManager: false, initiativeTracker: false, enemyGrimoire: false,
         gameLog: true, macroManager: false, fogOfWar: false, roomSettings: false, jukebox: false,
@@ -169,8 +170,12 @@ const GameRoomContent = () => {
     return (
         <>
             <JukeboxPlayer />
-            <VTTLayout>
-                <LeftSidebar onToolSelect={toggleWindow} />
+            <VTTLayout  $isSidebarCollapsed={isSidebarCollapsed}>
+              <LeftSidebar 
+                    onToolSelect={toggleWindow} 
+                    isCollapsed={isSidebarCollapsed} 
+                      onToggleCollapse={setIsSidebarCollapsed} 
+                />
                 <MapArea>
                     <VTTMap
                         activeScene={activeScene}
