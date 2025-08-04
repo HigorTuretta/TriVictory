@@ -4,33 +4,39 @@ import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 import * as gameData from '../data/gameData';
 
-// --- Funções Auxiliares de Lógica Pura ---
 const findAdv = (name) => gameData.vantagens.find((a) => a.nome === name);
 const hasReqItem = (arr = [], reqName) => arr.some((i) => i.nome === reqName);
 const checkReq = (char, req) => {
-  // Verifica se o personagem cumpre um único requisito.
   switch (req.tipo) {
     case 'pericia': return hasReqItem(char.skills, req.nome);
     case 'vantagem': return hasReqItem(char.advantages, req.nome);
     case 'desvantagem': return hasReqItem(char.disadvantages, req.nome);
-    case 'ou': return req.opcoes.some((r) => checkReq(char, r)); // Se for 'ou', basta um ser verdadeiro.
+    case 'ou': return req.opcoes.some((r) => checkReq(char, r));
     default: return true;
   }
 };
 const unmetReqsForClass = (char, kit) => {
-  // Retorna uma lista de requisitos não cumpridos para um kit.
   const list = [];
   kit?.exigencias?.forEach((req) => !checkReq(char, req) && list.push(req));
   return list;
 };
 
-// --- Mapa de Efeitos de Consumíveis ---
 const CONSUMABLE_EFFECTS = {
     'Cura menor': { resource: 'pv', amount: 5, toast: '+5 PV recuperados.' },
     'Cura maior': { resource: 'pv', amount: 10, toast: '+10 PV recuperados.' },
     'Energia menor': { resource: 'pm', amount: 5, toast: '+5 PM recuperados.' },
     'Energia maior': { resource: 'pm', amount: 10, toast: '+10 PM recuperados.' },
     'Adrenalina menor': { resource: 'pa', amount: 1, toast: '+1 PA recuperado.' },
+};
+
+// NOVO: Mapa de tradução para as chaves de lista.
+const KEY_TO_NAME_MAP = {
+    skills: 'Perícia',
+    advantages: 'Vantagem',
+    disadvantages: 'Desvantagem',
+    inventory: 'Item',
+    techniques: 'Técnica',
+    kits: 'Kit'
 };
 
 export const useCharacterActions = (character, updateCharacter, resources, lockedItems) => {
@@ -47,17 +53,16 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
 
     const addItem = (listKey, item, subOption = null, custoOverride = null) => {
         const list = character[listKey] || [];
-        // A verificação de item repetível agora é mais inteligente.
         if (list.some(i => i.nome === item.nome && !item.repetivel)) {
             return toast.error(`${item.nome} já foi adicionado(a).`);
         }
-        
-        // Usa o custo que veio do modal, ou o custo padrão do item.
         const finalCost = custoOverride !== null ? custoOverride : item.custo;
         const newItem = { ...item, id: uuidv4(), subOption, custo: finalCost };
 
+        // CORREÇÃO: Usa o mapa de tradução para a mensagem do toast.
+        const itemNameSingular = KEY_TO_NAME_MAP[listKey] || 'Item';
         updateCharacter({ [listKey]: [...list, newItem] });
-        toast.success(`${listKey.slice(0, -1)} "${item.nome}${subOption ? ` (${subOption})` : ''}" adicionada!`);
+        toast.success(`${itemNameSingular} "${item.nome}${subOption ? ` (${subOption})` : ''}" adicionada!`);
     };
 
     const removeItem = (listKey, itemId) => {
@@ -67,28 +72,25 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         if (lockedItems.has(targetItem.nome)) {
             return toast.error('Item obrigatório por Arquétipo ou Kit não pode ser removido.');
         }
+
+        // CORREÇÃO: Usa o mapa de tradução para a mensagem do toast.
+        const itemNameSingular = KEY_TO_NAME_MAP[listKey] || 'Item';
         updateCharacter({ [listKey]: list.filter(i => i.id !== itemId) });
-        toast.success(`${listKey.slice(0, -1)} "${targetItem.nome}${targetItem.subOption ? ` (${targetItem.subOption})` : ''}" removida!`);
+        toast.success(`${itemNameSingular} "${targetItem.nome}${targetItem.subOption ? ` (${targetItem.subOption})` : ''}" removida!`);
     };
 
     const handleArchetypeChange = (e) => {
         const newName = e.target.value;
         const newArchetype = gameData.arquetipos.find(a => a.nome === newName) || null;
-
-        // Limpa vantagens e desvantagens do arquétipo ANTERIOR.
-        // Itens de 'escolhas' também são marcados com 'fromArchetype' e serão removidos.
         let advantages = (character.advantages || []).filter(v => !v.fromArchetype);
         let disadvantages = (character.disadvantages || []).filter(d => !d.fromArchetype);
         
-        // Adiciona apenas as vantagens gratuitas do NOVO arquétipo.
         newArchetype?.vantagensGratuitas?.forEach(advName => {
             if (!hasReqItem(advantages, advName)) {
                 const advData = findAdv(advName);
                 if (advData) advantages.push({ ...advData, id: uuidv4(), fromArchetype: true });
             }
         });
-
-        // Atualiza o personagem, limpando também as escolhas feitas para o arquétipo anterior.
         updateCharacter({ archetype: newArchetype, archetypeChoices: {}, advantages, disadvantages });
         toast.success(newArchetype ? `Arquétipo "${newArchetype.nome}" selecionado!` : 'Arquétipo removido!');
     };
@@ -110,14 +112,12 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const kitData = gameData.classes.find(c => c.nome === kitName);
         if (!kitData) return;
 
-        // 1. VERIFICA se o personagem cumpre os pré-requisitos (exigencias).
         const unmet = unmetReqsForClass(character, kitData);
         if (unmet.length > 0) {
             setUnmetClassReqs(unmet);
             return toast.error('Kit indisponível — veja os requisitos pendentes.');
         }
         
-        // 2. ADICIONA as vantagens gratuitas do kit.
         const advantages = [...(character.advantages || [])];
         kitData.vantagensGratuitas?.forEach(advName => {
             if (!hasReqItem(advantages, advName)) {
@@ -132,8 +132,6 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
     };
 
     const handleRemoveKit = (kitName) => {
-        // Remove apenas o kit e as vantagens que ele concedeu (fromKit).
-        // Os pré-requisitos (exigencias) permanecem, pois o jogador os adicionou manualmente.
         updateCharacter({
             kits: (character.kits || []).filter(k => k.nome !== kitName),
             advantages: (character.advantages || []).filter(adv => adv.fromKit !== kitName)
