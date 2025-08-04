@@ -1007,19 +1007,28 @@ export const ZoomSliderContainer = styled(motion.div)`
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 0.5rem;
-  background-color: ${({ theme }) => rgba(theme.surface, 0.6)};
+  background-color: ${({ theme }) => theme.surface}E6;
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border-radius: 16px;
   border: 1px solid ${({ theme }) => theme.border};
   box-shadow: ${({ theme }) => theme.shadows.medium};
   z-index: 1000;
 
   input[type="range"] {
-    writing-mode: bt-lr; /* Orienta o slider verticalmente */
-    -webkit-appearance: slider-vertical; /* Compatibilidade com WebKit */
+    /* CORREÇÃO: Usa o padrão moderno para sliders verticais */
+    writing-mode: vertical-lr;
+    direction: rtl;
+    -webkit-appearance: none; /* Ainda necessário para resetar o estilo base no WebKit */
+    appearance: none;
     width: 8px;
     height: 150px;
     cursor: ns-resize;
+    
+    /* Mantém os estilos customizados para a barra e o seletor */
+    background: ${({ theme }) => theme.background};
+    border-radius: 4px;
+    outline: none;
+    &::-webkit-slider-thumb { /* ... */ }
+    &::-moz-range-thumb { /* ... */ }
   }
 `;

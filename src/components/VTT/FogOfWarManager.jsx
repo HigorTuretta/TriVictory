@@ -4,7 +4,7 @@ import { FowToolbar, FowControls, FowActions,} from './styles';
 
 export const FogOfWarManager = ({ tool, setTool, brushSize, setBrushSize, onFillAll, onClearAll }) => {
     const minBrushSize = 20;
-    const maxBrushSize = 200;
+    const maxBrushSize = 2000;
 
     return (
         <FowToolbar>

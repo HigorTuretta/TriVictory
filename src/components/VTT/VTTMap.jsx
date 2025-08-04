@@ -69,30 +69,65 @@ const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMa
 };
 
 const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings, mapSize, gridSize }) => {
-    const opacity = isMaster ? 0.7 : 1;
+    const opacity = isMaster ? 0.85 : 1.0;
+
     return (
         <Layer listening={false}>
-            <Rect x={0} y={0} width={mapSize.width || 5000} height={mapSize.height || 5000} fill={FOG_COLOR} opacity={opacity} />
-            {!isMaster && visionSettings.playerVision && playerTokens.map(token => (
-                <Circle key={`vision-${token.tokenId}`} x={token.x + gridSize / 2} y={token.y + gridSize / 2} radius={gridSize * visionSettings.visionRadius} fill="white" globalCompositeOperation={'destination-out'}/>
-            ))}
-            {(paths || []).map((path, i) => (
-                <Line key={i} points={path.points} stroke={path.isEraser ? 'white' : FOG_COLOR} strokeWidth={path.brushSize} lineCap="round" lineJoin="round" globalCompositeOperation={path.isEraser ? 'destination-out' : 'source-over'}/>
-            ))}
+            <Rect 
+                x={0} y={0} 
+                width={mapSize.width || 5000} 
+                height={mapSize.height || 5000} 
+                fill={FOG_COLOR} 
+                opacity={opacity} 
+            />
+            {!isMaster && visionSettings.playerVision && playerTokens.map(token => {
+                const radius = gridSize * visionSettings.visionRadius;
+                return (
+                    <Circle
+                        key={`vision-${token.tokenId}`}
+                        x={token.x + gridSize / 2}
+                        y={token.y + gridSize / 2}
+                        radius={radius}
+                        fillRadialGradientStartPoint={{ x: 0, y: 0 }}
+                        fillRadialGradientEndPoint={{ x: 0, y: 0 }}
+                        fillRadialGradientStartRadius={radius * 0.1}
+                        fillRadialGradientEndRadius={radius}
+                        fillRadialGradientColorStops={[0, 'rgba(0,0,0,1)', 1, 'rgba(0,0,0,0)']}
+                        globalCompositeOperation={'destination-out'}
+                    />
+                );
+            })}
+            {(paths || []).map((path, i) => {
+                const isErasingWithFeather = path.isEraser;
+                return (
+                    <Line
+                        key={i}
+                        points={path.points}
+                        stroke={FOG_COLOR}
+                        strokeWidth={path.brushSize}
+                        lineCap="round"
+                        lineJoin="round"
+                        shadowForStrokeEnabled={isErasingWithFeather}
+                        shadowColor="black"
+                        shadowBlur={isErasingWithFeather ? 30 : 0}
+                        globalCompositeOperation={path.isEraser ? 'destination-out' : 'source-over'}
+                    />
+                )
+            })}
         </Layer>
     );
 };
+
 
 const GridLayer = ({ width, height, gridSize, offset, theme }) => {
     const lines = [];
     const offsetX = offset.x % gridSize;
     const offsetY = offset.y % gridSize;
-
     for (let i = -1; i < width / gridSize + 1; i++) {
-        lines.push(<Line key={`v-${i}`} points={[Math.round(i * gridSize) + offsetX, 0, Math.round(i * gridSize) + offsetX, height]} stroke={theme.border} strokeWidth={1} opacity={0.8}/>);
+        lines.push(<Line key={`v-${i}`} points={[Math.round(i * gridSize) + offsetX, 0, Math.round(i * gridSize) + offsetX, height]} stroke={theme.border} strokeWidth={1} opacity={0.5}/>);
     }
     for (let j = -1; j < height / gridSize + 1; j++) {
-        lines.push(<Line key={`h-${j}`} points={[0, Math.round(j * gridSize) + offsetY, width, Math.round(j * gridSize) + offsetY]} stroke={theme.border} strokeWidth={1} opacity={0.8} />);
+        lines.push(<Line key={`h-${j}`} points={[0, Math.round(j * gridSize) + offsetY, width, Math.round(j * gridSize) + offsetY]} stroke={theme.border} strokeWidth={1} opacity={0.5} />);
     }
     return <Layer listening={false}>{lines}</Layer>;
 };
@@ -111,7 +146,7 @@ const ZoomSlider = ({ scale, onZoomChange, onZoomIn, onZoomOut }) => (
 );
 
 export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenContextMenu, activeTurnTokenId, fowTool }) => {
-    const { room, updateTokenPosition, setFogPaths } = useRoom();
+     const { room, updateRoom, updateTokenPosition, setFogPaths } = useRoom();
     const { currentUser } = useAuth();
     const isMaster = room.masterId === currentUser.uid;
     const theme = useTheme();
@@ -152,16 +187,11 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         setScale(clampedScale);
     }, []);
 
-    useEffect(() => {
-        if (activeScene) setMapSize({ width: 0, height: 0 });
-    }, [activeScene?.id]);
+    useEffect(() => { if (activeScene) setMapSize({ width: 0, height: 0 }); }, [activeScene?.id]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.code === 'Space') {
-                if (!isPanningWithSpace) { e.preventDefault(); setIsPanningWithSpace(true); }
-                return;
-            }
+            if (e.code === 'Space') { if (!isPanningWithSpace) { e.preventDefault(); setIsPanningWithSpace(true); } return; }
             if (e.code.startsWith('Arrow')) {
                 if (!selectedTokenId) return;
                 const tokenToMove = sceneTokens.find(t => t.tokenId === selectedTokenId);
@@ -213,15 +243,11 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         const playerDataString = e.dataTransfer.getData('application/vtt-player-character');
         const currentTokens = room.tokens || [];
         const { x, y } = getDropPosition(e);
-
         if (enemyDataString) {
             const enemy = JSON.parse(enemyDataString);
             const sameNameCount = currentTokens.filter(t => t.grimoireId === enemy.id && t.sceneId === activeScene.id).length;
             const tokenName = sameNameCount > 0 ? `${enemy.name} ${sameNameCount + 1}` : enemy.name;
-            const newToken = {
-                tokenId: uuidv4(), type: 'enemy', name: tokenName, grimoireId: enemy.id, imageUrl: getTokenImageUrl(enemy.imageUrl), sceneId: activeScene.id, x, y, color: '#FF3B30', isVisible: false, isDead: false, isImmobilized: false, isKnockedOut: false,
-                pv_current: enemy.pv, pv_max: enemy.pv, pm_current: enemy.pm, pm_max: enemy.pm, pa_current: enemy.pa, pa_max: enemy.pa, attributes: enemy.attributes,
-            };
+            const newToken = { tokenId: uuidv4(), type: 'enemy', name: tokenName, grimoireId: enemy.id, imageUrl: getTokenImageUrl(enemy.imageUrl), sceneId: activeScene.id, x, y, color: '#FF3B30', isVisible: false, isDead: false, isImmobilized: false, isKnockedOut: false, pv_current: enemy.pv, pv_max: enemy.pv, pm_current: enemy.pm, pm_max: enemy.pm, pa_current: enemy.pa, pa_max: enemy.pa, attributes: enemy.attributes };
             updateRoom({ tokens: [...currentTokens, newToken] });
         } else if (playerDataString) {
             const playerLink = JSON.parse(playerDataString);
@@ -232,10 +258,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             const pv_max = resistencia * 5 || 1;
             const pm_max = habilidade * 5 || 1;
             const pa_max = poder || 1;
-            const newToken = {
-                tokenId: playerLink.characterId, userId: playerLink.userId, name: playerLink.characterName, imageUrl: getTokenImageUrl(playerLink.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${playerLink.characterName}`, type: 'player', sceneId: activeScene.id, x, y, color: '#3498db', isVisible: true, isDead: false, isImmobilized: false, isKnockedOut: false,
-                pv_current: fullCharData.pv_current ?? pv_max, pv_max, pm_current: fullCharData.pm_current ?? pm_max, pm_max, pa_current: fullCharData.pa_current ?? pa_max, pa_max, attributes: fullCharData.attributes,
-            };
+            const newToken = { tokenId: playerLink.characterId, userId: playerLink.userId, name: playerLink.characterName, imageUrl: getTokenImageUrl(playerLink.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${playerLink.characterName}`, type: 'player', sceneId: activeScene.id, x, y, color: '#3498db', isVisible: true, isDead: false, isImmobilized: false, isKnockedOut: false, pv_current: fullCharData.pv_current ?? pv_max, pv_max, pm_current: fullCharData.pm_current ?? pm_max, pm_max, pa_current: fullCharData.pa_current ?? pa_max, pa_max, attributes: fullCharData.attributes };
             updateRoom({ tokens: [...currentTokens, newToken] });
         }
     };
@@ -293,9 +316,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         <MapContainer ref={mapContainerRef} onDrop={handleDrop} onDragOver={handleDragOver} tabIndex={1}>
             <Stage width={mapContainerRef.current?.clientWidth || window.innerWidth - 280} height={mapContainerRef.current?.clientHeight || window.innerHeight} onWheel={handleWheel} draggable={isDraggable} onClick={handleStageClick} ref={stageRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onContextMenu={(e) => e.evt.preventDefault()} scaleX={scale} scaleY={scale}>
                 <Layer><SceneBackground imageUrl={activeScene?.imageUrl} onLoad={setMapSize} /></Layer>
-                {roomSettings.showGrid && mapSize.width > 0 && (
-                    <GridLayer width={mapSize.width} height={mapSize.height} gridSize={gridSize} offset={gridOffset} theme={theme} />
-                )}
+                {roomSettings.showGrid && mapSize.width > 0 && ( <GridLayer width={mapSize.width} height={mapSize.height} gridSize={gridSize} offset={gridOffset} theme={theme} /> )}
                 <FogOfWarLayer paths={room.fogOfWar?.[activeScene?.id]?.fogPaths || []} playerTokens={playerVisionSources} isMaster={isMaster} visionSettings={roomSettings} mapSize={mapSize} gridSize={gridSize} />
                 <Layer>
                     {visibleTokens.map(token => {
@@ -303,9 +324,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
                         return (<Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => handleTokenClick(e, token)} isDraggable={canDrag} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} gridSize={gridSize} />);
                     })}
                 </Layer>
-                {isMaster && fowTool && !isPanningWithSpace && (
-                    <Layer listening={false}><BrushCursor x={cursorPos.x} y={cursorPos.y} brushSize={fowTool.brushSize} tool={fowTool.tool} /></Layer>
-                )}
+                {isMaster && fowTool && !isPanningWithSpace && ( <Layer listening={false}><BrushCursor x={cursorPos.x} y={cursorPos.y} brushSize={fowTool.brushSize} tool={fowTool.tool} /></Layer> )}
             </Stage>
             <ZoomSlider scale={scale} onZoomChange={applyZoom} onZoomIn={() => applyZoom(scale * 1.2)} onZoomOut={() => applyZoom(scale / 1.2)} />
         </MapContainer>
