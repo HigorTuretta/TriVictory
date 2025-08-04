@@ -60,12 +60,12 @@ export const TokenCropperModal = ({ isOpen, onClose, onComplete, imageSrc }) => 
             const blob = await getCroppedBlob(imageSrc, croppedAreaPixels);
             const compressedFile = await imageCompression(blob, { maxSizeMB: 0.5, maxWidthOrHeight: 280, useWebWorker: true });
             const result = await uploadImage(compressedFile);
-            
+
             toast.success('Token enviado com sucesso!');
             onComplete(result.public_id);
             onClose();
         } catch (error) {
-            toast.error('Falha ao enviar a imagem do token.');
+            toast.error(error.message || 'Falha ao enviar a imagem do token.');
             console.error(error);
         } finally {
             setLoading(false);

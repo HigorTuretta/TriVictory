@@ -119,7 +119,7 @@ const updateCropState = (type, newValues) => {
             onClose();
         } catch (err) {
             console.error(err);
-            toast.error('Falha ao enviar as imagens.');
+             toast.error(err.message || 'Falha ao enviar as imagens.');
         } finally {
             setLoading(false);
         }

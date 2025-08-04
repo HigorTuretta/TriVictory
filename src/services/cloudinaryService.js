@@ -22,8 +22,7 @@ const _uploadFile = async (file, resourceType = 'image') => {
   formData.append('upload_preset', CLOUDINARY_CONFIG.UPLOAD_PRESET);
 
   const uploadUrl = resourceType === 'audio' ? AUDIO_UPLOAD_URL : UPLOAD_URL;
-  // Este 'resource_type' é necessário para que a API saiba como processar o arquivo.
-  if(resourceType === 'audio') {
+  if (resourceType === 'audio') {
       formData.append('resource_type', 'video');
   }
 
@@ -36,11 +35,19 @@ const _uploadFile = async (file, resourceType = 'image') => {
     return response.json();
   } catch (error) {
     console.error('Erro no serviço Cloudinary:', error);
-    throw error;
+    throw error; // Re-lança o erro para ser capturado pelo componente
   }
 };
 
 export const uploadImage = (imageFile) => {
+  const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
+  if (!acceptedTypes.includes(imageFile.type)) {
+      throw new Error('Tipo de arquivo de imagem inválido. Use JPG, JPEG, PNG, WEBP ou GIF.');
+  }
+  const maxSize = 10 * 1024 * 1024; // 10 MB
+  if (imageFile.size > maxSize) {
+      throw new Error('A imagem é muito grande. O limite é de 10MB.');
+  }
   return _uploadFile(imageFile, 'image');
 };
 
@@ -53,9 +60,9 @@ export const uploadAudio = (audioFile) => {
     if (audioFile.size > maxSize) {
         throw new Error('O arquivo de áudio é muito grande. O limite é de 20MB.');
     }
-
     return _uploadFile(audioFile, 'audio');
 };
+
 
 // --- Funções Auxiliares de URL ---
 export const getTokenImageUrl = (publicIdOrUrl, borderColor = '#7b3ff1') => {

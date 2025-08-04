@@ -43,7 +43,7 @@ export const SceneManager = () => {
             setNewSceneFile(null);
             if (fileInputRef.current) fileInputRef.current.value = null; // Limpa o input do arquivo
         } catch (error) {
-            toast.error("Falha ao enviar a imagem da cena.");
+            toast.error(error.message || "Falha ao enviar a imagem da cena.");
         } finally {
             setIsUploading(false);
         }
