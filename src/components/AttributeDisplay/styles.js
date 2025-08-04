@@ -99,39 +99,50 @@ export const ControlButton = styled.button`
 
 export const CompactWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Aumenta o minmax para caber o conteúdo */
   gap: 1rem;
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
 `;
-
 export const CompactCard = styled.div`
-  background-color: ${({ theme }) => theme?.surface || '#2a2a2a'};
-  border: 1px solid ${({ theme }) => theme?.border || '#444'};
+  background-color: ${({ theme }) => theme.surface};
+  border: 1px solid ${({ theme }) => theme.border};
   border-radius: 8px;
   padding: 0.75rem 1rem;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex; /* Alterado de grid para flex */
   align-items: center;
   gap: 1rem;
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #7b3ff1;
-    box-shadow: 0 2px 8px rgba(123, 63, 241, 0.2);
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
+`
+
+export const ResourceColumn = styled.div`
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+`;
+
+export const AttributeText = styled.div`
+    font-size: 0.8rem;
+    color: ${({ theme }) => theme.textSecondary};
+    font-weight: 500;
+    
+    strong {
+        font-weight: 700;
+        color: ${({ theme }) => theme.textPrimary};
+    }
 `;
 
 export const ResourceBar = styled.div`
-  flex-grow: 1;
-  height: 28px;
-  background-color: ${({ theme }) => theme?.border || '#444'};
+  width: 100%; /* Garante que preencha a coluna */
+  height: 20px; /* Levemente mais fina */
+  background-color: ${({ theme }) => theme.border};
   border-radius: 6px;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 export const ResourceProgress = styled.div`
