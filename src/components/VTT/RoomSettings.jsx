@@ -4,14 +4,13 @@ import { useRoom } from '../../contexts/RoomContext';
 import { SettingsContainer, SettingRow, SettingLabel, ToggleSwitch } from './styles';
 
 export const RoomSettings = () => {
-    // CORREÇÃO: Consome 'updateRoom' diretamente do contexto, em vez de um 'dispatch' inexistente.
     const { room, updateRoom } = useRoom();
 
-    const settings = room.roomSettings || { playerVision: true, visionRadius: 3.5 };
+    // Define valores padrão para as configurações, incluindo a nova 'showGrid'
+    const settings = room.roomSettings || { playerVision: true, visionRadius: 3.5, showGrid: true };
 
     const handleSettingChange = (key, value) => {
         const newSettings = { ...settings, [key]: value };
-        // CORREÇÃO: Usa a função 'updateRoom' para garantir que a atualização seja enviada corretamente ao Firestore.
         updateRoom({ roomSettings: newSettings });
     };
 
@@ -43,6 +42,19 @@ export const RoomSettings = () => {
                     min="1"
                     step="0.5"
                     disabled={!settings.playerVision}
+                />
+            </SettingRow>
+            
+            {/* NOVO: Opção para mostrar/ocultar a grade */}
+            <SettingRow>
+                <SettingLabel htmlFor="showGrid">
+                    Exibir Grade no Mapa
+                    <span>Mostra as linhas da grade para todos os jogadores.</span>
+                </SettingLabel>
+                <ToggleSwitch
+                    id="showGrid"
+                    checked={settings.showGrid ?? true} // Valor padrão true
+                    onChange={(e) => handleSettingChange('showGrid', e.target.checked)}
                 />
             </SettingRow>
         </SettingsContainer>

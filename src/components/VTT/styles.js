@@ -1,5 +1,5 @@
-// src/components/VTT/styles.js
-import styled, { keyframes,css }from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
+import { rgba } from 'polished';
 import { motion } from 'framer-motion';
 
 // --- FloatingWindow Styles ---
@@ -7,8 +7,9 @@ import { motion } from 'framer-motion';
 export const WindowContainer = styled(motion.div)`
   position: absolute;
   z-index: 1010;
-  background-color: ${({ theme }) => theme.surface}E6;
+  background-color: ${({ theme }) => rgba(theme.surface, 0.6)};
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid ${({ theme }) => theme.border};
   border-radius: 8px;
   box-shadow: ${({ theme }) => theme.shadows.large};
@@ -58,7 +59,6 @@ export const WindowBody = styled.div`
   overflow-y: auto;
 `;
 
-// --- LeftSidebar Styles ---
 export const SidebarContainer = styled(motion.aside)`
   grid-area: sidebar;
   background-color: ${({ theme }) => theme.surface};
@@ -157,17 +157,17 @@ export const LinkButton = styled.button`
     filter: brightness(1.1);
   }
 `;
-// --- VTTMap Styles ---
+
 export const MapContainer = styled.div`width: 100%; height: 100%; cursor: grab; &:active { cursor: grabbing; }`;
-// --- DiceToolbar Styles ---
+
 export const ToolbarContainer = styled(motion.div)`
-  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: ${({ theme }) => theme.surface}E6;
-  backdrop-filter: blur(10px); padding: 0.75rem; border-radius: 12px; border: 1px solid ${({ theme }) => theme.border};
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: ${({ theme }) => rgba(theme.surface, 0.5)};
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 0.75rem; border-radius: 12px; border: 1px solid ${({ theme }) => theme.border};
   box-shadow: ${({ theme }) => theme.shadows.large}; display: flex; align-items: center; gap: 0.5rem; z-index: 1000;
 `;
 export const RollButton = styled.button`font-weight: 600; min-width: 50px; background-color: ${({ theme }) => theme.primary}; color: ${({ theme }) => theme.onPrimary}; &:hover { filter: brightness(1.1); }`;
 export const CommandInput = styled.input`background-color: ${({ theme }) => theme.background}; width: 200px; text-align: center;`;
-// --- SceneManager Styles ---
+
 export const SceneList = styled.div`display: flex; flex-direction: column; gap: 0.75rem;`;
 export const SceneItem = styled.div`
   padding: 0.75rem; border-radius: 6px; border: 2px solid ${({ theme, $isActive }) => $isActive ? theme.success : theme.border};
@@ -181,7 +181,7 @@ export const SceneForm = styled.div`
     input { font-size: 0.9rem; padding: 8px; }
     button { background-color: ${({ theme }) => theme.success}; color: white; font-weight: 600; }
 `;
-// --- EnemyGrimoire Styles ---
+
 export const GrimoireList = styled.div`
   display: flex;
   flex-direction: column;
@@ -225,7 +225,7 @@ export const DeleteEnemyButton = styled.button`
     
     &:hover {
         color: ${({ theme }) => theme.error};
-        background-color: ${({ theme }) => theme.error}20;
+        background-color: ${({ theme }) => rgba(theme.error, 0.125)};
         transform: scale(1.1);
     }
 `;
@@ -306,7 +306,7 @@ export const InitiativeItem = styled.li`
   justify-content: space-between;
   padding: 0.75rem;
   border-radius: 6px;
-  background-color: ${({ theme, $isActive }) => $isActive ? theme.primary + '30' : theme.background};
+  background-color: ${({ theme, $isActive }) => $isActive ? rgba(theme.primary, 0.188) : theme.background};
   border: 2px solid ${({ theme, $isActive }) => $isActive ? theme.primary : 'transparent'};
   transition: all 0.2s ease-in-out;
 `;
@@ -356,7 +356,7 @@ export const PlayerInitiativeButton = styled.button`
         cursor: not-allowed;
     }
 `;
-// --- DiceModifierModal Styles ---
+
 export const ModifierContent = styled.div`
   display: flex;
   flex-direction: column;
@@ -387,7 +387,7 @@ export const ModifierInput = styled.input`
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.primary};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.primary}40;
+    box-shadow: 0 0 0 3px ${({ theme }) => rgba(theme.primary, 0.25)};
   }
 `;
 
@@ -422,7 +422,7 @@ export const OptionCard = styled.label`
   padding: 1rem;
   border-radius: 8px;
   border: 2px solid ${({ theme, $isActive }) => $isActive ? theme.primary : theme.border};
-  background-color: ${({ theme, $isActive }) => $isActive ? theme.primary + '20' : theme.surface};
+  background-color: ${({ theme, $isActive }) => $isActive ? rgba(theme.primary, 0.125) : theme.surface};
   cursor: pointer;
   transition: all 0.2s ease;
   
@@ -433,7 +433,7 @@ export const OptionCard = styled.label`
 
   &:hover {
     border-color: ${({ theme }) => theme.secondary};
-    background-color: ${({ theme }) => theme.secondary}20;
+    background-color: ${({ theme }) => rgba(theme.secondary, 0.125)};
   }
 `;
 
@@ -454,7 +454,6 @@ export const OptionDescription = styled.p`
   line-height: 1.3;
 `;
 
-// Checkbox fica funcional, mas visualmente escondido
 export const OptionCheckbox = styled.input`
   display: none;
 `;
@@ -660,7 +659,7 @@ export const ResourceInput = styled.input`
     &:focus {
         outline: none;
         border-color: ${({ theme }) => theme.primary};
-        box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
+        box-shadow: 0 0 0 2px ${({ theme }) => rgba(theme.primary, 0.2)};
     }
 
     &:disabled {
@@ -817,7 +816,6 @@ export const JukeboxForm = styled.div`
   }
 `;
 
-// --- GameLog Styles (REPAGINADO) ---
 const critGlow = keyframes`
   0%, 100% {
     box-shadow:
@@ -849,7 +847,7 @@ export const LogItem = styled(motion.div)`
   position: relative; 
   display: flex;
   flex-direction: column;
-  background-color: ${({ theme, $hidden }) => $hidden ? `${theme.surface}80` : theme.surface};
+  background-color: ${({ theme, $hidden }) => $hidden ? rgba(theme.surface, 0.5) : theme.surface};
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.border};
   padding: 0.75rem 1rem;
@@ -931,7 +929,7 @@ export const LogBreakdown = styled.p`
   .fumble { color: ${({ theme }) => theme.error}; }
 `;
 
-// NOVO: Estilos para a rolagem oculta
+
 export const HiddenRollCard = styled.div`
   width: 100%;
   text-align: center;
@@ -997,4 +995,31 @@ export const LogList = styled.div`
   gap: 1rem;
   overflow-y: auto;
   padding: 1rem;
+`;
+
+export const ZoomSliderContainer = styled(motion.div)`
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0.5rem;
+  background-color: ${({ theme }) => rgba(theme.surface, 0.6)};
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 16px;
+  border: 1px solid ${({ theme }) => theme.border};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
+  z-index: 1000;
+
+  input[type="range"] {
+    writing-mode: bt-lr; /* Orienta o slider verticalmente */
+    -webkit-appearance: slider-vertical; /* Compatibilidade com WebKit */
+    width: 8px;
+    height: 150px;
+    cursor: ns-resize;
+  }
 `;
