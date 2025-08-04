@@ -360,30 +360,123 @@ export const PlayerInitiativeButton = styled.button`
 export const ModifierContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem; /* Aumenta o espaçamento entre as seções */
   text-align: center;
 `;
-export const ModifierInput = styled.div`
-  label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-  input { text-align: center; font-size: 1.5rem; padding: 0.5rem; width: 100px; margin: 0 auto; }
-`;
-export const OptionsGrid = styled.div`
+
+// Container para o controle principal de -/+
+export const ModifierControl = styled.div`
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
-`;
-export const OptionToggle = styled.div`
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  label { cursor: pointer; }
-`;
-export const OptionCheckbox = styled.input`
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
+  gap: 1rem;
 `;
 
+export const ModifierInput = styled.input`
+  width: 100px;
+  height: 60px;
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  border: 2px solid ${({ theme }) => theme.border};
+  background-color: ${({ theme }) => theme.background};
+  color: ${({ theme }) => theme.textPrimary};
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.primary}40;
+  }
+`;
+
+export const ModifierButton = styled.button`
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background-color: ${({ theme }) => theme.surfaceVariant};
+  color: ${({ theme }) => theme.textPrimary};
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.primary};
+    color: white;
+    transform: scale(1.1);
+  }
+`;
+
+export const OptionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+`;
+
+export const OptionCard = styled.label`
+  padding: 1rem;
+  border-radius: 8px;
+  border: 2px solid ${({ theme, $isActive }) => $isActive ? theme.primary : theme.border};
+  background-color: ${({ theme, $isActive }) => $isActive ? theme.primary + '20' : theme.surface};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.secondary};
+    background-color: ${({ theme }) => theme.secondary}20;
+  }
+`;
+
+export const OptionIcon = styled.div`
+  font-size: 1.8rem;
+  color: ${({ theme }) => theme.primary};
+`;
+
+export const OptionLabel = styled.span`
+  font-weight: 600;
+  color: ${({ theme }) => theme.textPrimary};
+`;
+
+export const OptionDescription = styled.p`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.textSecondary};
+  margin: 0;
+  line-height: 1.3;
+`;
+
+// Checkbox fica funcional, mas visualmente escondido
+export const OptionCheckbox = styled.input`
+  display: none;
+`;
+
+export const ConfirmRollButton = styled.button`
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    background-color: ${({ theme }) => theme.success};
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.1);
+        transform: translateY(-2px);
+    }
+`;
 
 // --- MacroManager Styles ---
 export const MacroList = styled.div`
@@ -726,12 +819,23 @@ export const JukeboxForm = styled.div`
 
 // --- GameLog Styles (REPAGINADO) ---
 const critGlow = keyframes`
-  0% { box-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 8px #4CAF50, 0 0 12px #4CAF50; }
-  100% { box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #4CAF50, 0 0 20px #4CAF50; }
+  0%, 100% {
+    box-shadow:
+      0 0 3px rgba(255,255,255,.30),
+      0 0 12px rgba(255,255,255,.50),
+      0 0 16px rgba(76,175,80,.85),
+      0 0 18px rgba(76,175,80,.85);
+  }
 `;
+
 const fumbleGlow = keyframes`
-  0% { box-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 8px #F44336, 0 0 12px #F44336; }
-  100% { box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #F44336, 0 0 20px #F44336; }
+  0%, 100% {
+    box-shadow:
+      0 0 3px rgba(255,255,255,.30),
+      0 0 12px rgba(255,255,255,.50),
+      0 0 16px rgba(244,67,54,.85),
+      0 0 20px rgba(244,67,54,.85);
+  }
 `;
 
 export const LogContainer = styled.div`
@@ -750,7 +854,7 @@ export const LogItem = styled(motion.div)`
   border: 1px solid ${({ theme }) => theme.border};
   padding: 0.75rem 1rem;
   transition: all 0.3s ease;
-  
+  will-change: transform, box-shadow, filter;
   opacity: ${({ $hidden }) => $hidden ? 0.7 : 1};
   
   animation: ${({ $isAllCrits, $isAllFumbles }) => {
