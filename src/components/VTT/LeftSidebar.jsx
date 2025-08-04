@@ -12,7 +12,7 @@ import { SidebarContainer, CollapseButton, ToolSection, PlayerList, PlayerCard, 
 import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog, FaChevronLeft, FaChevronRight, FaMusic } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { Modal } from '../Modal';
-
+import v from '../../../package.json'
 const LinkCharacterModal = ({ isOpen, onClose, onLink }) => {
     const { characters, loading } = useUserCharacters();
 
@@ -160,6 +160,7 @@ export const LeftSidebar = ({ onToolSelect, onToggleCollapse }) => {
                     <ToolButton onClick={copyInviteLink} $isCollapsed={isCollapsed}><FaCopy /> <span>Copiar Convite</span></ToolButton>
                     <ToolButton onClick={() => navigate('/rooms')} $isCollapsed={isCollapsed}><FaSignOutAlt /> <span>Sair da Sala</span></ToolButton>
                 </div>
+                <span className='version'>Versão {v.version}</span>
             </SidebarContainer>
             <LinkCharacterModal isOpen={isLinkModalOpen} onClose={() => setIsLinkModalOpen(false)} onLink={handleLinkCharacter} />
         </>

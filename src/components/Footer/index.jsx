@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FooterContainer, FooterContent, FooterText, ThemeToggle } from './styles';
 import { FaSun, FaMoon } from 'react-icons/fa';
-
+import v from '../../../package.json'
 // Configurações da animação para os ícones
 const iconVariants = {
   hidden: { opacity: 0, rotate: -90, scale: 0.5 },
@@ -17,7 +17,8 @@ export const Footer = ({ theme, toggleTheme }) => {
     <FooterContainer>
       <FooterContent>
         <FooterText>
-          Powered by <strong>Turetta</strong>
+          <p>Powered by <strong>Turetta</strong></p>
+          <span>Versão {v.version}</span>
         </FooterText>
 
         <ThemeToggle

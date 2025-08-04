@@ -72,6 +72,10 @@ export const SidebarContainer = styled(motion.aside)`
   z-index: 100;
   position: relative;
 
+>.version{
+  font-size: 10px;
+  color: ${({ theme }) => theme.textSecondary};
+}
 `;
 export const CollapseButton = styled.button`
   position: absolute;

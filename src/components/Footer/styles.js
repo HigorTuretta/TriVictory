@@ -20,13 +20,21 @@ export const FooterContent = styled.div`
   gap: 1rem;
 `;
 
-export const FooterText = styled.p`
+export const FooterText = styled.div`
   color: ${({ theme }) => theme.textSecondary};
   font-size: 0.9rem;
-
+  display: flex;
+  justify-content: start;
+  flex-direction: column;
+  gap: .5rem;
   strong {
     color: ${({ theme }) => theme.primary};
   }
+
+  >span{
+  font-size: 10px;
+  color: ${({ theme }) => theme.textSecondary};
+}
 `;
 
 export const ThemeToggle = styled(motion.button)`
