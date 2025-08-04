@@ -14,7 +14,6 @@ import { useUserCharacters } from '../../hooks/useUserCharacters';
 import { FaPlus, FaMinus } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
-const GRID_SIZE = 70;
 const FOG_COLOR = "#0a0a0c";
 
 const SceneBackground = ({ imageUrl, onLoad }) => {
@@ -23,7 +22,7 @@ const SceneBackground = ({ imageUrl, onLoad }) => {
     return <KonvaImage image={img} x={0} y={0} listening={false} />;
 };
 
-const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMaster, isSelected, theme, isTurn }) => {
+const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMaster, isSelected, theme, isTurn, gridSize }) => {
     const [img] = useImage(tokenData.imageUrl, 'anonymous');
     const shapeRef = useRef(null);
 
@@ -34,7 +33,7 @@ const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMa
     }, [tokenData.x, tokenData.y]);
     
     const handleDragEnd = (e) => {
-        const newPos = { x: Math.round(e.target.x() / GRID_SIZE) * GRID_SIZE, y: Math.round(e.target.y() / GRID_SIZE) * GRID_SIZE };
+        const newPos = { x: Math.round(e.target.x() / gridSize) * gridSize, y: Math.round(e.target.y() / gridSize) * gridSize };
         onDragEnd(tokenData.tokenId, newPos);
     };
 
@@ -44,26 +43,13 @@ const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMa
     if (tokenData.isKnockedOut) statusIcons.push('😴');
 
     return (
-        <Group
-            ref={shapeRef}
-            x={tokenData.x}
-            y={tokenData.y}
-            draggable={isDraggable}
-            onDragEnd={handleDragEnd}
-            onClick={onClick}
-            onTap={onClick}
-            onContextMenu={onContextMenu}
-            opacity={(tokenData.isVisible === false && isMaster) ? 0.5 : 1}
-        >
+        <Group x={tokenData.x} y={tokenData.y} draggable={isDraggable} onDragEnd={handleDragEnd} onClick={onClick} onTap={onClick} onContextMenu={onContextMenu} opacity={(tokenData.isVisible === false && isMaster) ? 0.5 : 1} ref={shapeRef}>
             <Circle
-                // CORREÇÃO: Desloca o centro do círculo para o meio da célula da grade.
-                x={GRID_SIZE / 2}
-                y={GRID_SIZE / 2}
-                radius={GRID_SIZE / 2}
+                x={gridSize / 2} y={gridSize / 2} radius={gridSize / 2}
                 fillPatternImage={img}
-                fillPatternScaleX={GRID_SIZE / (img?.width || GRID_SIZE)}
-                fillPatternScaleY={GRID_SIZE / (img?.height || GRID_SIZE)}
-                fillPatternOffset={{ x: (img?.width || GRID_SIZE) / 2, y: (img?.height || GRID_SIZE) / 2 }}
+                fillPatternScaleX={gridSize / (img?.width || gridSize)}
+                fillPatternScaleY={gridSize / (img?.height || gridSize)}
+                fillPatternOffset={{ x: (img?.width || gridSize) / 2, y: (img?.height || gridSize) / 2 }}
                 stroke={isTurn ? '#FFD700' : (isSelected ? theme.primary : (tokenData.color || '#3498db'))}
                 strokeWidth={isSelected || isTurn ? 6 : 4}
                 shadowColor={isTurn ? '#FFD700' : (isSelected ? theme.primary : 'black')}
@@ -71,45 +57,24 @@ const Token = ({ tokenData, onDragEnd, onClick, onContextMenu, isDraggable, isMa
                 shadowOpacity={isSelected || isTurn ? 0.9 : 0.6}
             />
             <Text
-                text={tokenData.name}
-                // CORREÇÃO: Centraliza o texto horizontalmente com o círculo.
-                x={GRID_SIZE / 2}
-                // CORREÇÃO: Posiciona o texto abaixo do círculo.
-                y={GRID_SIZE + 5}
-                width={GRID_SIZE * 1.5}
-                offsetX={(GRID_SIZE * 1.5) / 2}
-                align="center"
-                fill="white"
-                fontSize={14}
-                fontStyle="bold"
-                shadowColor="black"
-                shadowBlur={10}
+                text={tokenData.name} x={gridSize / 2} y={gridSize + 5}
+                width={gridSize * 1.5} offsetX={(gridSize * 1.5) / 2}
+                align="center" fill="white" fontSize={14} fontStyle="bold" shadowColor="black" shadowBlur={10}
             />
             {statusIcons.map((icon, index) => (
-                <Text
-                    key={index}
-                    text={icon}
-                    // CORREÇÃO: Ajusta a posição dos ícones para o novo centro.
-                    x={GRID_SIZE} 
-                    y={0 + (index * 22)}
-                    fontSize={24}
-                    shadowColor="black"
-                    shadowBlur={5}
-                    shadowOffsetX={1}
-                    shadowOffsetY={1}
-                />
+                <Text key={index} text={icon} x={gridSize} y={0 + (index * 22)} fontSize={24} shadowColor="black" shadowBlur={5} shadowOffsetX={1} shadowOffsetY={1}/>
             ))}
         </Group>
     );
 };
 
-const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings, mapSize }) => {
+const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings, mapSize, gridSize }) => {
     const opacity = isMaster ? 0.7 : 1;
     return (
         <Layer listening={false}>
             <Rect x={0} y={0} width={mapSize.width || 5000} height={mapSize.height || 5000} fill={FOG_COLOR} opacity={opacity} />
             {!isMaster && visionSettings.playerVision && playerTokens.map(token => (
-                <Circle key={`vision-${token.tokenId}`} x={token.x + GRID_SIZE / 2} y={token.y + GRID_SIZE / 2} radius={GRID_SIZE * visionSettings.visionRadius} fill="white" globalCompositeOperation={'destination-out'}/>
+                <Circle key={`vision-${token.tokenId}`} x={token.x + gridSize / 2} y={token.y + gridSize / 2} radius={gridSize * visionSettings.visionRadius} fill="white" globalCompositeOperation={'destination-out'}/>
             ))}
             {(paths || []).map((path, i) => (
                 <Line key={i} points={path.points} stroke={path.isEraser ? 'white' : FOG_COLOR} strokeWidth={path.brushSize} lineCap="round" lineJoin="round" globalCompositeOperation={path.isEraser ? 'destination-out' : 'source-over'}/>
@@ -157,8 +122,9 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
     const [scale, setScale] = useState(1);
     const { characters: allPlayerCharacters } = useUserCharacters();
 
-    const roomSettings = room.roomSettings || { playerVision: true, visionRadius: 3.5, showGrid: true };
-    
+    const roomSettings = room.roomSettings || { playerVision: true, visionRadius: 3.5, showGrid: true, gridSize: 70 };
+    const gridSize = roomSettings.gridSize || 70;
+
     const sceneTokens = useMemo(() => {
         if (!Array.isArray(room.tokens) || !activeScene) return [];
         return room.tokens.filter(t => t.sceneId === activeScene.id);
@@ -199,10 +165,10 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
                 e.preventDefault();
                 let newPos = { x: tokenToMove.x, y: tokenToMove.y };
                 switch (e.key) {
-                    case 'ArrowUp': newPos.y -= GRID_SIZE; break;
-                    case 'ArrowDown': newPos.y += GRID_SIZE; break;
-                    case 'ArrowLeft': newPos.x -= GRID_SIZE; break;
-                    case 'ArrowRight': newPos.x += GRID_SIZE; break;
+                    case 'ArrowUp': newPos.y -= gridSize; break;
+                    case 'ArrowDown': newPos.y += gridSize; break;
+                    case 'ArrowLeft': newPos.x -= gridSize; break;
+                    case 'ArrowRight': newPos.x += gridSize; break;
                     default: return;
                 }
                 newPos.x = Math.max(0, newPos.x);
@@ -214,7 +180,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
         return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); };
-    }, [isPanningWithSpace, selectedTokenId, sceneTokens, updateTokenPosition, isMaster]);
+    }, [isPanningWithSpace, selectedTokenId, sceneTokens, updateTokenPosition, isMaster, gridSize]);
     
     const handleTokenClick = (e, token) => {
         const isOwnPlayerToken = token.type === 'player' && token.userId === currentUser.uid;
@@ -231,8 +197,8 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         const position = stageRef.current.getPointerPosition();
         const stage = stageRef.current;
         return {
-            x: Math.round((position.x - stage.x()) / stage.scaleX() / GRID_SIZE) * GRID_SIZE,
-            y: Math.round((position.y - stage.y()) / stage.scaleY() / GRID_SIZE) * GRID_SIZE,
+            x: Math.round((position.x - stage.x()) / stage.scaleX() / gridSize) * gridSize,
+            y: Math.round((position.y - stage.y()) / stage.scaleY() / gridSize) * gridSize,
         };
     };
 
@@ -322,29 +288,22 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
     return (
         <MapContainer ref={mapContainerRef} onDrop={handleDrop} onDragOver={handleDragOver} tabIndex={1}>
             <Stage width={mapContainerRef.current?.clientWidth || window.innerWidth - 280} height={mapContainerRef.current?.clientHeight || window.innerHeight} onWheel={handleWheel} draggable={isDraggable} onClick={handleStageClick} ref={stageRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onContextMenu={(e) => e.evt.preventDefault()} scaleX={scale} scaleY={scale}>
-                <Layer>
-                    {activeScene?.imageUrl && <SceneBackground imageUrl={activeScene.imageUrl} onLoad={setMapSize} />}
-                </Layer>
+                <Layer><SceneBackground imageUrl={activeScene?.imageUrl} onLoad={setMapSize} /></Layer>
                 {roomSettings.showGrid && mapSize.width > 0 && (
-                    <GridLayer width={mapSize.width} height={mapSize.height} gridSize={GRID_SIZE} theme={theme} />
+                    <GridLayer width={mapSize.width} height={mapSize.height} gridSize={gridSize} theme={theme} />
                 )}
-                <FogOfWarLayer paths={room.fogOfWar?.[activeScene?.id]?.fogPaths || []} playerTokens={playerVisionSources} isMaster={isMaster} visionSettings={roomSettings} mapSize={mapSize} />
+                <FogOfWarLayer paths={room.fogOfWar?.[activeScene?.id]?.fogPaths || []} playerTokens={playerVisionSources} isMaster={isMaster} visionSettings={roomSettings} mapSize={mapSize} gridSize={gridSize} />
                 <Layer>
                     {visibleTokens.map(token => {
                         const canDrag = isMaster || (token.userId === currentUser.uid && !token.isImmobilized);
-                        return (<Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => handleTokenClick(e, token)} isDraggable={canDrag} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} />);
+                        return (<Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => handleTokenClick(e, token)} isDraggable={canDrag} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} gridSize={gridSize} />);
                     })}
                 </Layer>
                 {isMaster && fowTool && !isPanningWithSpace && (
                     <Layer listening={false}><BrushCursor x={cursorPos.x} y={cursorPos.y} brushSize={fowTool.brushSize} tool={fowTool.tool} /></Layer>
                 )}
             </Stage>
-            <ZoomSlider 
-                scale={scale} 
-                onZoomChange={applyZoom} 
-                onZoomIn={() => applyZoom(scale * 1.2)}
-                onZoomOut={() => applyZoom(scale / 1.2)}
-            />
+            <ZoomSlider scale={scale} onZoomChange={applyZoom} onZoomIn={() => applyZoom(scale * 1.2)} onZoomOut={() => applyZoom(scale / 1.2)} />
         </MapContainer>
     );
 };

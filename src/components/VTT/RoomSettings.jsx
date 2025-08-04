@@ -6,8 +6,8 @@ import { SettingsContainer, SettingRow, SettingLabel, ToggleSwitch } from './sty
 export const RoomSettings = () => {
     const { room, updateRoom } = useRoom();
 
-    // Define valores padrão para as configurações, incluindo a nova 'showGrid'
-    const settings = room.roomSettings || { playerVision: true, visionRadius: 3.5, showGrid: true };
+    // Adiciona 'gridSize' com um valor padrão de 70px.
+    const settings = room.roomSettings || { playerVision: true, visionRadius: 3.5, showGrid: true, gridSize: 70 };
 
     const handleSettingChange = (key, value) => {
         const newSettings = { ...settings, [key]: value };
@@ -45,7 +45,6 @@ export const RoomSettings = () => {
                 />
             </SettingRow>
             
-            {/* NOVO: Opção para mostrar/ocultar a grade */}
             <SettingRow>
                 <SettingLabel htmlFor="showGrid">
                     Exibir Grade no Mapa
@@ -53,9 +52,30 @@ export const RoomSettings = () => {
                 </SettingLabel>
                 <ToggleSwitch
                     id="showGrid"
-                    checked={settings.showGrid ?? true} // Valor padrão true
+                    checked={settings.showGrid ?? true}
                     onChange={(e) => handleSettingChange('showGrid', e.target.checked)}
                 />
+            </SettingRow>
+
+            {/* NOVO: Controle para o tamanho da grade */}
+            <SettingRow>
+                <SettingLabel htmlFor="gridSize">
+                    Tamanho da Grade (px)
+                    <span>Afeta o tamanho dos tokens e o alinhamento no mapa.</span>
+                </SettingLabel>
+                <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+                    <input
+                        type="range"
+                        id="gridSize"
+                        min="30"
+                        max="150"
+                        step="1"
+                        value={settings.gridSize || 70}
+                        onChange={(e) => handleSettingChange('gridSize', parseInt(e.target.value, 10))}
+                        style={{width: '120px'}}
+                    />
+                    <span>{settings.gridSize || 70}px</span>
+                </div>
             </SettingRow>
         </SettingsContainer>
     );
