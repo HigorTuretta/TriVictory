@@ -251,7 +251,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             updateRoom({ tokens: [...currentTokens, newToken] });
         } else if (playerDataString) {
             const playerLink = JSON.parse(playerDataString);
-            if (currentTokens.some(t => t.tokenId === playerLink.characterId && t.sceneId === activeScene.id)) { return toast.info(`${playerLink.characterName} já está nesta cena.`); }
+            if (currentTokens.some(t => t.tokenId === playerLink.characterId && t.sceneId === activeScene.id)) { return toast(`${playerLink.characterName} já está nesta cena.`); }
             const fullCharData = allPlayerCharacters.find(c => c.id === playerLink.characterId);
             if (!fullCharData) return toast.error("Não foi possível carregar os dados completos do personagem.");
             const { poder = 0, habilidade = 0, resistencia = 0 } = fullCharData.attributes || {};
