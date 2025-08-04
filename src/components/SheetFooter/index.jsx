@@ -1,3 +1,4 @@
+// src/components/SheetFooter/index.jsx
 import React from 'react';
 import * as gameData from '../../data/gameData';
 import { SelectionGrid } from '../SelectionGrid';
@@ -10,7 +11,6 @@ import {
 } from './styles';
 
 // --- Array de Configuração para as Seções da Ficha ---
-// Centraliza os dados de cada seção, eliminando a repetição no JSX.
 const SECTIONS_CONFIG = [
   {
     key: 'skills',
@@ -89,10 +89,11 @@ export const SheetFooter = ({
         selectedItems={selectedItems}
         lockedItems={lockedItems}
         itemCounts={itemCounts}
-        onAddItem={(item, subOption) => addItem(section.key, item, subOption)}
+        onAddItem={(item, subOption, cost) => addItem(section.key, item, subOption, cost)}
         onRemoveItem={(id) => removeItem(section.key, id)}
         listName={section.title}
         isEditing={isEditing}
+        characterSkills={character.skills || []} // Passa as perícias atuais do personagem
       />
     ) : (
       <FinalizedView items={selectedItems} />

@@ -1,3 +1,4 @@
+// src/components/SelectionGrid/index.jsx
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Modal } from '../Modal';
@@ -8,11 +9,11 @@ import {
     Grid, ItemCard, ItemName, ItemCost, SearchBar, GridContainer, 
     SelectedItemsContainer, SelectedItem, RemoveButton, GridHeader, 
     AddCustomButton, HintText, CustomItemControls, SpecializationModalContent, 
-    SpecializationInput, DisclaimerText, CounterBadge
+    SpecializationInput, DisclaimerText, CounterBadge, ModalSelectionWrapper, ModalOptionButton
 } from './styles';
 import { ChoiceButton } from '../../screens/CharacterSheet/styles';
+import * as gameData from '../../data/gameData';
 
-// --- Subcomponente: Item da Grade ---
 const GridItem = ({ item, count, isDisabled, isLocked, onClick, onContextMenu, onEdit, onDelete, isEditing }) => (
     <ItemCard
         onClick={() => !isDisabled && onClick(item)}
@@ -23,9 +24,7 @@ const GridItem = ({ item, count, isDisabled, isLocked, onClick, onContextMenu, o
     >
         <ItemName>{item.nome}</ItemName>
         <ItemCost>{item.custo > 0 ? `+${item.custo}` : item.custo}pt</ItemCost>
-        
         {item.repetivel && count > 0 && <CounterBadge>{count}</CounterBadge>}
-        
         {item.isCustom && isEditing && (
             <CustomItemControls>
                 <button onClick={(e) => { e.stopPropagation(); onEdit(item); }} title="Editar"><FaPen /></button>
@@ -35,11 +34,8 @@ const GridItem = ({ item, count, isDisabled, isLocked, onClick, onContextMenu, o
     </ItemCard>
 );
 
-// --- Subcomponentes de Modal ---
 const ItemDetailsModal = ({ item, onClose }) => {
-    // CORREÇÃO: Adicionada verificação para prevenir erro quando 'item' é nulo.
     if (!item) return null;
-
     return (
         <Modal isOpen={!!item} onClose={onClose}>
             <h3>{item.nome}</h3>
@@ -49,28 +45,26 @@ const ItemDetailsModal = ({ item, onClose }) => {
     );
 };
 
-const SubOptionModal = ({ item, onSelect, onClose }) => {
-    // CORREÇÃO: Adicionada verificação de segurança.
-    if (!item) return null;
-
+const OptionsChooserModal = ({ isOpen, title, options, onSelect, onClose }) => {
+    if (!isOpen || !options) return null;
     return (
-        <Modal isOpen={!!item} onClose={onClose}>
-            <h3>Escolha uma opção para: {item.nome}</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-                {item.opcoes.map(opt => (
-                    <ChoiceButton key={opt} onClick={() => onSelect(item, opt)}>
-                        {opt}
-                    </ChoiceButton>
+        <Modal isOpen={isOpen} onClose={onClose}>
+            <h3>{title}</h3>
+            <ModalSelectionWrapper>
+                {options.map(opt => (
+                    <ModalOptionButton key={opt.label} onClick={() => onSelect(opt.value)}>
+                        {opt.label}
+                        {opt.description && <small>{opt.description}</small>}
+                    </ModalOptionButton>
                 ))}
-            </div>
+            </ModalSelectionWrapper>
         </Modal>
     );
 };
 
+
 const SpecializationModal = ({ item, onConfirm, onClose }) => {
     const [name, setName] = useState('');
-
-    // CORREÇÃO: Adicionada verificação de segurança.
     if (!item) return null;
 
     const handleConfirm = (isSpecialization) => {
@@ -98,11 +92,11 @@ const SpecializationModal = ({ item, onConfirm, onClose }) => {
     );
 };
 
-// --- Componente Principal ---
 export const SelectionGrid = ({
     items, selectedItems = [], lockedItems = new Set(), itemCounts = {},
     onAddItem, onRemoveItem, listName, isEditing,
-    onAddCustomItem, onUpdateCustomItem, onDeleteCustomItem
+    onAddCustomItem, onUpdateCustomItem, onDeleteCustomItem,
+    characterSkills = []
 }) => {
     const [activeModal, setActiveModal] = useState({ type: null, data: null });
     const [searchTerm, setSearchTerm] = useState('');
@@ -112,26 +106,64 @@ export const SelectionGrid = ({
     const closeModal = () => setActiveModal({ type: null, data: null });
 
     const handleItemClick = (item) => {
-        if (listName === 'Perícias') {
+        if (listName === 'Perícias' && item.nome === 'Perícias') {
             setActiveModal({ type: 'specialization', data: item });
         } else if (item.opcoes) {
-            setActiveModal({ type: 'subOption', data: item });
+            setActiveModal({ type: 'options', data: item });
+        } else if (item.custos) {
+            setActiveModal({ type: 'cost', data: item });
+        } else if (item.requerPericia) {
+            setActiveModal({ type: 'pericia', data: item });
         } else {
-            onAddItem(item, null);
+            onAddItem(item, null, item.custo);
         }
     };
 
-    const handleSelectSubOption = (item, option) => {
-        onAddItem(item, option);
-        if (!item.repetivel) {
+    const handleSelectSubOption = (option) => {
+        onAddItem(activeModal.data, option.nome, activeModal.data.custo);
+        if (!activeModal.data.repetivel) {
             closeModal();
         }
     };
 
     const handleConfirmSpecialization = (pericia, isSpecialization, specializationName) => {
-        onAddItem({ ...pericia, isSpecialization }, specializationName);
+        onAddItem({ ...pericia, isSpecialization }, specializationName, pericia.custo);
+    };
+    
+    const handleCostSelect = (cost) => {
+        onAddItem(activeModal.data, null, cost);
+        closeModal();
+    };
+    
+    const handlePericiaSelect = (pericia) => {
+        onAddItem(activeModal.data, pericia.nome, activeModal.data.custo);
+        closeModal();
     };
 
+    const getModalOptions = () => {
+        const { type, data } = activeModal;
+        if (!data) return null;
+        if (type === 'options') return data.opcoes.map(opt => ({ label: `${opt.nome}`, description: opt.descricao, value: opt }));
+        
+        if (type === 'cost') {
+            return data.custos.map(cost => ({ 
+                label: `${data.nome} (${cost > 0 ? '+' : ''}${cost}pt)`, 
+                value: cost 
+            }));
+        }
+
+        if (type === 'pericia') {
+            const chosenSkills = selectedItems.filter(i => i.nome === data.nome).map(i => i.subOption);
+            const allPossibleSkills = listName === 'Vantagens' ? characterSkills : gameData.pericias;
+            const availableSkills = allPossibleSkills.filter(p => !chosenSkills.includes(p.nome));
+            
+            if (availableSkills.length === 0) return [{ label: `Nenhuma perícia disponível para ${data.nome}`, value: null }];
+            
+            return availableSkills.map(pericia => ({ label: pericia.nome, value: pericia }));
+        }
+        return null;
+    };
+    
     const handleSaveCustom = (customItemData) => {
         if (activeModal.type === 'customEdit') {
             onUpdateCustomItem({ ...activeModal.data, ...customItemData });
@@ -151,17 +183,20 @@ export const SelectionGrid = ({
     return (
         <>
             <GridHeader>
-                <SearchBar placeholder={`Buscar em ${listName}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                <AddCustomButton onClick={() => setActiveModal({ type: 'customAdd', data: null })}>
-                    + Criar {listName.slice(0, -1)} Customizada
-                </AddCustomButton>
+                 <SearchBar placeholder={`Buscar em ${listName}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                {isEditing && (
+                    <AddCustomButton onClick={() => setActiveModal({ type: 'customAdd', data: null })}>
+                        + Criar {listName.slice(0, -1)} Customizada
+                    </AddCustomButton>
+                )}
             </GridHeader>
-
+            
             {selectedItems?.length > 0 && (
                 <SelectedItemsContainer>
                     {selectedItems.map((item) => (
                         <SelectedItem key={item.id} $isLocked={lockedItems.has(item.nome)}>
                             {item.isSpecialization ? `${item.nome} (Especialização: ${item.subOption})` : (item.subOption ? `${item.nome}: ${item.subOption}` : item.nome)}
+                            <span style={{opacity: 0.7, marginLeft: '0.5rem'}}>({item.custo}pt)</span>
                             <RemoveButton onClick={() => onRemoveItem(item.id)} title={lockedItems.has(item.nome) ? "Item bloqueado" : "Remover"} disabled={lockedItems.has(item.nome)}>×</RemoveButton>
                         </SelectedItem>
                     ))}
@@ -188,10 +223,31 @@ export const SelectionGrid = ({
             </GridContainer>
 
             <HintText><b>Botão esquerdo:</b> selecionar item. <b>Botão direito:</b> ver detalhes.</HintText>
-
-            {/* Renderização dos Modais */}
+            
             <ItemDetailsModal item={activeModal.type === 'details' ? activeModal.data : null} onClose={closeModal} />
-            <SubOptionModal item={activeModal.type === 'subOption' ? activeModal.data : null} onSelect={handleSelectSubOption} onClose={closeModal} />
+            
+            <OptionsChooserModal
+                isOpen={activeModal.type === 'options'}
+                onClose={closeModal}
+                title={`Escolha uma opção para ${activeModal.data?.nome}`}
+                options={getModalOptions()}
+                onSelect={handleSelectSubOption}
+            />
+            <OptionsChooserModal
+                isOpen={activeModal.type === 'cost'}
+                onClose={closeModal}
+                title={`Escolha o custo para ${activeModal.data?.nome}`}
+                options={getModalOptions()}
+                onSelect={handleCostSelect}
+            />
+            <OptionsChooserModal
+                isOpen={activeModal.type === 'pericia'}
+                onClose={closeModal}
+                title={`Escolha uma Perícia para ${activeModal.data?.nome}`}
+                options={getModalOptions()}
+                onSelect={handlePericiaSelect}
+            />
+            
             <SpecializationModal item={activeModal.type === 'specialization' ? activeModal.data : null} onConfirm={handleConfirmSpecialization} onClose={closeModal} />
             
             <CustomItemModal

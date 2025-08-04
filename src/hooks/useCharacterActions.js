@@ -45,12 +45,17 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         updateCharacter({ [key]: value });
     };
 
-    const addItem = (listKey, item, subOption = null) => {
+    const addItem = (listKey, item, subOption = null, custoOverride = null) => {
         const list = character[listKey] || [];
+        // A verificação de item repetível agora é mais inteligente.
         if (list.some(i => i.nome === item.nome && !item.repetivel)) {
             return toast.error(`${item.nome} já foi adicionado(a).`);
         }
-        const newItem = { ...item, id: uuidv4(), subOption };
+        
+        // Usa o custo que veio do modal, ou o custo padrão do item.
+        const finalCost = custoOverride !== null ? custoOverride : item.custo;
+        const newItem = { ...item, id: uuidv4(), subOption, custo: finalCost };
+
         updateCharacter({ [listKey]: [...list, newItem] });
         toast.success(`${listKey.slice(0, -1)} "${item.nome}${subOption ? ` (${subOption})` : ''}" adicionada!`);
     };
