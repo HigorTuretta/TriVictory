@@ -2,8 +2,9 @@ import React, { useMemo } from 'react';
 import { InventorySettings } from '../InventorySettings';
 import { Mochila } from '../Mochila';
 import { RightColumn, Section, SectionTitle } from './styles';
+import { ArtifactList } from '../Artifacts/ArtifactList'
 
-export const SheetRightColumn = ({ character, isEditing, handleUpdate, onConsume }) => {
+export const SheetRightColumn = ({ character, isEditing, handleUpdate, onConsume, onEditArtifact, onCreateArtifact, onDeleteArtifact }) => {
   // Guarda de segurança para o caso do personagem ainda não ter carregado.
   if (!character) {
     return <RightColumn />;
@@ -37,6 +38,8 @@ export const SheetRightColumn = ({ character, isEditing, handleUpdate, onConsume
     return attrValue * multiplier;
   }, [inventorySettings, attributes]);
 
+  const artifactPoints = character.advantages?.filter(a => a.nome === 'Artefato').reduce((sum, a) => sum + a.custo, 0) || 0;
+  const createdArtifactsCount = character.artifacts?.length || 0;
   return (
     <RightColumn>
       <Section>
@@ -54,6 +57,18 @@ export const SheetRightColumn = ({ character, isEditing, handleUpdate, onConsume
           totalWeight={totalWeight}
           isDead={isDead}
           onConsume={onConsume}
+        />
+      </Section>
+
+      <Section>
+        <SectionTitle>Artefatos</SectionTitle>
+        <ArtifactList
+          artifacts={character.artifacts}
+          isEditing={isEditing}
+          onEdit={onEditArtifact}
+          onDelete={onDeleteArtifact}
+          onCreate={onCreateArtifact}
+          canCreate={artifactPoints > createdArtifactsCount}
         />
       </Section>
     </RightColumn>

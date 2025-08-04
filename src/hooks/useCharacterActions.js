@@ -47,6 +47,24 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         updateCharacter({ attributes: { ...character.attributes, [attr]: sanitizedValue } });
     };
 
+    const addArtifact = (artifactData) => {
+        const artifacts = [...(character.artifacts || []), artifactData];
+        updateCharacter({ artifacts });
+        toast.success(`Artefato "${artifactData.name}" criado!`);
+    };
+
+    const updateArtifact = (artifactData) => {
+        const artifacts = (character.artifacts || []).map(a => a.id === artifactData.id ? artifactData : a);
+        updateCharacter({ artifacts });
+        toast.success(`Artefato "${artifactData.name}" atualizado!`);
+    };
+
+    const removeArtifact = (artifactId) => {
+        const artifacts = (character.artifacts || []).filter(a => a.id !== artifactId);
+        updateCharacter({ artifacts });
+        toast.error("Artefato removido.");
+    };
+
     const handleResourceChange = (key, value) => {
         updateCharacter({ [key]: value });
     };
@@ -216,5 +234,8 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         handleAddTechnique,
         handleRemoveTechnique,
         handleConsume,
+        addArtifact,
+        updateArtifact,
+        removeArtifact,
     };
 };

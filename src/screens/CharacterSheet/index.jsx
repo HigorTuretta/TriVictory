@@ -1,3 +1,4 @@
+// src/screens/CharacterSheet/index.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -8,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { CharacterProvider, useCharacter } from '../../contexts/CharacterContext';
 import { getMainImageUrl } from '../../services/cloudinaryService';
 
+// Componentes de UI
 import { CharacterSheetHeader } from '../../components/CharacterSheetHeader';
 import { ImageCropperModal } from '../../components/ImageCropperModal';
 import { ImageLightbox } from '../../components/ImageLightbox';
@@ -16,12 +18,13 @@ import { SheetLeftColumn } from '../../components/SheetLeftColumn';
 import { SheetRightColumn } from '../../components/SheetRightColumn';
 import { SheetFooter } from '../../components/SheetFooter';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { ArtifactBuilderModal } from '../../components/Artifacts/ArtifactBuilderModal';
 import { RPGLoader } from '../../components/RPGLoader';
 
 import deathAnimation from '../../assets/lotties/deathAnimation.json';
 import {
-    SheetContainer, BackButton, HeaderPanel, Section, SectionTitle,
-    SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
+  SheetContainer, BackButton, HeaderPanel, Section, SectionTitle,
+  SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
 } from './styles';
 
 
@@ -101,7 +104,6 @@ const SheetModals = ({ character, modals, closeModal, lightboxImageUrl, updateCh
         </>
     );
 };
-
 /* --------------------- Conteúdo Principal da Tela ------------------------- */
 const CharacterSheetContent = () => {
     const navigate = useNavigate();
@@ -109,30 +111,44 @@ const CharacterSheetContent = () => {
     const { character, loading, isEditing, setIsEditing, updateCharacter, ...actions } = useCharacter();
     const { modals, openModal, closeModal, lightboxImageUrl, openLightbox } = useCharacterSheetUI();
     const [isBackstoryVisible, setIsBackstoryVisible] = useState(false);
+    const [editingArtifact, setEditingArtifact] = useState(null);
 
     useEffect(() => {
         if (!loading && character?.isDead) setIsEditing(false);
     }, [loading, character, setIsEditing]);
 
+    // GUARDA DE SEGURANÇA: Se estiver carregando ou o personagem for nulo, mostra o loader.
     if (loading || !character) {
         return <RPGLoader />;
     }
 
-    const isOwner = currentUser?.uid === character?.ownerId;
-    const { resources, points, lockedItems, itemCounts } = actions;
+    // CORREÇÃO: Todos os cálculos e desestruturações que dependem do 'character'
+    // são movidos para DEPOIS da guarda de segurança.
+    const isOwner = currentUser?.uid === character.ownerId;
+    const { resources, points, lockedItems, itemCounts, addArtifact, updateArtifact, removeArtifact } = actions;
+    const imageForCropper = character.portraitImage || '';
 
-    // CORREÇÃO: Passa o public_id diretamente, pois o modal não precisa mais da URL completa.
-    const imageForCropper = character?.portraitImage || '';
+    const xpBudget = (character.advantages?.filter(a => a.nome === 'Artefato').reduce((sum, a) => sum + a.custo, 0) || 0) * 10;
+    
+    const handleSaveArtifact = (artifactData) => {
+        if (editingArtifact === 'new') {
+            addArtifact(artifactData);
+        } else {
+            updateArtifact(artifactData);
+        }
+    };
+
 
     return (
         <SheetContainer $isDead={character.isDead}>
-            <SheetModals
-                character={character}
-                modals={modals}
-                closeModal={closeModal}
-                lightboxImageUrl={lightboxImageUrl}
-                updateCharacter={updateCharacter}
+            <SheetModals 
+                character={character} 
+                modals={modals} 
+                closeModal={closeModal} 
+                lightboxImageUrl={lightboxImageUrl} 
+                updateCharacter={updateCharacter} 
             />
+
             {character.isDead && <DeathAnimationOverlay><Lottie animationData={deathAnimation} loop /></DeathAnimationOverlay>}
             <BackButton onClick={() => navigate(-1)}>← Voltar</BackButton>
 
@@ -179,8 +195,12 @@ const CharacterSheetContent = () => {
                     isEditing={isEditing}
                     handleUpdate={updateCharacter}
                     onConsume={actions.handleConsume}
+                    onEditArtifact={setEditingArtifact}
+                    onDeleteArtifact={removeArtifact}
+                    onCreateArtifact={() => setEditingArtifact('new')}
                 />
             </SheetLayoutGrid>
+
             <SheetFooter
                 character={character}
                 isEditing={isEditing}
@@ -203,6 +223,14 @@ const CharacterSheetContent = () => {
                 onDone={(data) => updateCharacter(data)}
                 characterImage={imageForCropper}
             />
+            
+            <ArtifactBuilderModal 
+                isOpen={!!editingArtifact}
+                onClose={() => setEditingArtifact(null)}
+                onSave={handleSaveArtifact}
+                artifactToEdit={editingArtifact === 'new' ? null : editingArtifact}
+                xpBudget={xpBudget}
+            />
 
             <FloatingActions
                 isOwner={isOwner}
@@ -215,6 +243,7 @@ const CharacterSheetContent = () => {
     );
 };
 
+/* ------- Componente Wrapper com o Provider -------------- */
 export const CharacterSheet = () => {
     const { characterId } = useParams();
     return (

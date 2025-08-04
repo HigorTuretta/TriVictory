@@ -8,7 +8,9 @@ export const RightColumn = styled.div`
   }
 `;
 
-export const Section = styled.section``;
+export const Section = styled.section`
+margin-bottom: 2.5rem;
+`;
 
 export const SectionTitle = styled.h2`
   font-size: 1.5rem;
