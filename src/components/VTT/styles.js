@@ -737,14 +737,12 @@ const fumbleGlow = keyframes`
 export const LogContainer = styled.div`
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  gap: 1rem;
-  overflow-y: auto;
-  padding: 1rem;
+  height: 100%; /* Garante que o container ocupe o espaço */
   background-color: ${({ theme }) => theme.background};
 `;
 
-export const LogItem = styled.div`
+export const LogItem = styled(motion.div)`
+  position: relative; 
   display: flex;
   flex-direction: column;
   background-color: ${({ theme, $hidden }) => $hidden ? `${theme.surface}80` : theme.surface};
@@ -753,14 +751,20 @@ export const LogItem = styled.div`
   padding: 0.75rem 1rem;
   transition: all 0.3s ease;
   
-  /* Animações de crítico e falha */
-  animation: ${({ $isAllCrits, $isFumble }) => {
+  opacity: ${({ $hidden }) => $hidden ? 0.7 : 1};
+  
+  animation: ${({ $isAllCrits, $isAllFumbles }) => {
     if ($isAllCrits) return css`${critGlow} 1.5s ease-in-out infinite alternate`;
-    if ($isFumble) return css`${fumbleGlow} 1.5s ease-in-out infinite alternate`;
+    if ($isAllFumbles) return css`${fumbleGlow} 1.5s ease-in-out infinite alternate`;
     return 'none';
   }};
-`;
 
+  /* O botão de visibilidade só aparece quando o mouse está sobre o card */
+  &:hover > button {
+    opacity: 1;
+    visibility: visible;
+  }
+`;
 export const LogHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -796,7 +800,6 @@ export const LogRoll = styled.span`
   color: ${({ theme }) => theme.secondary};
   white-space: nowrap;
 `;
-
 export const LogResult = styled.div`
   display: grid;
   grid-template-columns: 1fr auto;
@@ -824,3 +827,70 @@ export const LogBreakdown = styled.p`
   .fumble { color: ${({ theme }) => theme.error}; }
 `;
 
+// NOVO: Estilos para a rolagem oculta
+export const HiddenRollCard = styled.div`
+  width: 100%;
+  text-align: center;
+  font-style: italic;
+  padding: 1rem;
+  color: ${({ theme }) => theme.textSecondary};
+`;
+
+export const VisibilityToggle = styled.button`
+  position: absolute;
+  top: -7px;      /* Distância do topo do card */
+  right: -7px;   /* Distância da direita do card */
+  
+  background: ${({ theme }) => theme.surfaceVariant};
+  color: ${({ theme }) => theme.textSecondary};
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+
+  opacity: 0;
+  visibility: hidden;
+
+  &:hover {
+    color: ${({ theme }) => theme.primary};
+    transform: scale(1.1);
+  }
+`;
+
+export const Timestamp = styled.time`
+  font-size: 0.7rem;
+  color: ${({ theme }) => theme.textSecondary};
+  align-self: flex-end;
+  margin-top: 0.5rem;
+`;
+
+
+// NOVO: Estilos para paginação
+export const LogPagination = styled.div`
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border-top: 1px solid ${({ theme }) => theme.border};
+
+  button {
+    font-weight: 600;
+    color: ${({ theme }) => theme.primary};
+  }
+`;
+
+export const LogList = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 1rem;
+  overflow-y: auto;
+  padding: 1rem;
+`;

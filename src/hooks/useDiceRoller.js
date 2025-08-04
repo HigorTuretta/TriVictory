@@ -2,12 +2,11 @@
 import { useState, useCallback } from 'react';
 import { useRoom } from '../contexts/RoomContext';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import toast from 'react-hot-toast';
 
 const parseRollCommand = (command, character) => {
-    // ...código da função parseRollCommand sem alterações...
     let numDice = 0;
     let sides = 6;
     const modifiers = [];
@@ -46,16 +45,15 @@ const parseRollCommand = (command, character) => {
     return { numDice, sides, modifiers };
 };
 
-export const useDiceRoller = (character, updateCharacter) => {
+export const useDiceRoller = (character) => {
     const { roomId, room } = useRoom();
     const { currentUser } = useAuth();
-    const isMaster = room.masterId === currentUser.uid;
+    const isMaster = room?.masterId === currentUser.uid;
     
     const [isRolling, setIsRolling] = useState(false);
     const [currentRoll, setCurrentRoll] = useState(null);
     const [modifierModal, setModifierModal] = useState({ isOpen: false, resolve: null });
 
-    // MODIFICADO: A função agora aceita `macroName`
     const executeRoll = useCallback(async (baseCommand, baseModifiers = [], onComplete, macroName = null) => {
         const charForRoll = character || { attributes: {}, pa_current: 0 };
         const userMods = await new Promise(resolve => { setModifierModal({ isOpen: true, resolve }); });
@@ -68,13 +66,12 @@ export const useDiceRoller = (character, updateCharacter) => {
         let finalDice = numDice;
         let results = [];
         let tempModifiers = [...baseModifiers, ...commandModifiers];
-        
-        if (userMods.spendPA && charForRoll.pa_current > 0 && updateCharacter) {
+
+        if (userMods.spendPA && charForRoll.pa_current > 0) {
             finalDice -= 1;
             results.push(6);
             tempModifiers.push({ label: 'Gasto de PA', value: 0 });
-            updateCharacter({ pa_current: charForRoll.pa_current - 1 });
-            toast.success("Você gastou 1 PA para garantir um sucesso!", { icon: '✨'});
+            // Esta atualização deve ser feita pelo componente que chama, não pelo hook
         }
         
         for (let i = 0; i < finalDice; i++) {
@@ -89,18 +86,20 @@ export const useDiceRoller = (character, updateCharacter) => {
         }
         
         const critThreshold = userMods.critOnFive ? 5 : 6;
-        const crits = results.filter(r => r >= critThreshold).length;
-        const fumbles = results.filter(r => r === 1).length;
+        
+        // CORREÇÃO: Lógica de crítico e falha ajustada
+        const isAllCrits = results.length > 0 && results.every(r => r >= critThreshold);
+        const isAllFumbles = results.length > 0 && results.every(r => r === 1);
 
         const localRollData = {
             command: baseCommand, 
-            macroName: macroName, // NOVO: Salva o nome do macro
+            macroName: macroName,
             individualResults: results, 
             modifiers: tempModifiers, 
             total,
             critThreshold, 
-            isAllCrits: crits > 0 && crits === results.length, // NOVO: Flag para crítico total
-            isFumble: fumbles > 0, // Ajustado para ser mais genérico
+            isAllCrits,
+            isAllFumbles, // Renomeado para clareza
             hidden: isMaster ? userMods.isHidden : false,
             user: {
                 uid: currentUser.uid, 
@@ -108,10 +107,12 @@ export const useDiceRoller = (character, updateCharacter) => {
                 character: charForRoll.name || (isMaster ? 'Mestre' : null),
             }
         };
+        
+        const firestoreRollData = { ...localRollData, timestamp: new Date() };
 
         setCurrentRoll(localRollData);
         setIsRolling(true);
-        const firestoreRollData = { ...localRollData, timestamp: serverTimestamp() };
+
         try {
             await addDoc(collection(db, 'rooms', roomId, 'rolls'), firestoreRollData);
         } catch (error) {
@@ -120,7 +121,7 @@ export const useDiceRoller = (character, updateCharacter) => {
             return;
         }
         if (onComplete) onComplete(localRollData);
-    }, [roomId, currentUser, character, isMaster, updateCharacter]);
+    }, [roomId, currentUser, character, isMaster]);
 
     const onAnimationComplete = useCallback(() => setIsRolling(false), []);
     
