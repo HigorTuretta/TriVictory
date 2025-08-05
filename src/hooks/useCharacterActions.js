@@ -8,19 +8,27 @@ const findAdv = (name) => gameData.vantagens.find((a) => a.nome === name);
 const findDis = (name) => gameData.desvantagens.find((d) => d.nome === name);
 
 const hasReqItem = (arr = [], reqName) => arr.some((i) => i.nome === reqName);
+
 const checkReq = (char, req) => {
-  switch (req.tipo) {
-    case 'pericia': return hasReqItem(char.skills, req.nome);
-    case 'vantagem': return hasReqItem(char.advantages, req.nome);
-    case 'desvantagem': return hasReqItem(char.disadvantages, req.nome);
-    case 'ou': return req.opcoes.some((r) => checkReq(char, r));
-    default: return true;
-  }
+    switch (req.tipo) {
+        case 'atributo': return (char.attributes[req.nome.toLowerCase()] || 0) >= req.valor;
+        case 'pericia': return hasReqItem(char.skills, req.nome);
+        case 'vantagem': return hasReqItem(char.advantages, req.nome);
+        case 'maestria': return char.advantages.some(v => v.nome === 'Maestria' && v.subOption === req.nome);
+        case 'desvantagem': return hasReqItem(char.disadvantages, req.nome);
+        case 'ou': return req.opcoes.some((r) => checkReq(char, r));
+        default: return true;
+    }
 };
-const unmetReqsForClass = (char, kit) => {
-  const list = [];
-  kit?.exigencias?.forEach((req) => !checkReq(char, req) && list.push(req));
-  return list;
+
+const unmetReqs = (char, requirements = []) => {
+    const unmet = [];
+    requirements.forEach(req => {
+        if (!checkReq(char, req)) {
+            unmet.push(req);
+        }
+    });
+    return unmet;
 };
 
 const CONSUMABLE_EFFECTS = {
@@ -47,7 +55,7 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const sanitizedValue = Math.max(0, Math.min(5, value));
         updateCharacter({ attributes: { ...character.attributes, [attr]: sanitizedValue } });
     };
-    
+
     const handleResourceChange = (key, value) => {
         updateCharacter({ [key]: value });
     };
@@ -85,7 +93,7 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
 
         let advantages = (character.advantages || []).filter(v => !v.fromArchetype);
         let disadvantages = (character.disadvantages || []).filter(d => !d.fromArchetype);
-        
+
         newArchetype?.vantagensGratuitas?.forEach(advName => {
             if (!hasReqItem(advantages, advName)) {
                 const advData = findAdv(advName);
@@ -101,7 +109,7 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
                 if (disData) disadvantages.push({ ...disData, id: uuidv4(), fromArchetype: true, custo: 0 });
             }
         });
-        
+
         updateCharacter({ archetype: newArchetype, archetypeChoices: {}, advantages, disadvantages });
         toast.success(newArchetype ? `Arquétipo "${newArchetype.nome}" selecionado!` : 'Arquétipo removido!');
     };
@@ -110,24 +118,24 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true };
         const listToUpdate = choice.tipo === 'vantagem' ? 'advantages' : 'disadvantages';
         const updates = {
-          archetypeChoices: { ...character.archetypeChoices, [choice.id]: newItem },
-          [listToUpdate]: [...(character[listToUpdate] || []), newItem]
+            archetypeChoices: { ...character.archetypeChoices, [choice.id]: newItem },
+            [listToUpdate]: [...(character[listToUpdate] || []), newItem]
         };
         updateCharacter(updates);
         toast.success(`${newItem.nome}${subOption ? ` (${subOption})` : ''} definido como escolha!`);
     };
-    
+
     const handleAddKit = (kitName) => {
         if (!kitName) return;
         const kitData = gameData.classes.find(c => c.nome === kitName);
         if (!kitData) return;
 
-        const unmet = unmetReqsForClass(character, kitData);
+        const unmet = unmetReqs(character, kitData.exigencias);
         if (unmet.length > 0) {
             setUnmetClassReqs(unmet);
             return toast.error('Kit indisponível — veja os requisitos pendentes.');
         }
-        
+
         const advantages = [...(character.advantages || [])];
         const disadvantages = [...(character.disadvantages || [])];
 
@@ -137,14 +145,14 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
                 if (advData) advantages.push({ ...advData, id: uuidv4(), fromClass: true, fromKit: kitData.nome });
             }
         });
-        
+
         kitData.desvantagensGratuitas?.forEach(disName => {
             if (!hasReqItem(disadvantages, disName)) {
                 const disData = findDis(disName);
                 if (disData) disadvantages.push({ ...disData, id: uuidv4(), fromClass: true, fromKit: kitData.nome, custo: 0 });
             }
         });
-        
+
         setUnmetClassReqs([]);
         updateCharacter({ kits: [...(character.kits || []), kitData], advantages, disadvantages });
         toast.success(`Kit "${kitData.nome}" adicionado!`);
@@ -161,23 +169,11 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
     };
 
     const checkTechniqueRequirements = useCallback((technique) => {
-        if (!technique.requisito) return { meets: true, unmet: [] };
-        const requirements = technique.requisito.split(/, | e /);
-        const allCharItems = [...(character.skills || []), ...(character.advantages || []), ...(character.techniques || [])];
-        const unmetReqs = [];
-        requirements.forEach(req => {
-            const reqLower = req.toLowerCase();
-            const attrMatch = reqLower.match(/(poder|habilidade|resistencia) (\d+)/);
-            if (attrMatch) {
-                const [, attr, value] = attrMatch;
-                if ((character.attributes[attr] || 0) < parseInt(value, 10)) unmetReqs.push(req);
-                return;
-            }
-            if (!allCharItems.some(item => item.nome.toLowerCase() === reqLower)) unmetReqs.push(req);
-        });
-        return { meets: unmetReqs.length === 0, unmet: unmetReqs };
+        const requirements = technique.requisitos || [];
+        const unmet = unmetReqs(character, requirements);
+        return { meets: unmet.length === 0, unmet };
     }, [character]);
-    
+
     const handleAddTechnique = (technique, variation) => {
         const currentTechniques = character.techniques || [];
         const subOption = variation ? variation.nome : null;
@@ -208,11 +204,11 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const { resource, amount, toast: effectToast } = effect;
         const resourceKey = `${resource}_current`;
         const maxResource = resources[resource];
-        
+
         const updates = { [resourceKey]: Math.min(maxResource, (character[resourceKey] || 0) + amount) };
         inventory[itemIndex].quantity -= 1;
         updates.inventory = inventory.filter(i => i.quantity > 0);
-        
+
         updateCharacter(updates);
         toast.success(`"${itemName}" consumido. ${effectToast}`);
     };

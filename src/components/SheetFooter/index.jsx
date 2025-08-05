@@ -60,10 +60,12 @@ const BackstorySection = ({ character, isEditing, isVisible, onVisibilityToggle,
   </Section>
 );
 
+
 export const SheetFooter = ({
   isEditing, character, lockedItems, itemCounts, addItem, removeItem,
   onAddTechnique, onRemoveTechnique, checkTechniqueRequirements,
-  isBackstoryVisible, setIsBackstoryVisible, handleUpdate,  points
+  isBackstoryVisible, setIsBackstoryVisible, handleUpdate,
+  points
 }) => {
 
   const renderSectionContent = (section) => {
@@ -93,8 +95,9 @@ export const SheetFooter = ({
         onRemoveItem={(id) => removeItem(section.key, id)}
         listName={section.title}
         isEditing={isEditing}
+        // CORREÇÃO: Passa a lista de perícias do personagem para a grade
         characterSkills={character.skills || []}
-         points={points}
+        points={points}
       />
     ) : (
       <FinalizedView items={selectedItems} />

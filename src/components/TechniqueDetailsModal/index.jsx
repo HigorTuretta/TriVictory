@@ -7,6 +7,26 @@ import {
 } from './styles';
 import { CategoryBadge } from '../TechniqueSelectionGrid/styles';
 
+
+const formatRequirements = (reqs = []) => {
+    if (reqs.length === 0) return 'Nenhum';
+    
+    const describeReq = (req) => {
+        const nome = req.nome ? req.nome.charAt(0).toUpperCase() + req.nome.slice(1) : '';
+        switch (req.tipo) {
+            case 'atributo': return `${nome} ${req.valor}`;
+            case 'pericia':
+            case 'vantagem':
+            case 'maestria':
+                return nome;
+            case 'ou':
+                return `(${req.opcoes.map(describeReq).join(' ou ')})`;
+            default: return 'Requisito';
+        }
+    };
+    return reqs.map(describeReq).join(' e ');
+};
+
 // --- Subcomponentes para Modularização ---
 
 const TechniqueHeader = ({ nome, categoria }) => (
@@ -16,15 +36,17 @@ const TechniqueHeader = ({ nome, categoria }) => (
   </ModalHeader>
 );
 
+// MODIFICADO: Passa o array de requisitos para a nova função de formatação.
 const TechniqueInfo = ({
-  requisito = 'Nenhum',
+  requisitos = [], // Agora recebe o array 'requisitos'
   alcance,
   custo,
   duracao,
   testes
 }) => {
   const infoItems = [
-    { label: 'Requisito', value: requisito },
+    // Usa a nova função de formatação
+    { label: 'Requisitos', value: formatRequirements(requisitos) },
     { label: 'Alcance', value: alcance },
     { label: 'Custo', value: custo },
     { label: 'Duração', value: duracao },
@@ -33,7 +55,7 @@ const TechniqueInfo = ({
   return (
     <>
       <InfoGrid>
-        {infoItems.map(item => (
+        {infoItems.map(item => item.value && ( // Só renderiza se tiver valor
           <InfoItem key={item.label}>
             <strong>{item.label}:</strong>
             <span>{item.value}</span>
@@ -106,7 +128,10 @@ const MainActionButton = ({ onSelect, meetsRequirements, isSelected, unmetReason
 export const TechniqueDetailsModal = ({ isOpen, onClose, technique, onSelect, checkRequirements, selectedTechniques = [] }) => {
   if (!technique) return null;
 
+  // A lógica de verificação agora retorna o array de objetos não cumpridos
   const { meets, unmet } = checkRequirements(technique);
+  // A mensagem de erro agora também usa a função de formatação
+  const unmetReasons = formatRequirements(unmet);
   const isAlreadySelected = selectedTechniques.some(t => t.nome === technique.nome && !t.subOption);
   const hasVariations = technique.variacoes && technique.variacoes.length > 0;
 
@@ -114,7 +139,8 @@ export const TechniqueDetailsModal = ({ isOpen, onClose, technique, onSelect, ch
     <Modal isOpen={isOpen} onClose={onClose} size="large">
       <ModalContentWrapper>
         <TechniqueHeader nome={technique.nome} categoria={technique.categoria} />
-        <TechniqueInfo {...technique} />
+        {/* Passa a propriedade 'requisitos' em vez de 'requisito' */}
+        <TechniqueInfo {...technique} requisitos={technique.requisitos} />
         <Description>{technique.descricao}</Description>
         
         {hasVariations ? (
@@ -124,14 +150,14 @@ export const TechniqueDetailsModal = ({ isOpen, onClose, technique, onSelect, ch
             techniqueName={technique.nome}
             onSelect={(variation) => onSelect(technique, variation)}
             meetsRequirements={meets}
-            unmetReasons={unmet.join(', ')}
+            unmetReasons={unmetReasons}
           />
         ) : (
           <MainActionButton
             onSelect={() => onSelect(technique, null)}
             meetsRequirements={meets}
             isSelected={isAlreadySelected}
-            unmetReasons={unmet.join(', ')}
+            unmetReasons={unmetReasons}
           />
         )}
       </ModalContentWrapper>

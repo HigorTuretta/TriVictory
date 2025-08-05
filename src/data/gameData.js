@@ -1127,12 +1127,11 @@ export const classes = [
     ]
   }
 ]
-
 export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Ás Indomável",
-    "requisito": "Esporte ou Máquinas",
+    "requisitos": [{ "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Esporte" }, { "tipo": "pericia", "nome": "Máquinas" }] }],
     "alcance": "Pessoal",
     "custo": "Variável",
     "duracao": "Instantânea",
@@ -1163,7 +1162,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Barreira Mística",
-    "requisito": "Magia, Mística",
+    "requisitos": [{ "tipo": "vantagem", "nome": "Magia" }, { "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Pessoal",
     "custo": "1 a 2 PM por uso",
     "duracao": "Um turno",
@@ -1203,7 +1202,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Cancioneiro Popular",
-    "requisito": "Arte",
+    "requisitos": [{ "tipo": "pericia", "nome": "Arte" }],
     "alcance": "Perto",
     "custo": "2 PM",
     "duracao": "Instantânea",
@@ -1237,7 +1236,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Dobrar Elemento",
-    "requisito": "Nenhum",
+    "requisitos": [],
     "alcance": "Perto",
     "custo": "1 PM ou mais por uso",
     "duracao": "Instantânea",
@@ -1273,7 +1272,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Golpes",
-    "requisito": "Luta",
+    "requisitos": [{ "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Variável",
     "custo": "Variável",
     "duracao": "Instantânea",
@@ -1324,7 +1323,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Grimório Debilitante",
-    "requisito": "Magia",
+    "requisitos": [{ "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "3 PM por uso (ou 9 PM)",
     "duracao": "Instantânea ou duradoura",
@@ -1357,7 +1356,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Grimório Irritante",
-    "requisito": "Magia",
+    "requisitos": [{ "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "0 a 1 PM ou mais",
     "duracao": "Instantânea",
@@ -1390,7 +1389,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Monasticismo Marcial",
-    "requisito": "Nenhum",
+    "requisitos": [],
     "alcance": "Pessoal",
     "custo": "2 PM por uso",
     "duracao": "Instantânea",
@@ -1417,7 +1416,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Ninjutsu",
-    "requisito": "Manha",
+    "requisitos": [{ "tipo": "pericia", "nome": "Manha" }],
     "alcance": "Perto",
     "custo": "2 PM por uso",
     "duracao": "Instantânea",
@@ -1448,7 +1447,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Pequenos Desejos",
-    "requisito": "Mística",
+    "requisitos": [{ "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Perto",
     "custo": "0 a 1 PM por uso",
     "duracao": "Instantânea",
@@ -1485,7 +1484,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Praga",
-    "requisito": "Mística",
+    "requisitos": [{ "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Perto",
     "custo": "2 PM",
     "duracao": "Variada",
@@ -1513,7 +1512,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Raio Místico",
-    "requisito": "Magia, Mística",
+    "requisitos": [{ "tipo": "vantagem", "nome": "Magia" }, { "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Perto ou Longe",
     "custo": "1 a 2 PM por uso",
     "duracao": "Instantânea",
@@ -1550,7 +1549,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Super-Movimento",
-    "requisito": "Esporte, Luta ou Magia",
+    "requisitos": [{ "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Esporte" }, { "tipo": "pericia", "nome": "Luta" }, { "tipo": "vantagem", "nome": "Magia" }] }],
     "alcance": "Pessoal",
     "custo": "1 PM por uso",
     "duracao": "Instantânea",
@@ -1577,7 +1576,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Absorver Mana",
-    "requisito": "Mística",
+    "requisitos": [{ "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Pessoal",
     "custo": "0 PM",
     "duracao": "Instantânea",
@@ -1586,7 +1585,10 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Área de Batalha",
-    "requisito": "Poder ou Habilidade 2, Mística",
+    "requisitos": [
+      { "tipo": "ou", "opcoes": [{ "tipo": "atributo", "nome": "Poder", "valor": 2 }, { "tipo": "atributo", "nome": "Habilidade", "valor": 2 }] },
+      { "tipo": "pericia", "nome": "Mística" }
+    ],
     "alcance": "Perto",
     "custo": "2 PM para ativar, 1 PM por rodada para manter",
     "duracao": "Enquanto pagar o custo",
@@ -1596,7 +1598,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Bola de Fogo",
-    "requisito": "Habilidade 2, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "3 PM + Magia",
     "duracao": "Instantânea",
@@ -1605,7 +1607,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Combo",
-    "requisito": "Habilidade 1, Golpe",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 1 }, { "tipo": "vantagem", "nome": "Golpe" }],
     "alcance": "Variável",
     "custo": "0 PM",
     "duracao": "Instantânea",
@@ -1615,7 +1617,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Consertar",
-    "requisito": "Máquinas",
+    "requisitos": [{ "tipo": "pericia", "nome": "Máquinas" }],
     "alcance": "Perto",
     "custo": "2 a 10 PM",
     "duracao": "Instantânea",
@@ -1624,7 +1626,10 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Desprezo",
-    "requisito": "Poder 2 e Arte ou Influência",
+    "requisitos": [
+      { "tipo": "atributo", "nome": "Poder", "valor": 2 },
+      { "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Arte" }, { "tipo": "pericia", "nome": "Influência" }] }
+    ],
     "alcance": "Perto",
     "custo": "2 PM, depois 1 PM por uso",
     "duracao": "Duradoura",
@@ -1634,7 +1639,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Disparo de Energia",
-    "requisito": "Luta ou Magia",
+    "requisitos": [{ "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Luta" }, { "tipo": "vantagem", "nome": "Magia" }] }],
     "alcance": "Longe",
     "custo": "3 PM",
     "duracao": "Instantânea",
@@ -1643,7 +1648,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Encantar",
-    "requisito": "Arte, Influência ou Magia",
+    "requisitos": [{ "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Arte" }, { "tipo": "pericia", "nome": "Influência" }, { "tipo": "vantagem", "nome": "Magia" }] }],
     "alcance": "Perto",
     "custo": "3 PM (ou mais com Magia)",
     "duracao": "Duradoura",
@@ -1653,7 +1658,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Gambiarra",
-    "requisito": "Saber, Maestria (Saber)",
+    "requisitos": [{ "tipo": "pericia", "nome": "Saber" }, { "tipo": "maestria", "nome": "Saber" }],
     "alcance": "Pessoal",
     "custo": "2 PM",
     "duracao": "Instantânea",
@@ -1662,7 +1667,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Golpe Púrpura",
-    "requisito": "Poder 3, Luta",
+    "requisitos": [{ "tipo": "atributo", "nome": "Poder", "valor": 3 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Perto",
     "custo": "3 PM",
     "duracao": "Instantânea",
@@ -1671,7 +1676,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Grito da Selva",
-    "requisito": "Poder 2, Animais",
+    "requisitos": [{ "tipo": "atributo", "nome": "Poder", "valor": 2 }, { "tipo": "pericia", "nome": "Animais" }],
     "alcance": "Pessoal",
     "custo": "3 PM",
     "duracao": "Duradoura",
@@ -1680,7 +1685,10 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Inspirar",
-    "requisito": "Poder 2 e Arte, Influência ou Devoto",
+    "requisitos": [
+      { "tipo": "atributo", "nome": "Poder", "valor": 2 },
+      { "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Arte" }, { "tipo": "pericia", "nome": "Influência" }, { "tipo": "vantagem", "nome": "Devoto" }] }
+    ],
     "alcance": "Perto",
     "custo": "3 ou 6 PM",
     "duracao": "Duradoura",
@@ -1690,7 +1698,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Invocar Elemental",
-    "requisito": "Habilidade 2, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "3 PM",
     "duracao": "Duradoura",
@@ -1699,7 +1707,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Megalon",
-    "requisito": "Habilidade 3, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 3 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "10 PM",
     "duracao": "Duradoura",
@@ -1709,7 +1717,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Mikron",
-    "requisito": "Habilidade 3, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 3 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "10 PM",
     "duracao": "Duradoura",
@@ -1719,7 +1727,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Pisão do Titã",
-    "requisito": "Poder 3",
+    "requisitos": [{ "tipo": "atributo", "nome": "Poder", "valor": 3 }],
     "alcance": "Perto",
     "custo": "3 PM",
     "duracao": "Instantânea",
@@ -1728,7 +1736,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Poeira Glacial",
-    "requisito": "Habilidade 2, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "3 PM + bônus de Magia",
     "duracao": "Instantânea",
@@ -1737,7 +1745,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Queimar o Cosmo",
-    "requisito": "Resistência 2, Luta",
+    "requisitos": [{ "tipo": "atributo", "nome": "Resistência", "valor": 2 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Pessoal",
     "custo": "5 a 25 PM",
     "duracao": "Duradoura",
@@ -1746,7 +1754,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Raio da Fúria",
-    "requisito": "Habilidade 3, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 3 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "10 PM",
     "duracao": "Duradoura",
@@ -1756,7 +1764,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Rajada de Golpes",
-    "requisito": "Habilidade 2, Luta",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Perto",
     "custo": "3 PM",
     "duracao": "Instantânea",
@@ -1765,7 +1773,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Relâmpago",
-    "requisito": "Habilidade 2, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "3 PM + bônus de Magia",
     "duracao": "Instantânea",
@@ -1774,7 +1782,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Role os Dados",
-    "requisito": "Habilidade 3, Arte",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 3 }, { "tipo": "pericia", "nome": "Arte" }],
     "alcance": "Perto",
     "custo": "5 PM",
     "duracao": "Instantânea",
@@ -1784,7 +1792,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Sabedoria dos Ermos",
-    "requisito": "Arena, Sobrevivência",
+    "requisitos": [{ "tipo": "vantagem", "nome": "Arena" }, { "tipo": "pericia", "nome": "Sobrevivência" }],
     "alcance": "Pessoal",
     "custo": "1 ou 3 PM",
     "duracao": "Instantânea",
@@ -1793,7 +1801,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Setas Infalíveis de Petrovna",
-    "requisito": "Habilidade 1, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 1 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "1 PM por seta",
     "duracao": "Instantânea",
@@ -1803,7 +1811,10 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Abrir Chakra",
-    "requisito": "Atributo 4, Luta",
+    "requisitos": [
+      { "tipo": "ou", "opcoes": [{ "tipo": "atributo", "nome": "Poder", "valor": 4 }, { "tipo": "atributo", "nome": "Habilidade", "valor": 4 }, { "tipo": "atributo", "nome": "Resistência", "valor": 4 }] },
+      { "tipo": "pericia", "nome": "Luta" }
+    ],
     "alcance": "Pessoal",
     "custo": "15 PM",
     "duracao": "Duradoura",
@@ -1827,7 +1838,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Bomba Vital",
-    "requisito": "Resistência 4, Luta",
+    "requisitos": [{ "tipo": "atributo", "nome": "Resistência", "valor": 4 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Longe",
     "custo": "Variável",
     "duracao": "Instantânea",
@@ -1837,7 +1848,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Dim Mak",
-    "requisito": "Habilidade 5, Luta",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Perto",
     "custo": "5 PM",
     "duracao": "Instantânea",
@@ -1846,7 +1857,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Mata-Kaiju",
-    "requisito": "Habilidade 5, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Muito Longe",
     "custo": "10 PM + bônus de Magia",
     "duracao": "Instantânea",
@@ -1855,7 +1866,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Megalon Superior",
-    "requisito": "Habilidade 6, Megalon",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 6 }, { "tipo": "tecnica", "nome": "Megalon" }],
     "alcance": "Perto",
     "custo": "25 ou 50 PM",
     "duracao": "Duradoura",
@@ -1864,7 +1875,11 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Metamagia",
-    "requisito": "Habilidade 5, Magia, Maestria (Mística)",
+    "requisitos": [
+      { "tipo": "atributo", "nome": "Habilidade", "valor": 5 },
+      { "tipo": "vantagem", "nome": "Magia" },
+      { "tipo": "maestria", "nome": "Mística" }
+    ],
     "alcance": "Variável",
     "custo": "Variável",
     "duracao": "Instantânea",
@@ -1900,7 +1915,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Morte Estelar",
-    "requisito": "Habilidade 9, Magia",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 9 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Muito Longe",
     "custo": "100 PM",
     "duracao": "Instantânea",
@@ -1909,7 +1924,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Percepção Cósmica",
-    "requisito": "Habilidade 5, Maestria (Percepção)",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }, { "tipo": "maestria", "nome": "Percepção" }],
     "alcance": "Pessoal",
     "custo": "5 PM para ativar, 1 PM por rodada para manter",
     "duracao": "Enquanto pagar o custo",
@@ -1918,7 +1933,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Rapsódia das Arcas",
-    "requisito": "Poder 4, Maestria (Arte)",
+    "requisitos": [{ "tipo": "atributo", "nome": "Poder", "valor": 4 }, { "tipo": "maestria", "nome": "Arte" }],
     "alcance": "Perto",
     "custo": "3 PM por rodada",
     "duracao": "4 rodadas",
@@ -1950,7 +1965,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Sabedoria Selvagem",
-    "requisito": "Habilidade 4, Sabedoria dos Ermos",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 4 }, { "tipo": "tecnica", "nome": "Sabedoria dos Ermos" }],
     "alcance": "Pessoal",
     "custo": "5 ou 10 PM",
     "duracao": "Instantânea",
@@ -1959,7 +1974,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Trapacear o Destino",
-    "requisito": "Habilidade 5, Maestria (Manha)",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }, { "tipo": "maestria", "nome": "Manha" }],
     "alcance": "Pessoal",
     "custo": "5 a 15 PM",
     "duracao": "Instantânea",
@@ -1968,7 +1983,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Visão do Futuro",
-    "requisito": "Habilidade 5",
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }],
     "alcance": "Pessoal",
     "custo": "3 PM",
     "duracao": "Instantânea",
