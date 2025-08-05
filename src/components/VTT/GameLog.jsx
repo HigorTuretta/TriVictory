@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../../firebase/config';
 import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { 
-    LogContainer, LogList, LogItem, LogHeader, LogInfo, LogCharacter, LogUser, 
-    LogRoll, LogResult, LogTotal, LogBreakdown, HiddenRollCard, VisibilityToggle, 
+import { FaEye, FaEyeSlash, FaStar } from 'react-icons/fa';
+import {
+    LogContainer, LogList, LogItem, LogHeader, LogInfo, LogCharacter, LogUser,
+    LogRoll, LogResult, LogTotal, LogBreakdown, HiddenRollCard, VisibilityToggle,
     Timestamp, LogPagination
 } from './styles';
 
@@ -19,6 +19,7 @@ const comicPhrases = [
     "Uma trama se desenrola fora de vista...", "O Mestre esboça um sorriso enigmático."
 ];
 
+// MODIFICADO: Função aprimorada para exibir TODOS os modificadores
 const formatResult = (roll) => {
     if (!roll || !roll.individualResults) return '';
 
@@ -28,12 +29,17 @@ const formatResult = (roll) => {
         return r.toString();
     }).join(' + ');
 
+    // Filtra para exibir apenas os modificadores que NÃO são de crítico
     const modsPart = (roll.modifiers || [])
-        .filter(m => m.value !== 0)
-        .map(m => ` ${m.value > 0 ? '+' : '-'} ${Math.abs(m.value)} <small>(${m.label})</small>`)
+        .filter(m => !m.label.startsWith('Crítico'))
+        .map(m => ` ${m.value >= 0 ? '+' : ''} ${m.value} <small>(${m.label})</small>`)
         .join('');
 
-    return `[${dicePart}]${modsPart}`;
+    // Encontra o modificador de crítico (se houver) para exibição especial
+    const critModifier = (roll.modifiers || []).find(m => m.label.startsWith('Crítico'));
+    const critPart = critModifier ? ` ${critModifier.value >= 0 ? '+' : ''} ${critModifier.value} <small>(${critModifier.label})</small>` : '';
+
+    return `[${dicePart}]${modsPart}${critPart}`;
 };
 
 const formatTimestamp = (timestamp) => {
@@ -61,11 +67,9 @@ export const GameLog = () => {
         });
         return () => unsubscribe();
     }, [roomId]);
-    
+
     useEffect(() => {
-        if(logContainerRef.current) {
-             logContainerRef.current.scrollTop = 0;
-        }
+        logContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }, [visibleLogsCount]);
 
     const toggleVisibility = async (logId, currentVisibility) => {
@@ -81,12 +85,12 @@ export const GameLog = () => {
                 <AnimatePresence>
                     {logsToShow.map((log) => {
                         const isPlayerViewingHiddenRoll = log.hidden && !isMaster;
-                        
+
                         return (
                             <LogItem
                                 key={log.id}
                                 $hidden={isPlayerViewingHiddenRoll}
-                                $isAllCrits={log.isAllCrits && !isPlayerViewingHiddenRoll}
+                                $isCrit={log.isCrit && !isPlayerViewingHiddenRoll}
                                 $isAllFumbles={log.isAllFumbles && !isPlayerViewingHiddenRoll}
                                 layout
                                 initial={{ opacity: 0, y: 20 }}
@@ -103,20 +107,22 @@ export const GameLog = () => {
                                                 <LogCharacter>{log.user.character || log.user.name}</LogCharacter>
                                                 {log.user.character && <LogUser>({log.user.name})</LogUser>}
                                             </LogInfo>
-                                            <LogRoll>{log.macroName || log.command}</LogRoll>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {log.wasPaSpent && <FaStar color="#FFC107" title="PA Gasto!" />}
+                                                <LogRoll>{log.macroName || log.command}</LogRoll>
+                                            </div>
                                         </LogHeader>
                                         <LogResult>
                                             <LogBreakdown dangerouslySetInnerHTML={{ __html: formatResult(log) }} />
                                             <LogTotal>{log.total}</LogTotal>
                                         </LogResult>
                                         <Timestamp>{formatTimestamp(log.timestamp)}</Timestamp>
-                                        
-                                        {isMaster && (
-                                            <VisibilityToggle onClick={() => toggleVisibility(log.id, log.hidden)} title={log.hidden ? "Revelar aos jogadores" : "Ocultar dos jogadores"}>
-                                                {log.hidden ? <FaEyeSlash size={12}/> : <FaEye size={12}/>}
-                                            </VisibilityToggle>
-                                        )}
                                     </>
+                                )}
+                                {isMaster && !isPlayerViewingHiddenRoll && (
+                                    <VisibilityToggle onClick={() => toggleVisibility(log.id, log.hidden)} title={log.hidden ? "Revelar aos jogadores" : "Ocultar dos jogadores"}>
+                                        {log.hidden ? <FaEyeSlash size={12} /> : <FaEye size={12} />}
+                                    </VisibilityToggle>
                                 )}
                             </LogItem>
                         );
@@ -124,7 +130,7 @@ export const GameLog = () => {
                 </AnimatePresence>
             </LogList>
             {allLogs.length > visibleLogsCount && visibleLogsCount < 20 && (
-                 <LogPagination>
+                <LogPagination>
                     <button onClick={() => setVisibleLogsCount(prev => prev + 10)}>
                         Carregar Mais Antigas
                     </button>

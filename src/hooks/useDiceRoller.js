@@ -6,6 +6,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import toast from 'react-hot-toast';
 
+// MODIFICADO: A função agora é mais robusta contra character nulo
 const parseRollCommand = (command, character) => {
     let numDice = 0;
     let sides = 6;
@@ -19,7 +20,12 @@ const parseRollCommand = (command, character) => {
     } else if (cleanCommand.startsWith('d')) {
         numDice = 1;
         sides = parseInt(cleanCommand.substring(1), 10);
+    } else if (!isNaN(parseInt(cleanCommand, 10))) {
+        // Permite rolagens de apenas um número como se fossem 1d...
+        numDice = 1;
+        sides = parseInt(cleanCommand, 10);
     }
+
     const modsString = cleanCommand.replace(diceRegex, '');
     const modParts = modsString.split(/[+-]/).filter(Boolean);
     let remainingMods = modsString;
@@ -31,7 +37,7 @@ const parseRollCommand = (command, character) => {
         if (!isNaN(num)) {
             const value = operator === '+' ? num : -num;
             modifiers.push({ label: `${operator}${num}`, value });
-        } else if (character && character.attributes) {
+        } else if (character && character.attributes) { // Essa checagem é a chave
             const attr = part.trim();
             if (Object.keys(character.attributes).includes(attr)) {
                 const attrValue = character.attributes[attr];
@@ -45,7 +51,7 @@ const parseRollCommand = (command, character) => {
     return { numDice, sides, modifiers };
 };
 
-export const useDiceRoller = (character) => {
+export const useDiceRoller = (character, updateCharacter) => {
     const { roomId, room } = useRoom();
     const { currentUser } = useAuth();
     const isMaster = room?.masterId === currentUser.uid;
@@ -55,84 +61,79 @@ export const useDiceRoller = (character) => {
     const [modifierModal, setModifierModal] = useState({ isOpen: false, resolve: null });
 
     const executeRoll = useCallback(async (baseCommand, baseModifiers = [], onComplete, macroName = null) => {
-        const charForRoll = character || { attributes: {}, pa_current: 0 };
+        // CORREÇÃO: Garante que charForRoll seja sempre um objeto, mesmo que 'character' seja nulo.
+        const charForRoll = character || { attributes: {}, pa_current: 0, name: null };
         const userMods = await new Promise(resolve => { setModifierModal({ isOpen: true, resolve }); });
         
-        if (userMods === null) return;
+        if (userMods === null) return null;
 
-        const { numDice, sides, modifiers: commandModifiers } = parseRollCommand(baseCommand, charForRoll);
-        if (numDice === 0) return toast.error("Comando de rolagem inválido.");
+        // A chamada a parseRollCommand agora é segura.
+        const { numDice, modifiers: commandModifiers } = parseRollCommand(baseCommand, charForRoll);
+        if (numDice === 0) {
+            toast.error("Comando de rolagem inválido.");
+            return null;
+        }
 
         let finalDice = numDice;
         let results = [];
-        let tempModifiers = [...baseModifiers, ...commandModifiers];
+        let allModifiersForLog = [...baseModifiers, ...commandModifiers];
+        let wasPaSpent = false;
 
-        if (userMods.spendPA && charForRoll.pa_current > 0) {
+        if (userMods.spendPA && charForRoll.pa_current > 0 && updateCharacter) {
             finalDice -= 1;
             results.push(6);
-            tempModifiers.push({ label: 'Gasto de PA', value: 0 });
-            // Esta atualização deve ser feita pelo componente que chama, não pelo hook
+            wasPaSpent = true;
+            updateCharacter({ pa_current: charForRoll.pa_current - 1 });
+            toast.success("Você gastou 1 PA para garantir um sucesso!", { icon: '✨'});
         }
         
-        for (let i = 0; i < finalDice; i++) {
-            results.push(Math.floor(Math.random() * 6) + 1);
-        }
+        for (let i = 0; i < finalDice; i++) { results.push(Math.floor(Math.random() * 6) + 1); }
 
+        const critThreshold = userMods.critOnFive ? 5 : 6;
+        const crits = results.filter(r => r >= critThreshold).length;
+        const fumbles = results.filter(r => r === 1).length;
+        
         let total = results.reduce((a, b) => a + b, 0);
-        tempModifiers.forEach(m => total += m.value);
+        const primaryAttributeModifier = allModifiersForLog.find(m => ['Poder', 'Habilidade', 'Resistência'].includes(m.label));
+        const attributeBaseValue = primaryAttributeModifier ? primaryAttributeModifier.value : 0;
+        const effectiveAttributeValue = attributeBaseValue + userMods.modifier;
+
+        allModifiersForLog.forEach(m => total += m.value);
         if (userMods.modifier !== 0) {
             total += userMods.modifier;
-            tempModifiers.push({ label: 'Modificador', value: userMods.modifier });
+            allModifiersForLog.push({ label: 'Modificador', value: userMods.modifier });
         }
         
-        const critThreshold = userMods.critOnFive ? 5 : 6;
-        
-        // CORREÇÃO: Lógica de crítico e falha ajustada
-        const isAllCrits = results.length > 0 && results.every(r => r >= critThreshold);
-        const isAllFumbles = results.length > 0 && results.every(r => r === 1);
+        if (crits > 0 && primaryAttributeModifier) {
+            const critBonusTotal = crits * effectiveAttributeValue;
+            total += critBonusTotal;
+            allModifiersForLog.push({ label: `Crítico (x${crits})`, value: critBonusTotal });
+        }
 
         const localRollData = {
-            command: baseCommand, 
-            macroName: macroName,
-            individualResults: results, 
-            modifiers: tempModifiers, 
-            total,
-            critThreshold, 
-            isAllCrits,
-            isAllFumbles, // Renomeado para clareza
+            command: baseCommand, macroName, individualResults: results, modifiers: allModifiersForLog, total,
+            critThreshold, isCrit: crits > 0, isAllFumbles: fumbles > 0 && fumbles === results.length, wasPaSpent,
             hidden: isMaster ? userMods.isHidden : false,
-            user: {
-                uid: currentUser.uid, 
-                name: currentUser.nickname,
-                character: charForRoll.name || (isMaster ? 'Mestre' : null),
-            }
+            user: { uid: currentUser.uid, name: currentUser.nickname, character: charForRoll.name || (isMaster ? 'Mestre' : null) }
         };
         
         const firestoreRollData = { ...localRollData, timestamp: new Date() };
-
         setCurrentRoll(localRollData);
         setIsRolling(true);
 
-        try {
-            await addDoc(collection(db, 'rooms', roomId, 'rolls'), firestoreRollData);
-        } catch (error) {
-            toast.error("Falha ao registrar a rolagem.");
-            setIsRolling(false);
-            return;
-        }
+        try { await addDoc(collection(db, 'rooms', roomId, 'rolls'), firestoreRollData); } 
+        catch (error) { toast.error("Falha ao registrar a rolagem."); setIsRolling(false); return null; }
+        
         if (onComplete) onComplete(localRollData);
-    }, [roomId, currentUser, character, isMaster]);
+        return localRollData;
+
+    }, [roomId, currentUser, character, isMaster, updateCharacter]);
 
     const onAnimationComplete = useCallback(() => setIsRolling(false), []);
-    
     const closeModifierModal = useCallback((value) => {
         if (modifierModal.resolve) modifierModal.resolve(value);
         setModifierModal({ isOpen: false, resolve: null });
     }, [modifierModal]);
 
-    return {
-        isRolling, currentRoll, executeRoll,
-        onAnimationComplete, isModifierModalOpen: modifierModal.isOpen,
-        closeModifierModal,
-    };
+    return { isRolling, currentRoll, executeRoll, onAnimationComplete, isModifierModalOpen: modifierModal.isOpen, closeModifierModal };
 };

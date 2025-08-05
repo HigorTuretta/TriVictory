@@ -463,7 +463,7 @@ export const OptionCard = styled.label`
   padding: 1rem;
   border-radius: 8px;
   border: 2px solid ${({ theme, $isActive }) => $isActive ? theme.primary : theme.border};
-  background-color: ${({ theme, $isActive }) => $isActive ? rgba(theme.primary, 0.125) : theme.surface};
+  background-color: ${({ theme, $isActive }) => $isActive ? `rgba(${theme.primary}, 0.125)` : theme.surface};
   cursor: pointer;
   transition: all 0.2s ease;
   
@@ -474,7 +474,24 @@ export const OptionCard = styled.label`
 
   &:hover {
     border-color: ${({ theme }) => theme.secondary};
-    background-color: ${({ theme }) => rgba(theme.secondary, 0.125)};
+    background-color: ${({ theme }) => `rgba(${theme.secondary}, 0.125)`};
+  }
+
+  /* Estilos para o estado desabilitado */
+  ${({ theme, $disabled }) => 
+    $disabled && 
+    css`
+      cursor: not-allowed;
+      opacity: 0.6;
+      background-color: ${theme.surface}; /* Força um fundo neutro */
+      border-color: ${theme.border};     /* Força uma borda neutra */
+
+      /* Sobrescreve o efeito hover para que nada aconteça */
+      &:hover {
+        background-color: ${theme.surface};
+        border-color: ${theme.border};
+      }
+    `
   }
 `;
 

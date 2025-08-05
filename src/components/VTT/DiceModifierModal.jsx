@@ -1,18 +1,18 @@
 // src/components/VTT/DiceModifierModal.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRoom } from '../../contexts/RoomContext';
 import { Modal } from '../Modal';
-import { 
-    FaPlus, FaMinus, FaStar, FaCrosshairs, FaEyeSlash, FaDiceD20 
+import {
+    FaPlus, FaMinus, FaStar, FaCrosshairs, FaEyeSlash, FaDiceD20
 } from 'react-icons/fa';
-import { 
-    ModifierContent, ModifierControl, ModifierInput, ModifierButton, 
-    OptionsGrid, OptionCard, OptionIcon, OptionLabel, OptionDescription, 
+import {
+    ModifierContent, ModifierControl, ModifierInput, ModifierButton,
+    OptionsGrid, OptionCard, OptionIcon, OptionLabel, OptionDescription,
     OptionCheckbox, ConfirmRollButton
 } from './styles';
 
-export const DiceModifierModal = ({ isOpen, onClose }) => {
+export const DiceModifierModal = ({ isOpen, onClose, character }) => {
     const { currentUser } = useAuth();
     const { room } = useRoom();
     const isMaster = room.masterId === currentUser.uid;
@@ -21,8 +21,12 @@ export const DiceModifierModal = ({ isOpen, onClose }) => {
     const [spendPA, setSpendPA] = useState(false);
     const [critOnFive, setCritOnFive] = useState(false);
     const [isHidden, setIsHidden] = useState(false);
+    const [canSpendPa, setCanSpendPa] = useState(false);
 
-    // Reseta o estado quando o modal fecha para não "lembrar" das escolhas anteriores.
+    useEffect(() => {
+        setCanSpendPa(character && character.pa_current > 0);
+    }, [character, isOpen]);
+
     const handleClose = (value) => {
         onClose(value);
         setModifier(0);
@@ -30,22 +34,22 @@ export const DiceModifierModal = ({ isOpen, onClose }) => {
         setCritOnFive(false);
         setIsHidden(false);
     };
-    
+
     const handleModifierChange = (delta) => {
         setModifier(prev => prev + delta);
     };
 
     const optionsConfig = [
-        { id: 'spendPA', label: 'Gastar 1 PA?', description: 'Garante que um dado seja 6.', value: spendPA, setter: setSpendPA, Icon: FaStar, isPlayerOnly: true },
+        { id: 'spendPA', label: 'Gastar 1 PA?', description: 'Garante que um dado seja 6.', value: spendPA, setter: setSpendPA, Icon: FaStar, isPlayerOnly: true, disabled: !canSpendPa },
         { id: 'critOnFive', label: 'Crítico Aprimorado', description: 'Acerto crítico com 5 ou 6.', value: critOnFive, setter: setCritOnFive, Icon: FaCrosshairs },
         { id: 'isHidden', label: 'Rolagem Oculta', description: 'Apenas você verá o resultado.', value: isHidden, setter: setIsHidden, Icon: FaEyeSlash, isMasterOnly: true },
     ];
-    
+
     return (
         <Modal isOpen={isOpen} onClose={() => handleClose(null)}>
             <ModifierContent>
                 <h3>Modificar Rolagem</h3>
-                
+
                 <ModifierControl>
                     <ModifierButton onClick={() => handleModifierChange(-1)}><FaMinus /></ModifierButton>
                     <ModifierInput
@@ -59,11 +63,11 @@ export const DiceModifierModal = ({ isOpen, onClose }) => {
 
                 <OptionsGrid>
                     {optionsConfig.map(opt => {
-                        // Não renderiza a opção se não for permitida para o usuário
                         if ((opt.isMasterOnly && !isMaster) || (opt.isPlayerOnly && isMaster)) return null;
 
                         return (
-                            <OptionCard key={opt.id} $isActive={opt.value}>
+                            // Adiciona a prop 'disabled' ao card para estilização (se desejar)
+                            <OptionCard key={opt.id} $isActive={opt.value} $disabled={opt.disabled}>
                                 <OptionIcon><opt.Icon /></OptionIcon>
                                 <OptionLabel>{opt.label}</OptionLabel>
                                 <OptionDescription>{opt.description}</OptionDescription>
@@ -72,12 +76,14 @@ export const DiceModifierModal = ({ isOpen, onClose }) => {
                                     id={opt.id}
                                     checked={opt.value}
                                     onChange={(e) => opt.setter(e.target.checked)}
+                                    // Desabilita o checkbox se a condição não for atendida
+                                    disabled={opt.disabled}
                                 />
                             </OptionCard>
                         );
                     })}
                 </OptionsGrid>
-                
+
                 <ConfirmRollButton onClick={() => handleClose({ modifier, spendPA, critOnFive, isHidden })}>
                     <FaDiceD20 /> Rolar os Dados
                 </ConfirmRollButton>
