@@ -225,7 +225,11 @@ export const SelectionGrid = ({
             {selectedItems?.length > 0 && (
                 <SelectedItemsContainer>
                     {selectedItems.map((item) => {
-                        const isLocked = lockedItems.has(item.nome) || lockedItems.has(`${item.nome} (${item.subOption})`);
+                        // Lógica de bloqueio aprimorada
+                        const isLockedByName = lockedItems.has(item.nome);
+                        const isLockedBySubOption = item.subOption && lockedItems.has(`${item.nome} (${item.subOption})`);
+                        const isLocked = isLockedByName || isLockedBySubOption;
+
                         return (
                             <SelectedItem key={item.id} $isLocked={isLocked}>
                                 {item.isSpecialization ? `${item.nome} (Especialização: ${item.subOption})` : (item.subOption ? `${item.nome}: ${item.subOption}` : item.nome)}
@@ -236,7 +240,6 @@ export const SelectionGrid = ({
                     })}
                 </SelectedItemsContainer>
             )}
-
             <GridContainer>
                 <Grid>
                     {filteredItems.map(item => {

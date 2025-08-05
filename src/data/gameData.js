@@ -234,7 +234,7 @@ export const arquetipos = [
         nome: 'Kallyanach', 
         custo: 2, 
         poderes: ['Baforada: Recebe um Ataque Especial (Área, Distante ou Potente) que custa -1PM.', 'Poder Dracônico: Dragões são poderosos.', 'Código dos Dragões (desvantagem).'],
-        desvantagensGratuitas: [{ nome: 'Código', subOption: 'Código dos Heróis' }],
+        desvantagensGratuitas: [{ nome: 'Código', subOption: 'Código dos Dragões' }],
         escolhas: [{
             id: 'kally_poder', tipo: 'vantagem', listaFiltro: ['Forte', 'Carismático'], mensagem: 'Como Kallyanach, escolha seu Poder Dracônico.'
         }]
