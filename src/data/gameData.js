@@ -168,44 +168,49 @@ export const desvantagens = [
 
 export const arquetipos = [
     { nome: 'Humano', custo: 0, poderes: ['Mais Além: Uma vez por cena, gaste 2PM para ter Ganho em um teste.'] },
-    { nome: 'Aberrante', custo: 1, poderes: ['Deformidade: +1 no atributo de uma perícia à sua escolha.', 'Teratismo: Recebe uma Técnica Comum grátis.', 'Monstruoso (desvantagem).'], desvantagensGratuitas: ['Monstruoso'] },
-    { nome: 'Abissal', custo: 1, poderes: ['Ágil (vantagem).', 'Desfavor: Gaste 3PM e uma ação para impor Perda a um alvo.', 'Infame (desvantagem).'], vantagensGratuitas: ['Ágil'], desvantagensGratuitas: ['Infame'] },
+    { nome: 'Aberrante', custo: 1, poderes: ['Deformidade: +1 no atributo de uma perícia à sua escolha.', 'Teratismo: Recebe uma Técnica Comum grátis.', 'Monstruoso (desvantagem).'], desvantagensGratuitas: [{ nome: 'Monstruoso' }] },
+    { nome: 'Abissal', custo: 1, poderes: ['Ágil (vantagem).', 'Desfavor: Gaste 3PM e uma ação para impor Perda a um alvo.', 'Infame (desvantagem).'], vantagensGratuitas: [{ nome: 'Ágil' }], desvantagensGratuitas: [{ nome: 'Infame' }] },
     { 
         nome: 'Alien', 
         custo: 1, 
         poderes: ['Talento: Aliens têm aptidões físicas ou mentais superiores.', 'Xenobiologia: Uma vantagem sua custa metade dos PM.', 'Inculto (desvantagem).'],
-        desvantagensGratuitas: ['Inculto'],
+        desvantagensGratuitas: [{ nome: 'Inculto' }],
         escolhas: [{
             id: 'alien_talento', tipo: 'vantagem', listaFiltro: ['Ágil', 'Carismático', 'Forte', 'Gênio', 'Resoluto', 'Vigoroso'], mensagem: 'Como Alien, escolha seu Talento inato.'
         }]
     },
-    { nome: 'Anão', custo: 1, poderes: ['Abascanto: Ganho em testes de R para evitar efeitos ruins.', 'A Ferro e Fogo: +1 em Máquinas e Sentido (Infravisão).', 'Lento (desvantagem).'], desvantagensGratuitas: ['Lento'] },
-    { nome: 'Anfíbio', custo: 1, poderes: ['Imune (Anfíbio).', 'Vigoroso (vantagem).', 'Ambiente (água) (desvantagem).'], vantagensGratuitas: ['Vigoroso'], desvantagensGratuitas: ['Ambiente'] },
+    // CORREÇÃO: Sentido agora é um objeto com subOption
+    { nome: 'Anão', custo: 1, poderes: ['Abascanto: Ganho em testes de R para evitar efeitos ruins.', 'A Ferro e Fogo: +1 em Máquinas e Sentido (Infravisão).', 'Lento (desvantagem).'], vantagensGratuitas: [{ nome: 'Sentido', subOption: 'Infravisão' }], desvantagensGratuitas: [{ nome: 'Lento' }] },
+    // CORREÇÃO: Ambiente agora é um objeto com subOption
+    { nome: 'Anfíbio', custo: 1, poderes: ['Imune (Anfíbio).', 'Vigoroso (vantagem).', 'Ambiente (água) (desvantagem).'], vantagensGratuitas: [{ nome: 'Vigoroso' }, { nome: 'Imune', subOption: 'Anfíbio' }], desvantagensGratuitas: [{ nome: 'Ambiente', subOption: 'Água' }] },
     { 
         nome: 'Celestial', 
         custo: 1, 
         poderes: ['Carismático (vantagem).', 'Arrebatar: Gaste 3PM e um movimento para conceder Ganho a um aliado.', 'Código: Todo celestial é guiado por um código.'],
-        vantagensGratuitas: ['Carismático'],
+        vantagensGratuitas: [{ nome: 'Carismático' }],
         escolhas: [{
             id: 'celestial_codigo', tipo: 'desvantagem', nomeFiltro: 'Código', mensagem: "Como um Celestial, você deve ser guiado por um Código de Conduta."
         }]
     },
-    { nome: 'Centauro', custo: 2, poderes: ['Corpo Táurico: Gaste 1PM para crítico com 5 ou 6 em testes de P físico e H para correr.', 'Vigoroso (vantagem).', 'Diferente (desvantagem).'], vantagensGratuitas: ['Vigoroso'], desvantagensGratuitas: ['Diferente'] },
+    { nome: 'Centauro', custo: 2, poderes: ['Corpo Táurico: Gaste 1PM para crítico com 5 ou 6 em testes de P físico e H para correr.', 'Vigoroso (vantagem).', 'Diferente (desvantagem).'], vantagensGratuitas: [{ nome: 'Vigoroso' }], desvantagensGratuitas: [{ nome: 'Diferente' }] },
     { 
         nome: 'Ciborgue', 
         custo: 2, 
         poderes: ['Construto Vivo: Pode recuperar PV normalmente e ser consertado.', 'Imune (Abiótico, Doenças, Resiliente).', 'Diretriz: Sua mente tem travas de programação.'],
+        vantagensGratuitas: [{ nome: 'Imune', subOption: 'Abiótico'}, { nome: 'Imune', subOption: 'Doenças'}, { nome: 'Imune', subOption: 'Resiliente'}],
         escolhas: [{
             id: 'ciborgue_diretriz', tipo: 'desvantagem', listaFiltro: ['Código', 'Transtorno'], mensagem: "Como um Ciborgue, você deve escolher uma Diretriz (Código ou Transtorno)."
         }]
     },
-    { nome: 'Construto', custo: 1, poderes: ['Imune (Abiótico, Doenças, Resiliente, Sem Mente).', 'Bateria (desvantagem).', 'Sem Vida (desvantagem).'], desvantagensGratuitas: ['Bateria', 'Sem Vida'] },
-    { nome: 'Dahllan', custo: 1, poderes: ['Benção da Natureza: Gaste 2PM e um movimento para Ganho em Defesa por um turno.', 'Empatia Selvagem: +1 em Animais.', 'Código Dahllan (desvantagem).'], desvantagensGratuitas: ['Código'] },
+    // CORREÇÃO: Imune agora especifica todas as imunidades
+    { nome: 'Construto', custo: 1, poderes: ['Imune (Abiótico, Doenças, Resiliente, Sem Mente).', 'Bateria (desvantagem).', 'Sem Vida (desvantagem).'], vantagensGratuitas: [{ nome: 'Imune', subOption: 'Abiótico'}, { nome: 'Imune', subOption: 'Doenças'}, { nome: 'Imune', subOption: 'Resiliente'}, { nome: 'Imune', subOption: 'Sem Mente'}], desvantagensGratuitas: [{ nome: 'Bateria' }, { nome: 'Sem Vida' }] },
+    // CORREÇÃO: Código agora especifica "Código dos Dahllan"
+    { nome: 'Dahllan', custo: 1, poderes: ['Benção da Natureza: Gaste 2PM e um movimento para Ganho em Defesa por um turno.', 'Empatia Selvagem: +1 em Animais.', 'Código Dahllan (desvantagem).'], desvantagensGratuitas: [{ nome: 'Código', subOption: 'Código dos Heróis' }] },
     { 
         nome: 'Elfo', 
         custo: 1, 
         poderes: ['Impecável: Elfos são elegantes.', 'Natureza Mística: +1 em Mística.', 'Frágil (desvantagem).'],
-        desvantagensGratuitas: ['Frágil'],
+        desvantagensGratuitas: [{ nome: 'Frágil' }],
         escolhas: [{
             id: 'elfo_impecavel', tipo: 'vantagem', listaFiltro: ['Ágil', 'Carismático', 'Gênio'], mensagem: 'Como Elfo, escolha sua característica Impecável.'
         }]
@@ -214,26 +219,22 @@ export const arquetipos = [
         nome: 'Fada', 
         custo: 1, 
         poderes: ['Magia das Fadas: Você pode usar Magia ou Ilusão com -1PM de custo.', 'Infame (desvantagem).', 'Delicada: Escolha entre Diferente ou Frágil (desvantagem).'],
-        desvantagensGratuitas: ['Infame'],
+        desvantagensGratuitas: [{ nome: 'Infame' }],
         escolhas: [
             { id: 'fada_magia', tipo: 'vantagem', listaFiltro: ['Magia', 'Ilusão'], mensagem: 'Como Fada, escolha seu dom mágico principal.' },
             { id: 'fada_delicada', tipo: 'desvantagem', listaFiltro: ['Diferente', 'Frágil'], mensagem: 'Como Fada, escolha sua delicadeza.' },
         ]
     },
-    { nome: 'Fantasma', custo: 2, poderes: ['Espírito: Sempre incorpóreo, gasta PM para se tornar sólido. Imune e Sem Vida.', 'Paralisia (vantagem).', 'Devoto (desvantagem).'], vantagensGratuitas: ['Paralisia'], desvantagensGratuitas: ['Devoto', 'Sem Vida'] },
-    { nome: 'Goblin', custo: 1, 
-      poderes: [
-        'Espertalhão: +1 em Manha.', 
-        'Subterrâneo: Sentido (Infravisão) e Ganho em testes de R contra doenças e venenos.', 
-        'Diferente (desvantagem).'], 
-        vantagensGratuitas: ['Sentido (Infravisão)'],
-        desvantagensGratuitas: ['Diferente'] },
-    { nome: 'Hynne', custo: 1, poderes: ['Atirador: Gaste 2PM para Ganho em ataques à distância.', 'Encantador: +1 em Influência.', 'Diferente (desvantagem).'], desvantagensGratuitas: ['Diferente'] },
+    { nome: 'Fantasma', custo: 2, poderes: ['Espírito: Sempre incorpóreo, gasta PM para se tornar sólido. Imune e Sem Vida.', 'Paralisia (vantagem).', 'Devoto (desvantagem).'], vantagensGratuitas: [{ nome: 'Paralisia' }], desvantagensGratuitas: [{ nome: 'Devoto' }, { nome: 'Sem Vida' }] },
+    // CORREÇÃO: Sentido agora é um objeto
+    { nome: 'Goblin', custo: 1, poderes: ['Espertalhão: +1 em Manha.', 'Subterrâneo: Sentido (Infravisão) e Ganho em testes de R contra doenças e venenos.', 'Diferente (desvantagem).'], vantagensGratuitas: [{ nome: 'Sentido', subOption: 'Infravisão' }], desvantagensGratuitas: [{ nome: 'Diferente' }] },
+    { nome: 'Hynne', custo: 1, poderes: ['Atirador: Gaste 2PM para Ganho em ataques à distância.', 'Encantador: +1 em Influência.', 'Diferente (desvantagem).'], desvantagensGratuitas: [{ nome: 'Diferente' }] },
+    // CORREÇÃO: Código agora especifica "Código dos Dragões"
     { 
         nome: 'Kallyanach', 
         custo: 2, 
         poderes: ['Baforada: Recebe um Ataque Especial (Área, Distante ou Potente) que custa -1PM.', 'Poder Dracônico: Dragões são poderosos.', 'Código dos Dragões (desvantagem).'],
-        desvantagensGratuitas: ['Código'],
+        desvantagensGratuitas: [{ nome: 'Código', subOption: 'Código dos Heróis' }],
         escolhas: [{
             id: 'kally_poder', tipo: 'vantagem', listaFiltro: ['Forte', 'Carismático'], mensagem: 'Como Kallyanach, escolha seu Poder Dracônico.'
         }]
@@ -247,18 +248,21 @@ export const arquetipos = [
             { id: 'kemono_cacoete', tipo: 'desvantagem', listaFiltro: ['Antipático', 'Atrapalhado', 'Fracote', 'Frágil', 'Indeciso', 'Tapado'], mensagem: "Escolha o Cacoete do seu Kemono (não conta para o limite de pontos)." }
         ]
     },
-    { nome: 'Medusa', custo: 1, poderes: ['Carismático (vantagem).', 'Olhar Atordoante: Gaste 3PM para forçar um teste de R. Se falhar, alvo não faz ações e tem Perda na defesa por um turno.', 'Fracote (desvantagem).'], vantagensGratuitas: ['Carismático'], desvantagensGratuitas: ['Fracote'] },
-    { nome: 'Minotauro', custo: 1, poderes: ['Atlético: +1 em Esporte.', 'Sentido Labiríntico: Nunca se perde e Ganho em testes de Percepção para farejar.', 'Transtorno (Fobia) (desvantagem).'], desvantagensGratuitas: ['Transtorno'] },
-    { nome: 'Ogro', custo: 1, poderes: ['Destruidor: Gaste 2PM em um crítico para somar Poder mais uma vez.', 'Intimidador: Ganho em testes de Influência para intimidar.', 'Diferente (desvantagem).'], desvantagensGratuitas: ['Diferente'] },
-    { nome: 'Osteon', custo: 2, poderes: ['Imune (Abiótico, Doenças, Resiliente).', 'Memória Póstuma: +1 em uma perícia à sua escolha.', 'Sem Vida (desvantagem).'], desvantagensGratuitas: ['Sem Vida'] },
-    { nome: 'Qareen', custo: 2, poderes: ['Desejos: Tem a vantagem Magia. Quando lança uma magia que outra pessoa pediu, o custo diminui em -2PM.', 'Carismático (vantagem).', 'Código da Gratidão (desvantagem).'], vantagensGratuitas: ['Magia', 'Carismático'], desvantagensGratuitas: ['Código'] },
-    { nome: 'Sauroide', custo: 2, poderes: ['Cascudo: Recebe Resoluto e Vigoroso.', 'Camuflagem: Ganho em testes para se esconder.', 'Fraqueza (Frio) (desvantagem).'], vantagensGratuitas: ['Resoluto', 'Vigoroso'], desvantagensGratuitas: ['Fraqueza'] },
+    { nome: 'Medusa', custo: 1, poderes: ['Carismático (vantagem).', 'Olhar Atordoante: Gaste 3PM para forçar um teste de R. Se falhar, alvo não faz ações e tem Perda na defesa por um turno.', 'Fracote (desvantagem).'], vantagensGratuitas: [{ nome: 'Carismático' }], desvantagensGratuitas: [{ nome: 'Fracote' }] },
+    // CORREÇÃO: Transtorno agora especifica Fobia
+    { nome: 'Minotauro', custo: 1, poderes: ['Atlético: +1 em Esporte.', 'Sentido Labiríntico: Nunca se perde e Ganho em testes de Percepção para farejar.', 'Transtorno (Fobia) (desvantagem).'], desvantagensGratuitas: [{ nome: 'Transtorno', subOption: 'Fobia' }] },
+    { nome: 'Ogro', custo: 1, poderes: ['Destruidor: Gaste 2PM em um crítico para somar Poder mais uma vez.', 'Intimidador: Ganho em testes de Influência para intimidar.', 'Diferente (desvantagem).'], desvantagensGratuitas: [{ nome: 'Diferente' }] },
+    { nome: 'Osteon', custo: 2, poderes: ['Imune (Abiótico, Doenças, Resiliente).', 'Memória Póstuma: +1 em uma perícia à sua escolha.', 'Sem Vida (desvantagem).'], vantagensGratuitas: [{ nome: 'Imune', subOption: 'Abiótico'}, { nome: 'Imune', subOption: 'Doenças'}, { nome: 'Imune', subOption: 'Resiliente'}], desvantagensGratuitas: [{ nome: 'Sem Vida' }] },
+    // CORREÇÃO: Código agora especifica "Código da Gratidão"
+    { nome: 'Qareen', custo: 2, poderes: ['Desejos: Tem a vantagem Magia. Quando lança uma magia que outra pessoa pediu, o custo diminui em -2PM.', 'Carismático (vantagem).', 'Código da Gratidão (desvantagem).'], vantagensGratuitas: [{ nome: 'Magia' }, { nome: 'Carismático' }], desvantagensGratuitas: [{ nome: 'Código', subOption: 'Código da Gratidão' }] },
+    // CORREÇÃO: Fraqueza agora especifica "Frio"
+    { nome: 'Sauroide', custo: 2, poderes: ['Cascudo: Recebe Resoluto e Vigoroso.', 'Camuflagem: Ganho em testes para se esconder.', 'Fraqueza (Frio) (desvantagem).'], vantagensGratuitas: [{ nome: 'Resoluto' }, { nome: 'Vigoroso' }], desvantagensGratuitas: [{ nome: 'Fraqueza', subOption: 'Frio' }] },
     { 
         nome: 'Vampiro', 
         custo: 1, 
         poderes: ['Talento: Vampiros têm aptidões superiores.', 'Imortal (vantagem).', 'Fraqueza (Luz do dia) (desvantagem).'],
-        vantagensGratuitas: ['Imortal'],
-        desvantagensGratuitas: ['Fraqueza', 'Dependência'],
+        vantagensGratuitas: [{ nome: 'Imortal' }],
+        desvantagensGratuitas: [{ nome: 'Fraqueza', subOption: 'Luz do dia' }, { nome: 'Dependência' }],
         escolhas: [{
             id: 'vampiro_talento', tipo: 'vantagem', listaFiltro: ['Ágil', 'Carismático', 'Forte', 'Gênio', 'Resoluto', 'Vigoroso'], mensagem: "Como Vampiro, escolha seu Talento profano."
         }]

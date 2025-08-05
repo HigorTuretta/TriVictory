@@ -60,8 +60,6 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         updateCharacter({ [key]: value });
     };
 
-    // --- LÓGICA DE ARTEFATOS CORRIGIDA ---
-
     const addArtifact = (artifactData) => {
         const artifacts = [...(character.artifacts || []), artifactData];
         let advantages = [...(character.advantages || [])];
@@ -86,13 +84,9 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
     };
 
     const updateArtifact = (artifactData) => {
-        // 1. Atualiza a lista de artefatos
         const artifacts = (character.artifacts || []).map(a => a.id === artifactData.id ? artifactData : a);
-        
-        // 2. Remove qualquer vantagem previamente associada a este artefato
         let advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactData.id);
         
-        // 3. Verifica a nova versão do artefato e adiciona a vantagem se existir
         const auspiciousQuality = artifactData.qualities.find(q => q.nome === 'Auspicioso' && q.subOption);
         if (auspiciousQuality) {
             const advData = findAdv(auspiciousQuality.subOption);
@@ -113,19 +107,16 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
 
     const removeArtifact = (artifactId) => {
         const artifactName = (character.artifacts || []).find(a => a.id === artifactId)?.name || 'Artefato';
-        // 1. Remove o artefato da lista
         const artifacts = (character.artifacts || []).filter(a => a.id !== artifactId);
-        // 2. Remove a vantagem associada da lista de vantagens
         const advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactId);
 
         updateCharacter({ artifacts, advantages });
         toast.error(`Artefato "${artifactName}" removido.`);
     };
 
-    // --- FIM DA LÓGICA DE ARTEFATOS ---
-
     const addItem = (listKey, item, subOption = null, custoOverride = null) => {
         const list = character[listKey] || [];
+        // Impede adicionar itens simples não repetíveis que já existem.
         if (list.some(i => i.nome === item.nome && !item.repetivel)) {
             return toast.error(`${item.nome} já foi adicionado(a).`);
         }
@@ -143,9 +134,12 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const list = character[listKey] || [];
         const targetItem = list.find(i => i.id === itemId);
         if (!targetItem) return;
-        if (lockedItems.has(targetItem.nome)) {
-            return toast.error('Item obrigatório por Arquétipo ou Kit não pode ser removido.');
+
+        // A lógica de bloqueio agora vem do `lockedItems` que já inclui todas as fontes.
+        if (lockedItems.has(targetItem.nome) || lockedItems.has(`${targetItem.nome} (${targetItem.subOption})`)) {
+            return toast.error('Este item é obrigatório e não pode ser removido.');
         }
+        
         const itemNameSingular = KEY_TO_NAME_MAP[listKey] || 'Item';
         updateCharacter({ [listKey]: list.filter(i => i.id !== itemId) });
         toast.success(`${itemNameSingular} "${targetItem.nome}${targetItem.subOption ? ` (${targetItem.subOption})` : ''}" removida!`);
@@ -158,17 +152,23 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         let advantages = (character.advantages || []).filter(v => !v.fromArchetype);
         let disadvantages = (character.disadvantages || []).filter(d => !d.fromArchetype);
 
-        newArchetype?.vantagensGratuitas?.forEach(advName => {
-            if (!hasReqItem(advantages, advName)) {
-                const advData = findAdv(advName);
-                if (advData) advantages.push({ ...advData, id: uuidv4(), fromArchetype: true });
+        newArchetype?.vantagensGratuitas?.forEach(freeAdv => {
+            const hasExisting = advantages.some(a => a.nome === freeAdv.nome && a.subOption === freeAdv.subOption);
+            if (!hasExisting) {
+                const advData = findAdv(freeAdv.nome);
+                if (advData) {
+                    advantages.push({ ...advData, id: uuidv4(), fromArchetype: true, subOption: freeAdv.subOption });
+                }
             }
         });
-
-        newArchetype?.desvantagensGratuitas?.forEach(disName => {
-            if (!hasReqItem(disadvantages, disName)) {
-                const disData = findDis(disName);
-                if (disData) disadvantages.push({ ...disData, id: uuidv4(), fromArchetype: true, custo: 0 });
+        
+        newArchetype?.desvantagensGratuitas?.forEach(freeDis => {
+            const hasExisting = disadvantages.some(d => d.nome === freeDis.nome && d.subOption === freeDis.subOption);
+            if (!hasExisting) {
+                const disData = findDis(freeDis.nome);
+                if (disData) {
+                    disadvantages.push({ ...disData, id: uuidv4(), fromArchetype: true, custo: 0, subOption: freeDis.subOption });
+                }
             }
         });
 
@@ -177,8 +177,10 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
     };
 
     const handleMakeChoice = (choice, chosenItem, subOption = null) => {
-        const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true };
+        const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true, custo: chosenItem.custo };
+        // Para escolhas de arquétipo, o custo é sempre mantido.
         const listToUpdate = choice.tipo === 'vantagem' ? 'advantages' : 'disadvantages';
+        
         const updates = {
             archetypeChoices: { ...character.archetypeChoices, [choice.id]: newItem },
             [listToUpdate]: [...(character[listToUpdate] || []), newItem]
