@@ -1,16 +1,15 @@
 // src/hooks/useCharacterCalculations.js
+
 import { useMemo } from 'react';
 
 export const useCharacterCalculations = (character) => {
     const points = useMemo(() => {
         if (!character) return { total: 10, used: 0, remaining: 10, disBonus: 0 };
 
-        const { attributes = {}, skills = [], advantages = [], disadvantages = [], archetype, kits = [], basePoints = 12 } = character;
+        const { attributes = {}, skills = [], advantages = [], disadvantages = [], archetype, kits = [], basePoints = 10 } = character;
 
         const attrCost = Object.values(attributes).reduce((s, v) => s + v, 0);
 
-        // CORREÇÃO: A função `reduce` precisa de um valor inicial (0) para funcionar corretamente com um array vazio
-        // ou com o primeiro item. Sem isso, `s` (o acumulador) pode ser `undefined`, resultando em NaN.
         const skillCost = skills.reduce((s, p) => s + p.custo, 0);
 
         const advCost = advantages
@@ -35,12 +34,10 @@ export const useCharacterCalculations = (character) => {
         const { attributes = {}, advantages = [] } = character;
         const { poder = 0, habilidade = 0, resistencia = 0 } = attributes;
 
-        // 1. Calcula os valores base a partir dos atributos.
         let totalPa = poder || 1;
         let totalPm = (habilidade * 5) || 1;
         let totalPv = (resistencia * 5) || 1;
 
-        // 2. Itera sobre as vantagens e adiciona os bônus.
         advantages.forEach(vantagem => {
             switch (vantagem.nome) {
                 case '+Vida':
@@ -57,7 +54,6 @@ export const useCharacterCalculations = (character) => {
             }
         });
 
-        // 3. Retorna os valores finais calculados.
         return { pa: totalPa, pm: totalPm, pv: totalPv };
     }, [character]);
 
@@ -65,16 +61,33 @@ export const useCharacterCalculations = (character) => {
         if (!character) return new Set();
 
         const locked = new Set();
-        // Vantagens de Arquétipo
+        
+        // --- LÓGICA DE BLOQUEIO UNIFICADA ---
+
+        // 1. Itens gratuitos de Arquétipos
         (character.archetype?.vantagensGratuitas || []).forEach(name => locked.add(name));
-        // DESVANTAGENS de Arquétipo
         (character.archetype?.desvantagensGratuitas || []).forEach(name => locked.add(name));
 
-        // Vantagens de Kit
+        // 2. CORREÇÃO: Adiciona os itens que foram RESULTADO de uma escolha de arquétipo
+        Object.values(character.archetypeChoices || {}).forEach(choice => {
+            if (choice && choice.nome) {
+                locked.add(choice.nome);
+            }
+        });
+
+        // 3. Itens gratuitos de Kits
         (character.kits || []).forEach(kit => {
             (kit.vantagensGratuitas || []).forEach(name => locked.add(name));
-            // DESVANTAGENS de Kit
             (kit.desvantagensGratuitas || []).forEach(name => locked.add(name));
+        });
+
+       // 4. Itens de Artefatos (Qualidade Auspicioso)
+       (character.artifacts || []).forEach(artifact => {
+            artifact.qualities.forEach(q => {
+                if (q.nome === 'Auspicioso' && q.subOption) {
+                    locked.add(q.subOption);
+                }
+            });
         });
 
         return locked;

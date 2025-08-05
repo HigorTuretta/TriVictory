@@ -1,5 +1,5 @@
 // src/screens/CharacterSheet/index.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { FaPencilAlt, FaSave, FaHeartbeat } from 'react-icons/fa';
@@ -23,8 +23,8 @@ import { RPGLoader } from '../../components/RPGLoader';
 
 import deathAnimation from '../../assets/lotties/deathAnimation.json';
 import {
-  SheetContainer, BackButton, HeaderPanel, Section, SectionTitle,
-  SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
+    SheetContainer, BackButton, HeaderPanel, Section, SectionTitle,
+    SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
 } from './styles';
 
 
@@ -113,6 +113,11 @@ const CharacterSheetContent = () => {
     const [isBackstoryVisible, setIsBackstoryVisible] = useState(false);
     const [editingArtifact, setEditingArtifact] = useState(null);
 
+    const xpBudget = useMemo(() => {
+        if (!character?.advantages) return 0;
+        return (character.advantages.filter(a => a.nome === 'Artefato').reduce((sum, a) => sum + a.custo, 0)) * 10;
+    }, [character?.advantages]);
+
     useEffect(() => {
         if (!loading && character?.isDead) setIsEditing(false);
     }, [loading, character, setIsEditing]);
@@ -128,8 +133,6 @@ const CharacterSheetContent = () => {
     const { resources, points, lockedItems, itemCounts, addArtifact, updateArtifact, removeArtifact } = actions;
     const imageForCropper = character.portraitImage || '';
 
-    const xpBudget = (character.advantages?.filter(a => a.nome === 'Artefato').reduce((sum, a) => sum + a.custo, 0) || 0) * 10;
-    
     const handleSaveArtifact = (artifactData) => {
         if (editingArtifact === 'new') {
             addArtifact(artifactData);
@@ -141,12 +144,12 @@ const CharacterSheetContent = () => {
 
     return (
         <SheetContainer $isDead={character.isDead}>
-            <SheetModals 
-                character={character} 
-                modals={modals} 
-                closeModal={closeModal} 
-                lightboxImageUrl={lightboxImageUrl} 
-                updateCharacter={updateCharacter} 
+            <SheetModals
+                character={character}
+                modals={modals}
+                closeModal={closeModal}
+                lightboxImageUrl={lightboxImageUrl}
+                updateCharacter={updateCharacter}
             />
 
             {character.isDead && <DeathAnimationOverlay><Lottie animationData={deathAnimation} loop /></DeathAnimationOverlay>}
@@ -223,13 +226,15 @@ const CharacterSheetContent = () => {
                 onDone={(data) => updateCharacter(data)}
                 characterImage={imageForCropper}
             />
-            
-            <ArtifactBuilderModal 
+            <ArtifactBuilderModal
                 isOpen={!!editingArtifact}
                 onClose={() => setEditingArtifact(null)}
                 onSave={handleSaveArtifact}
                 artifactToEdit={editingArtifact === 'new' ? null : editingArtifact}
                 xpBudget={xpBudget}
+                characterAdvantages={character.advantages}
+                characterDisadvantages={character.disadvantages}
+                characterSkills={character.skills}
             />
 
             <FloatingActions

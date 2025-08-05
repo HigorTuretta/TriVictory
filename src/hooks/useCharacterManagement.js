@@ -10,8 +10,8 @@ import toast from 'react-hot-toast';
 const newCharacterTemplate = {
     name: 'Novo Herói', isDead: false, money: { amount: 0, type: moedas[0] }, level: 0,
     xp: { current: 0, target: 100, system: 'unit' },
-    portraitImage: 'trivictory/nxp9picc2ipcob0e4vnq', // Apenas public_id
-    tokenImage: 'trivictory/sizepmrpwvfvpqmwugln', // Apenas public_id
+    portraitImage: 'nxp9picc2ipcob0e4vnq', // Apenas public_id
+    tokenImage: 'sizepmrpwvfvpqmwugln', // Apenas public_id
     bannerPosition: 50, tokenBorderColor: '#888888',
     attributes: { poder: 0, habilidade: 0, resistencia: 0 },
     pv_current: 1, pm_current: 1, pa_current: 1,

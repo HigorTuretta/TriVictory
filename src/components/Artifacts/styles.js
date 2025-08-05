@@ -83,17 +83,25 @@ export const ArtifactActions = styled.div`
 
 export const QualityList = styled.div`
   display: flex;
-  flex-direction: column; /* Altera para empilhar os itens verticalmente */
-  gap: 0.75rem; /* Aumenta o espaçamento */
+  flex-direction: column;
+  gap: 0.75rem;
 `;
 
 export const QualityItem = styled.div`
   background-color: ${({ theme }) => theme.surfaceVariant};
-  color: ${({ theme }) => theme.textPrimary}; /* Cor primária para o nome */
+  color: ${({ theme }) => theme.textPrimary};
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-size: 0.9rem;
   font-weight: 600;
+`;
+
+export const QualityDescription = styled.p`
+  margin: 0.25rem 0 0 0;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: ${({ theme }) => theme.textSecondary};
+  line-height: 1.4;
 `;
 
 
@@ -179,14 +187,6 @@ export const QualityCard = styled.button`
   }
 `;
 
-export const QualityDescription = styled.p`
-  margin: 0.25rem 0 0 0;
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: ${({ theme }) => theme.textSecondary};
-  line-height: 1.4;
-`;
-
 export const AddCustomButton = styled.button`
     color: ${({ theme }) => theme.secondary};
     font-weight: 600;
@@ -199,4 +199,21 @@ export const AddCustomButton = styled.button`
         background-color: ${({ theme }) => theme.secondary}20;
         border-style: solid;
     }
+`;
+
+export const SubChoiceInput = styled.input`
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 6px;
+  background-color: ${({ theme }) => theme.surface};
+  color: ${({ theme }) => theme.textPrimary};
+  margin-bottom: 1rem;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
+  }
 `;

@@ -1,3 +1,4 @@
+// src/components/LevelXPTracker/index.jsx
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaPlus, FaMinus, FaSync, FaSkull } from 'react-icons/fa';
@@ -122,8 +123,8 @@ const DisplayView = ({ level, xp, progress, isDead, onXpChange, onResetRequest }
 // --- Componente Principal ---
 export const LevelXPTracker = ({
     level = 0,
-    xp = { current: 0, target: 100 },
-    basePoints = 12,
+    xp = { current: 0, target: 10 },
+    basePoints = 10,
     isEditing,
     onUpdate,
     isDead
@@ -158,7 +159,14 @@ export const LevelXPTracker = ({
             onUpdate({ xp: { ...xp, current: 0 } });
             toast.success("XP do nível atual zerado!");
         } else if (confirmReset === 'level') {
-            onUpdate({ level: 0, xp: { ...xp, current: 0 }, basePoints: 12 });
+            const startingBasePoints = basePoints - level;
+            
+            onUpdate({ 
+                level: 0, 
+                xp: { ...xp, current: 0 }, 
+                // CORREÇÃO: Garante que o valor resetado não seja menor que o padrão de 10
+                basePoints: Math.max(10, startingBasePoints)
+            });
             toast.success("Nível e XP zerados!");
         }
         setConfirmReset(null);

@@ -60,6 +60,70 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         updateCharacter({ [key]: value });
     };
 
+    // --- LÓGICA DE ARTEFATOS CORRIGIDA ---
+
+    const addArtifact = (artifactData) => {
+        const artifacts = [...(character.artifacts || []), artifactData];
+        let advantages = [...(character.advantages || [])];
+
+        const auspiciousQuality = artifactData.qualities.find(q => q.nome === 'Auspicioso' && q.subOption);
+
+        if (auspiciousQuality) {
+            const advData = findAdv(auspiciousQuality.subOption);
+            if (advData) {
+                const newAdvantage = {
+                    ...advData,
+                    id: uuidv4(),
+                    fromArtifact: artifactData.id, // Vínculo com o artefato
+                    custo: 0 // Custo em pontos é zero
+                };
+                advantages.push(newAdvantage);
+            }
+        }
+
+        updateCharacter({ artifacts, advantages });
+        toast.success(`Artefato "${artifactData.name}" criado!`);
+    };
+
+    const updateArtifact = (artifactData) => {
+        // 1. Atualiza a lista de artefatos
+        const artifacts = (character.artifacts || []).map(a => a.id === artifactData.id ? artifactData : a);
+        
+        // 2. Remove qualquer vantagem previamente associada a este artefato
+        let advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactData.id);
+        
+        // 3. Verifica a nova versão do artefato e adiciona a vantagem se existir
+        const auspiciousQuality = artifactData.qualities.find(q => q.nome === 'Auspicioso' && q.subOption);
+        if (auspiciousQuality) {
+            const advData = findAdv(auspiciousQuality.subOption);
+            if (advData) {
+                const newAdvantage = {
+                    ...advData,
+                    id: uuidv4(),
+                    fromArtifact: artifactData.id,
+                    custo: 0
+                };
+                advantages.push(newAdvantage);
+            }
+        }
+
+        updateCharacter({ artifacts, advantages });
+        toast.success(`Artefato "${artifactData.name}" atualizado!`);
+    };
+
+    const removeArtifact = (artifactId) => {
+        const artifactName = (character.artifacts || []).find(a => a.id === artifactId)?.name || 'Artefato';
+        // 1. Remove o artefato da lista
+        const artifacts = (character.artifacts || []).filter(a => a.id !== artifactId);
+        // 2. Remove a vantagem associada da lista de vantagens
+        const advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactId);
+
+        updateCharacter({ artifacts, advantages });
+        toast.error(`Artefato "${artifactName}" removido.`);
+    };
+
+    // --- FIM DA LÓGICA DE ARTEFATOS ---
+
     const addItem = (listKey, item, subOption = null, custoOverride = null) => {
         const list = character[listKey] || [];
         if (list.some(i => i.nome === item.nome && !item.repetivel)) {
@@ -101,11 +165,9 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
             }
         });
 
-        // CORREÇÃO: Lógica para adicionar desvantagens gratuitas do arquétipo.
         newArchetype?.desvantagensGratuitas?.forEach(disName => {
             if (!hasReqItem(disadvantages, disName)) {
                 const disData = findDis(disName);
-                // Custo 0 pois é obrigatória e não concede pontos.
                 if (disData) disadvantages.push({ ...disData, id: uuidv4(), fromArchetype: true, custo: 0 });
             }
         });
@@ -162,7 +224,6 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         updateCharacter({
             kits: (character.kits || []).filter(k => k.nome !== kitName),
             advantages: (character.advantages || []).filter(adv => adv.fromKit !== kitName),
-            // CORREÇÃO: Garante que as desvantagens do kit também sejam removidas.
             disadvantages: (character.disadvantages || []).filter(dis => dis.fromKit !== kitName)
         });
         toast.success(`Kit "${kitName}" removido.`);
@@ -228,5 +289,8 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         handleAddTechnique,
         handleRemoveTechnique,
         handleConsume,
+        addArtifact,
+        updateArtifact,
+        removeArtifact
     };
 };

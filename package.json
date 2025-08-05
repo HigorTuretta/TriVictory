@@ -1,7 +1,7 @@
 {
   "name": "trivictory",
   "private": true,
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "browser-image-compression": "^2.0.2",
-    "cannon-es": "^0.20.0",
     "cloudinary-core": "^2.13.1",
     "firebase": "^11.9.1",
     "framer-motion": "^12.18.1",
@@ -29,12 +28,9 @@
     "react-easy-crop": "^5.4.2",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
-    "react-image-crop": "^11.0.10",
     "react-konva": "^19.0.7",
-    "react-radial-menu": "^1.0.0",
     "react-router-dom": "^7.6.2",
     "styled-components": "^6.1.19",
-    "three": "^0.177.0",
     "use-image": "^1.1.4",
     "uuid": "^11.1.0"
   },
@@ -47,7 +43,6 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
-    "sass": "^1.89.2",
     "vite": "^6.3.5"
   }
 }

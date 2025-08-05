@@ -1,4 +1,3 @@
-// src/components/SelectionGrid/index.jsx
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Modal } from '../Modal';
@@ -126,11 +125,11 @@ export const SelectionGrid = ({
             closeModal();
         }
     };
-    
+
     const handleConfirmSpecialization = (pericia, isSpecialization, specializationName) => {
         onAddItem({ ...pericia, isSpecialization }, specializationName, pericia.custo);
     };
-
+    
     const handleCostSelect = (cost) => {
         onAddItem(activeModal.data, null, cost);
         closeModal();
@@ -175,8 +174,21 @@ export const SelectionGrid = ({
         return null;
     };
     
-    const handleSaveCustom = (customItemData) => { /* ... */ };
-    const handleDeleteCustom = () => { /* ... */ };
+    const handleSaveCustom = (customItemData) => {
+        if (activeModal.type === 'customEdit') {
+            onUpdateCustomItem({ ...activeModal.data, ...customItemData });
+        } else {
+            onAddCustomItem(customItemData);
+        }
+        closeModal();
+    };
+
+    const handleDeleteCustom = () => {
+        if (activeModal.type === 'customDelete') {
+            onDeleteCustomItem(activeModal.data);
+            closeModal();
+        }
+    };
 
     return (
         <>

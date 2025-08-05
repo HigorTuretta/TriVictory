@@ -1,3 +1,4 @@
+// src/components/SheetLeftColumn/index.jsx
 import React from 'react';
 import * as gameData from '../../data/gameData';
 import { MoneyTracker } from '../MoneyTracker';
@@ -20,15 +21,26 @@ export const SheetLeftColumn = ({
   goToClassCreator,
   unmetClassReqs,
 }) => {
+  // --- CORREÇÃO APLICADA AQUI ---
   // Função wrapper para sanitizar os dados do LevelXPTracker antes de atualizar.
   const handleXpTrackerUpdate = (updates) => {
-    const sanitizedUpdates = {
-      ...updates,
-      level: Number(updates.level) || 0,
-      basePoints: Number(updates.basePoints) || 12,
+    // Mescla as atualizações recebidas com os valores existentes no personagem
+    const mergedData = {
+      level: updates.level ?? character.level,
+      basePoints: updates.basePoints ?? character.basePoints,
       xp: {
-        current: Number(updates.xp?.current) || 0,
-        target: Number(updates.xp?.target) || 100,
+        current: updates.xp?.current ?? character.xp?.current,
+        target: updates.xp?.target ?? character.xp?.target,
+      }
+    };
+
+    // Garante que todos os valores sejam números válidos, usando 0 ou 10 como fallback
+    const sanitizedUpdates = {
+      level: Number(mergedData.level) || 0,
+      basePoints: Number(mergedData.basePoints) || 10,
+      xp: {
+        current: Number(mergedData.xp?.current) || 0,
+        target: Number(mergedData.xp?.target) || 10,
       }
     };
     handleUpdate(sanitizedUpdates);
@@ -55,10 +67,10 @@ export const SheetLeftColumn = ({
       Component: LevelXPTracker,
       props: {
         level: character.level || 0,
-        xp: character.xp || { current: 0, target: 100 },
-        basePoints: character.basePoints || 12,
+        xp: character.xp || { current: 0, target: 10 },
+        basePoints: character.basePoints || 10,
         isEditing,
-        onUpdate: handleXpTrackerUpdate,
+        onUpdate: handleXpTrackerUpdate, // Esta função agora é segura
         isDead: character.isDead,
       },
     },

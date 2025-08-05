@@ -10,7 +10,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 import { getTokenImageUrl } from '../../services/cloudinaryService';
 import toast from 'react-hot-toast';
-import { useUserCharacters } from '../../hooks/useUserCharacters';
 import { FaPlus, FaMinus } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
