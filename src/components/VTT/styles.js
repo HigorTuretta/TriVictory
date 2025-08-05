@@ -75,6 +75,7 @@ export const SidebarContainer = styled(motion.aside)`
 >.version{
   font-size: 10px;
   color: ${({ theme }) => theme.textSecondary};
+  text-align: center;
 }
 `;
 export const CollapseButton = styled.button`
@@ -191,7 +192,7 @@ export const LinkButton = styled.button`
   display: inline-flex; align-items: center;
   justify-content: ${({ $isCollapsed }) => ($isCollapsed ? 'center' : 'center')};
   gap: 0.5rem;
-
+  margin-top: .5rem;
   background-color: ${({ theme }) => theme.primary};
   color: white; border-radius: 6px;
 
