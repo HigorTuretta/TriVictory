@@ -2,12 +2,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { FaPencilAlt, FaSave, FaHeartbeat } from 'react-icons/fa';
+import { FaPencilAlt, FaSave, FaHeartbeat, FaAddressCard } from 'react-icons/fa';
 import Lottie from 'lottie-react';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { CharacterProvider, useCharacter } from '../../contexts/CharacterContext';
-import { getMainImageUrl } from '../../services/cloudinaryService';
 
 // Componentes de UI
 import { CharacterSheetHeader } from '../../components/CharacterSheetHeader';
@@ -154,7 +153,6 @@ const CharacterSheetContent = () => {
 
             {character.isDead && <DeathAnimationOverlay><Lottie animationData={deathAnimation} loop /></DeathAnimationOverlay>}
             <BackButton onClick={() => navigate(-1)}>← Voltar</BackButton>
-
             <CharacterSheetHeader
                 character={character}
                 characterName={character.name}
@@ -165,6 +163,7 @@ const CharacterSheetContent = () => {
                 points={points}
                 onOpenImageManager={() => openModal('imageCropper')}
                 onBannerClick={openLightbox}
+                updateCharacter={updateCharacter} 
             />
 
             <HeaderPanel>

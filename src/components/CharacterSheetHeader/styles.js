@@ -1,10 +1,9 @@
+// src/components/CharacterSheetHeader/styles.js
 import styled, { css } from 'styled-components';
 import { rgba } from 'polished';
 
 // --- Funções Helper ---
-// Adiciona opacidade a uma cor hexadecimal.
 const withBaseOpacity = (hex) => rgba(hex, 0.25);
-// Retorna um valor padrão caso o valor do tema não esteja disponível.
 const fallback = (themeValue, defaultValue) => (themeValue || defaultValue);
 
 // --- Contêiner Principal ---
@@ -116,22 +115,21 @@ const IconBtn = css`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: opacity 0.2s, transform 0.2s, background-color 0.2s;
   pointer-events: auto;
   z-index: 4;
+  
+  // --- CORREÇÃO APLICADA AQUI ---
+  font-size: 22px; /* Define o tamanho do ícone */
 
-  & svg {
-    flex-shrink: 0;
-    fill: currentColor;
-    width: 50%;
-    height: 50%;
-  }
+  /* Removemos o seletor SVG, pois o font-size é mais eficaz */
 
   &:hover { transform: scale(1.1); }
 
   @media (max-width: 768px) {
     width: 36px;
     height: 36px;
+    font-size: 18px; /* Ajusta o tamanho do ícone para telas menores */
   }
 `;
 
@@ -139,8 +137,18 @@ const IconBtn = css`
 export const UploadBtn = styled.button`
   ${IconBtn};
   top: 16px;
-  right: 16px;
+  right: 68px; /* Abre espaço para o novo botão */
   background: ${({ theme }) => fallback(theme.primary, '#8a4fff')};
+  color: ${({ theme }) => fallback(theme.onPrimary, '#fff')};
+  opacity: 0.9;
+  &:hover { opacity: 1; }
+`;
+
+export const ShareButton = styled.button`
+  ${IconBtn};
+  top: 16px;
+  right: 16px;
+  background: ${({ theme, $isPublic }) => $isPublic ? theme.success : fallback(theme.secondary, '#00BCD4')};
   color: ${({ theme }) => fallback(theme.onPrimary, '#fff')};
   opacity: 0.9;
   &:hover { opacity: 1; }

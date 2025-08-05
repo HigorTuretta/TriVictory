@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     FaTrash, FaEyeSlash, FaBed, FaRunning, FaSkullCrossbones, 
-    FaArrowUp, FaDiceD20, FaMinus, FaPlus 
+    FaArrowUp, FaDiceD20, FaMinus, FaPlus, FaAddressCard // Importar o novo ícone
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRoom } from '../../contexts/RoomContext';
@@ -10,6 +10,8 @@ import {
     ContextMenuBody, ResourceBar, BarVisual, BarFill, ActionGrid, 
     ResourceInput, ResourceControls 
 } from './styles';
+
+// ... (ResourceControl sem alterações) ...
 
 const ResourceControl = ({ label, resourceKey, value, max, color, onAction, editable }) => {
     const [currentValue, setCurrentValue] = useState(value);
@@ -70,6 +72,12 @@ export const TokenContextMenu = ({ token, onAction }) => {
 
             {isMaster && (
                 <ActionGrid>
+                    {/* NOVO BOTÃO DE ABRIR FICHA */}
+                    {token.type === 'player' && (
+                        <button onClick={() => window.open(`/sheet/${token.tokenId}`, '_blank')}>
+                            <FaAddressCard /> Ver Ficha
+                        </button>
+                    )}
                     {token.type === 'enemy' && (
                         <button onClick={() => onAction('rollInitiative', {})}>
                             <FaDiceD20 /> Iniciativa

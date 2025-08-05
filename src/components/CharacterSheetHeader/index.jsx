@@ -1,10 +1,10 @@
 // src/components/CharacterSheetHeader/index.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FaCamera, FaExpandArrowsAlt } from 'react-icons/fa';
+import { FaCamera, FaExpandArrowsAlt, FaShareAlt, FaLock } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast'; // Importar toast
 
-// CORREÇÃO: Importar as funções para construir as URLs das imagens
 import { getMainImageUrl, getTokenImageUrl } from '../../services/cloudinaryService';
 
 import {
@@ -16,6 +16,7 @@ import {
   TokenWrap,
   Token,
   UploadBtn,
+  ShareButton, // Importar o novo botão
   ExpandButton,
   Info,
   NameInput,
@@ -33,17 +34,19 @@ export const CharacterSheetHeader = ({
   isDead = false,
   onOpenImageManager,
   onBannerClick,
+  updateCharacter, // Receber a função de atualização
 }) => {
   const {
-    portraitImage, // Agora é o public_id
+    id: characterId,
+    portraitImage,
     bannerPosition = 50,
-    tokenImage, // Agora é o public_id
+    tokenImage,
     tokenBorderColor = '#7b3ff1',
+    isPublic = false, // Padrão para falso se não existir
   } = character || {};
 
   const { total = 0, used = 0, remaining = 0, disBonus = 0 } = points || {};
 
-  // CORREÇÃO: Usar os helpers para construir as URLs completas a partir dos public_ids
   const bannerUrl = portraitImage ? getMainImageUrl(portraitImage) : '';
   const tokenUrl = tokenImage ? getTokenImageUrl(tokenImage, tokenBorderColor) : '';
 
@@ -57,6 +60,22 @@ export const CharacterSheetHeader = ({
   const handleBannerClick = () => {
     if (bannerUrl && onBannerClick) {
       onBannerClick(bannerUrl);
+    }
+  };
+
+  // Lógica para o botão de compartilhamento
+  const handleShare = () => {
+    if (!isOwner || !updateCharacter) return;
+    
+    const newPublicState = !isPublic;
+    updateCharacter({ isPublic: newPublicState });
+
+    if (newPublicState) {
+      const shareLink = `${window.location.origin}/sheet/${characterId}`;
+      navigator.clipboard.writeText(shareLink);
+      toast.success('Ficha agora é pública! Link copiado para a área de transferência.');
+    } else {
+      toast.error('Ficha agora é privada.');
     }
   };
 
@@ -84,6 +103,17 @@ export const CharacterSheetHeader = ({
         </UploadBtn>
       )}
 
+      {/* NOVO BOTÃO DE COMPARTILHAMENTO */}
+      {isOwner && (
+        <ShareButton
+          title={isPublic ? "Tornar ficha privada" : "Compartilhar (link público)"}
+          onClick={handleShare}
+          $isPublic={isPublic}
+        >
+          {isPublic ? <FaLock /> : <FaShareAlt />}
+        </ShareButton>
+      )}
+
       {bannerUrl && (
         <ExpandButton title="Ampliar imagem" onClick={handleBannerClick}>
           <FaExpandArrowsAlt />
@@ -109,7 +139,7 @@ export const CharacterSheetHeader = ({
             <PointsRow>
               {pointPills.map((pill) => (
                 <Pill key={pill.label} $variant={pill.variant}>
-                  {pill.label} • {pill.value}
+                  {pill.label} • {pill.value}
                 </Pill>
               ))}
             </PointsRow>
@@ -135,4 +165,5 @@ CharacterSheetHeader.propTypes = {
   isDead: PropTypes.bool,
   onOpenImageManager: PropTypes.func,
   onBannerClick: PropTypes.func,
+  updateCharacter: PropTypes.func, // Adicionar prop type
 };
