@@ -5,6 +5,7 @@ import { db } from '../firebase/config';
 import { useAuth } from './AuthContext';
 import _ from 'lodash';
 import { useCharacterCalculations, useCharacterActions } from '../hooks';
+import toast from 'react-hot-toast';
 
 const CharacterContext = createContext();
 

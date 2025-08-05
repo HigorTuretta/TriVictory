@@ -130,7 +130,6 @@ export const vantagens = [
     { nome: 'Vigoroso', custo: 1, descricao: 'Você é robusto. Recebe um bônus de +2 em testes envolvendo saúde física (incluindo testes de morte). Este bônus é somado ao resultado final do teste. Você também pode gastar 2 PM para conseguir um acerto crítico com 5 ou 6 nesses testes.' },
     { nome: 'Voo', custo: 1, descricao: 'Você pode voar. Levantar voo em combate usa um movimento e custa 2 PM. Voar ignora terreno difícil.' },
 ];
-
 export const desvantagens = [
     { nome: 'Ambiente', custo: -1, descricao: 'Você é mais acostumado a um certo ambiente. No início de cada cena, role 1D. Com um resultado 1, você tem -1D (Perda) em todos os testes.' },
     { nome: 'Amnésia', custo: -2, descricao: 'Você não sabe quem é. O mestre cria sua ficha em segredo, e você descobre suas próprias perícias, vantagens e desvantagens durante o jogo.' },
@@ -139,7 +138,23 @@ export const desvantagens = [
     { nome: 'Atrapalhado', custo: -1, descricao: 'Você se atrapalha com facilidade. Em testes de Habilidade envolvendo coordenação e agilidade, você tem -1D (Perda) e nunca consegue acertos críticos.' },
     { nome: 'Aura', custo: -1, custos: [-1, -2], descricao: 'Você emana uma aura pesada. -1pt: Testes de outros Perto de você têm Perda. -2pt: O efeito se estende para Longe.' },
     { nome: 'Bateria', custo: -1, descricao: 'Você tem uma reserva de energia. Sempre que ficar com 0 PM, você "desliga", ficando inconsciente. Quando está com pouco PM (abaixo de sua Habilidade), todos os seus testes têm -1D (Perda).' },
-    { nome: 'Código', custo: -1, repetivel: true, descricao: 'Você segue um código de conduta. Sempre que o violar, você fica com -1D (Perda) em todos os testes até conseguir se redimir.', opcoes: ['1ª Lei de Asimov', '2ª Lei de Asimov', 'Código do Caçador', 'Código do Combate', 'Código da Derrota', 'Código da Gratidão', 'Código dos Heróis', 'Código da Honestidade', 'Código da Redenção'] },
+    { 
+        nome: 'Código', 
+        custo: -1, 
+        repetivel: true, 
+        descricao: 'Você segue um código de conduta. Sempre que o violar, você fica com -1D (Perda) em todos os testes até conseguir se redimir.', 
+        opcoes: [
+            { nome: '1ª Lei de Asimov', descricao: 'Jamais causar mal a um ser humano ou, por omissão, permitir que um humano sofra qualquer mal.' },
+            { nome: '2ª Lei de Asimov', descricao: 'Sempre obedecer a seres humanos, exceto quando suas ordens violam outro Código que você tenha.' },
+            { nome: 'Código do Caçador', descricao: 'Nunca matar (apenas derrotar) filhotes ou gestantes. Nunca abandonar uma caça abatida.' },
+            { nome: 'Código do Combate', descricao: 'Nunca atacar um oponente em condição desfavorável (em Perda) ou de escala inferior.' },
+            { nome: 'Código da Derrota', descricao: 'Nunca seguir lutando depois de derrotado. Aceitar qualquer condição do vitorioso.' },
+            { nome: 'Código da Gratidão', descricao: 'Sempre que alguém presta um grande favor a você, fica a serviço dessa pessoa até devolver o favor.' },
+            { nome: 'Código dos Heróis', descricao: 'Sempre cumprir sua palavra, proteger os fracos e jamais recusar um pedido de ajuda.' },
+            { nome: 'Código da Honestidade', descricao: 'Nunca mentir, roubar, trapacear ou desobedecer às leis locais, nem permitir que seus companheiros o façam.' },
+            { nome: 'Código da Redenção', descricao: 'Nunca atacar primeiro, sempre aceitar um pedido de rendição, sempre poupar oponentes derrotados.' }
+        ] 
+    },
     { nome: 'Dependência', custo: -2, descricao: 'Você depende de algo raro ou desumano para viver. Todos os dias que não satisfizer sua dependência, você tem -1D (Perda) em todos os testes.' },
     { nome: 'Diferente', custo: -1, descricao: 'Seu corpo é muito diferente de um corpo humanoide comum. Você tem problemas para usar as armas, roupas, equipamentos, máquinas e veículos disponíveis — pode usar apenas aqueles feitos especialmente para você.' },
     { nome: 'Elo Vital', custo: -1, descricao: 'Escolha um aliado que também deve ter esta desvantagem. Sempre que um de vocês sofre dano, o outro também perde PV na mesma quantidade.' },

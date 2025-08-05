@@ -53,6 +53,31 @@ const SubtypeInputModal = ({ isOpen, quality, onClose, onSelect }) => {
     );
 };
 
+const CodigoChooserModal = ({ isOpen, quality, onSelect, onClose }) => {
+    const codigoOptions = useMemo(() => {
+        const codigoDisadvantage = gameData.desvantagens.find(d => d.nome === 'Código');
+        return codigoDisadvantage?.opcoes || [];
+    }, []);
+
+    if (!isOpen) return null;
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose}>
+            <h3>Escolha um Código para "{quality?.nome}"</h3>
+            <p>Selecione o código de honra que este artefato seguirá.</p>
+            <ModalSelectionWrapper>
+                 {codigoOptions.map(opt => (
+                    <ModalOptionButton key={opt.nome} onClick={() => onSelect({ subOption: opt.nome, cost: quality.custo })}>
+                        {opt.nome}
+                        {/* A descrição agora existe e será exibida corretamente */}
+                        <small>{opt.descricao}</small> 
+                    </ModalOptionButton>
+                ))}
+            </ModalSelectionWrapper>
+        </Modal>
+    );
+};
+
 export const ArtifactBuilderModal = ({ 
     isOpen, onClose, onSave, artifactToEdit, xpBudget,
     characterSkills = [], characterAdvantages = [], characterDisadvantages = [] 
@@ -102,7 +127,14 @@ export const ArtifactBuilderModal = ({
     
     const handleSubChoiceSelect = (choiceData) => {
         const { quality } = subChoice;
-        let newQuality = { ...quality, id: uuidv4(), subOption: choiceData.subOption, custo: choiceData.cost };
+        
+        // CORREÇÃO: Lógica unificada para criar o novo objeto de qualidade
+        const newQuality = { 
+            ...quality, 
+            id: uuidv4(), 
+            subOption: choiceData.subOption, 
+            custo: choiceData.cost 
+        };
         
         if (remainingXp < (newQuality.custo || 0)) {
             toast.error("XP do Artefato insuficiente!");
@@ -118,7 +150,6 @@ export const ArtifactBuilderModal = ({
         if (quality.custos) {
             return quality.custos.map(cost => ({ 
                 label: `${quality.nome} (${cost > 0 ? `+${cost}` : cost}XP)`, 
-                // CORREÇÃO: Passa um objeto com a propriedade 'cost'
                 value: { cost, subOption: `${cost}XP` } 
             }));
         }
@@ -128,8 +159,6 @@ export const ArtifactBuilderModal = ({
                 value: { subOption: v.nome, cost: v.custo * 10 }
             }));
         }
-
-        // Lógica para os outros tipos de sub-escolha...
         return [];
     }, [subChoice]);
 
@@ -141,13 +170,14 @@ export const ArtifactBuilderModal = ({
         return `(${quality.custo > 0 ? `+${quality.custo}`: quality.custo}XP)`;
     };
 
-  const handleSave = () => {
+    const handleSave = () => {
         if (!name.trim()) return toast.error("O artefato precisa de um nome.");
         if (spentXp > xpBudget) return toast.error("XP gasto excede o total disponível do artefato.");
         const artifactData = { id: artifactToEdit?.id || `art-${Date.now()}`, name, qualities };
         onSave(artifactData);
         onClose();
     };
+
     return (
         <>
             <Modal isOpen={isOpen} onClose={onClose} size="large">
@@ -176,7 +206,7 @@ export const ArtifactBuilderModal = ({
             </Modal>
             
             <SubChoiceModal 
-                isOpen={subChoice.modal === 'custos' || subChoice.modal === 'vantagem' /* ... ou outros */}
+                isOpen={subChoice.modal === 'custos' || subChoice.modal === 'vantagem'}
                 onClose={closeSubModal}
                 title={`Selecione uma opção para ${subChoice.quality?.nome}`}
                 options={getSubModalOptions()}
@@ -188,6 +218,13 @@ export const ArtifactBuilderModal = ({
                 quality={subChoice.quality}
                 onClose={closeSubModal}
                 onSelect={(subOption) => handleSubChoiceSelect({ subOption, cost: subChoice.quality.custo })}
+            />
+            
+            <CodigoChooserModal
+                isOpen={subChoice.modal === 'codigo'}
+                quality={subChoice.quality}
+                onClose={closeSubModal}
+                onSelect={handleSubChoiceSelect} // Passa a função diretamente
             />
 
             <Modal isOpen={subChoice.modal === 'vantagem'} onClose={closeSubModal} size="large">
