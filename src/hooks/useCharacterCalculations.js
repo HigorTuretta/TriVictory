@@ -9,18 +9,15 @@ export const useCharacterCalculations = (character) => {
 
         const attrCost = Object.values(attributes).reduce((s, v) => s + v, 0);
         
-        // Custo de Perícias, ignorando as que vêm de artefatos
-        const skillCost = skills.filter(s => !s.fromArtifact).reduce((s, p) => s + p.custo, 0);
+        const skillCost = skills.filter(s => !s.fromArtifact).reduce((s, p) => s + (p.custo || 0), 0);
 
-        // Custo de Vantagens, ignorando as de arquétipo, kit e artefato
         const advCost = advantages
             .filter(v => !v.fromArchetype && !v.fromClass && !v.fromArtifact)
-            .reduce((total, v) => total + v.custo, 0);
+            .reduce((total, v) => total + (v.custo || 0), 0);
 
-        // Bônus de Desvantagens, ignorando as de arquétipo e kit (as de artefato já tem custo 0)
         const disBonus = disadvantages
-            .filter(d => !d.fromArchetype && !d.fromClass)
-            .reduce((total, d) => total + d.custo, 0);
+            .filter(d => !d.fromArchetype && !d.fromClass && !d.fromArtifact)
+            .reduce((total, d) => total + (d.custo || 0), 0);
 
         const kitCost = kits.reduce((total, _, index) => total + (index + 1), 0);
 
@@ -64,6 +61,7 @@ export const useCharacterCalculations = (character) => {
         const locked = new Set();
     
         const addLock = (item) => {
+            if (!item || !item.nome) return;
             if (item.subOption) {
                 locked.add(`${item.nome} (${item.subOption})`);
             } else {
@@ -83,10 +81,17 @@ export const useCharacterCalculations = (character) => {
             (kit.desvantagensGratuitas || []).forEach(item => addLock(typeof item === 'string' ? { nome: item } : item));
         });
     
-       // CORREÇÃO: Itera sobre TODAS as listas para encontrar itens de artefato e bloqueá-los
-       (character.advantages || []).filter(i => i.fromArtifact).forEach(addLock);
-       (character.disadvantages || []).filter(i => i.fromArtifact).forEach(addLock);
-       (character.skills || []).filter(i => i.fromArtifact).forEach(addLock);
+       // --- CORREÇÃO FINAL APLICADA AQUI ---
+       // Itera sobre TODAS as listas e bloqueia itens com a flag 'fromArtifact'
+       [
+         ...(character.advantages || []),
+         ...(character.disadvantages || []),
+         ...(character.skills || [])
+       ].forEach(item => {
+           if (item.fromArtifact) {
+               addLock(item);
+           }
+       });
     
         return locked;
     }, [character]);    

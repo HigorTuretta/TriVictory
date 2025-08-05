@@ -2,13 +2,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { FaPencilAlt, FaSave, FaHeartbeat, FaAddressCard } from 'react-icons/fa';
+import { FaPencilAlt, FaSave, FaHeartbeat, FaAddressCard, FaCopy } from 'react-icons/fa';
 import Lottie from 'lottie-react';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { CharacterProvider, useCharacter } from '../../contexts/CharacterContext';
 
-// Componentes de UI
+// ... (outros imports)
 import { CharacterSheetHeader } from '../../components/CharacterSheetHeader';
 import { ImageCropperModal } from '../../components/ImageCropperModal';
 import { ImageLightbox } from '../../components/ImageLightbox';
@@ -19,13 +19,13 @@ import { SheetFooter } from '../../components/SheetFooter';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { ArtifactBuilderModal } from '../../components/Artifacts/ArtifactBuilderModal';
 import { RPGLoader } from '../../components/RPGLoader';
-
 import deathAnimation from '../../assets/lotties/deathAnimation.json';
 import {
     SheetContainer, BackButton, HeaderPanel, Section, SectionTitle,
     SheetLayoutGrid, DeathAnimationOverlay, FloatingActionButton
 } from './styles';
 
+// ... (useCharacterSheetUI, FloatingActions, SheetModals - sem alterações) ...
 
 const useCharacterSheetUI = () => {
     const [modals, setModals] = useState({ imageCropper: false, lightbox: false, confirmDeath: false, confirmResurrection: false });
@@ -36,14 +36,10 @@ const useCharacterSheetUI = () => {
     return { modals, openModal, closeModal, lightboxImageUrl, openLightbox };
 };
 
-// --- CORREÇÃO: Implementação completa do componente FloatingActions ---
 const FloatingActions = ({ isOwner, isEditing, onEditToggle, onDeathToggle, isDead }) => {
-    // Regra 1: Só o dono da ficha pode ver o botão.
     if (!isOwner) {
         return null;
     }
-
-    // Regra 2: Se o personagem está morto, o botão serve para ressuscitar.
     if (isDead) {
         return (
             <FloatingActionButton
@@ -55,8 +51,6 @@ const FloatingActions = ({ isOwner, isEditing, onEditToggle, onDeathToggle, isDe
             </FloatingActionButton>
         );
     }
-
-    // Regra 3: Se o personagem está vivo, o botão alterna o modo de edição.
     return (
         <FloatingActionButton
             onClick={onEditToggle}
@@ -68,7 +62,6 @@ const FloatingActions = ({ isOwner, isEditing, onEditToggle, onDeathToggle, isDe
     );
 };
 
-// O componente de Modais permanece como estava
 const SheetModals = ({ character, modals, closeModal, lightboxImageUrl, updateCharacter }) => {
     const handleDeathConfirm = () => {
         updateCharacter({ isDead: true });
@@ -103,11 +96,10 @@ const SheetModals = ({ character, modals, closeModal, lightboxImageUrl, updateCh
         </>
     );
 };
-/* --------------------- Conteúdo Principal da Tela ------------------------- */
+
 const CharacterSheetContent = () => {
     const navigate = useNavigate();
-    const { currentUser } = useAuth();
-    const { character, loading, isEditing, setIsEditing, updateCharacter, ...actions } = useCharacter();
+    const { character, loading, isEditing, setIsEditing, updateCharacter, isOwner, ...actions } = useCharacter();
     const { modals, openModal, closeModal, lightboxImageUrl, openLightbox } = useCharacterSheetUI();
     const [isBackstoryVisible, setIsBackstoryVisible] = useState(false);
     const [editingArtifact, setEditingArtifact] = useState(null);
@@ -118,17 +110,15 @@ const CharacterSheetContent = () => {
     }, [character?.advantages]);
 
     useEffect(() => {
-        if (!loading && character?.isDead) setIsEditing(false);
-    }, [loading, character, setIsEditing]);
+        if (!loading && (character?.isDead || !isOwner)) {
+            setIsEditing(false);
+        }
+    }, [loading, character, isOwner, setIsEditing]);
 
-    // GUARDA DE SEGURANÇA: Se estiver carregando ou o personagem for nulo, mostra o loader.
     if (loading || !character) {
         return <RPGLoader />;
     }
 
-    // CORREÇÃO: Todos os cálculos e desestruturações que dependem do 'character'
-    // são movidos para DEPOIS da guarda de segurança.
-    const isOwner = currentUser?.uid === character.ownerId;
     const { resources, points, lockedItems, itemCounts, addArtifact, updateArtifact, removeArtifact } = actions;
     const imageForCropper = character.portraitImage || '';
 
@@ -139,7 +129,6 @@ const CharacterSheetContent = () => {
             updateArtifact(artifactData);
         }
     };
-
 
     return (
         <SheetContainer $isDead={character.isDead}>
@@ -153,6 +142,7 @@ const CharacterSheetContent = () => {
 
             {character.isDead && <DeathAnimationOverlay><Lottie animationData={deathAnimation} loop /></DeathAnimationOverlay>}
             <BackButton onClick={() => navigate(-1)}>← Voltar</BackButton>
+
             <CharacterSheetHeader
                 character={character}
                 characterName={character.name}
@@ -163,7 +153,7 @@ const CharacterSheetContent = () => {
                 points={points}
                 onOpenImageManager={() => openModal('imageCropper')}
                 onBannerClick={openLightbox}
-                updateCharacter={updateCharacter} 
+                updateCharacter={updateCharacter}
             />
 
             <HeaderPanel>
@@ -178,6 +168,7 @@ const CharacterSheetContent = () => {
                         isEditing={isEditing}
                         isDead={character.isDead}
                         points={points}
+                        isOwner={isOwner} // <<< Adicionar prop
                     />
                 </Section>
             </HeaderPanel>
@@ -191,6 +182,7 @@ const CharacterSheetContent = () => {
                     onAddKit={actions.handleAddKit}
                     onRemoveKit={actions.handleRemoveKit}
                     unmetClassReqs={actions.unmetClassReqs}
+                    isOwner={isOwner} // <<< Adicionar prop
                 />
                 <SheetRightColumn
                     character={character}
@@ -200,6 +192,7 @@ const CharacterSheetContent = () => {
                     onEditArtifact={setEditingArtifact}
                     onDeleteArtifact={removeArtifact}
                     onCreateArtifact={() => setEditingArtifact('new')}
+                    isOwner={isOwner} // <<< Adicionar prop
                 />
             </SheetLayoutGrid>
 
@@ -247,7 +240,6 @@ const CharacterSheetContent = () => {
     );
 };
 
-/* ------- Componente Wrapper com o Provider -------------- */
 export const CharacterSheet = () => {
     const { characterId } = useParams();
     return (

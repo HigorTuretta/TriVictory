@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     FaTrash, FaEyeSlash, FaBed, FaRunning, FaSkullCrossbones, 
-    FaArrowUp, FaDiceD20, FaMinus, FaPlus, FaAddressCard // Importar o novo ícone
+    FaArrowUp, FaDiceD20, FaMinus, FaPlus, FaAddressCard 
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRoom } from '../../contexts/RoomContext';
@@ -10,8 +10,6 @@ import {
     ContextMenuBody, ResourceBar, BarVisual, BarFill, ActionGrid, 
     ResourceInput, ResourceControls 
 } from './styles';
-
-// ... (ResourceControl sem alterações) ...
 
 const ResourceControl = ({ label, resourceKey, value, max, color, onAction, editable }) => {
     const [currentValue, setCurrentValue] = useState(value);
@@ -63,6 +61,7 @@ export const TokenContextMenu = ({ token, onAction }) => {
     const isMaster = room.masterId === currentUser.uid;
     const isOwner = token.userId === currentUser.uid;
     const canEditResources = isMaster || isOwner;
+    const canViewSheet = token.type === 'player' && (isMaster || isOwner);
 
     return (
         <ContextMenuBody>
@@ -70,34 +69,40 @@ export const TokenContextMenu = ({ token, onAction }) => {
             <ResourceControl label="PM" resourceKey="pm_current" value={token.pm_current || 0} max={token.pm_max || 1} color="#2196F3" editable={canEditResources} onAction={onAction} />
             <ResourceControl label="PA" resourceKey="pa_current" value={token.pa_current || 0} max={token.pa_max || 1} color="#FFC107" editable={canEditResources} onAction={onAction} />
 
-            {isMaster && (
+        
+            {(canViewSheet || isMaster) && (
                 <ActionGrid>
-                    {/* NOVO BOTÃO DE ABRIR FICHA */}
-                    {token.type === 'player' && (
+             
+                    {canViewSheet && (
                         <button onClick={() => window.open(`/sheet/${token.tokenId}`, '_blank')}>
                             <FaAddressCard /> Ver Ficha
                         </button>
                     )}
-                    {token.type === 'enemy' && (
-                        <button onClick={() => onAction('rollInitiative', {})}>
-                            <FaDiceD20 /> Iniciativa
-                        </button>
+              
+                    {isMaster && (
+                        <>
+                            {token.type === 'enemy' && (
+                                <button onClick={() => onAction('rollInitiative', {})}>
+                                    <FaDiceD20 /> Iniciativa
+                                </button>
+                            )}
+                            <button onClick={() => onAction('toggleVisibility')}>
+                                <FaEyeSlash /> {token.isVisible === false ? 'Revelar' : 'Ocultar'}
+                            </button>
+                            <button onClick={() => onAction('toggleImmobilized')}>
+                                <FaRunning /> {token.isImmobilized ? 'Liberar' : 'Imobilizar'}
+                            </button>
+                            <button onClick={() => onAction('toggleKnockedOut')}>
+                                <FaBed /> {token.isKnockedOut ? 'Acordar' : 'Nocautear'}
+                            </button>
+                            <button onClick={() => onAction('toggleDead')} className="danger">
+                                <FaSkullCrossbones /> {token.isDead ? 'Reviver' : 'Matar'}
+                            </button>
+                            <button onClick={() => onAction('delete')} className="danger">
+                                <FaTrash /> Remover
+                            </button>
+                        </>
                     )}
-                    <button onClick={() => onAction('toggleVisibility')}>
-                        <FaEyeSlash /> {token.isVisible === false ? 'Revelar' : 'Ocultar'}
-                    </button>
-                    <button onClick={() => onAction('toggleImmobilized')}>
-                        <FaRunning /> {token.isImmobilized ? 'Liberar' : 'Imobilizar'}
-                    </button>
-                    <button onClick={() => onAction('toggleKnockedOut')}>
-                        <FaBed /> {token.isKnockedOut ? 'Acordar' : 'Nocautear'}
-                    </button>
-                    <button onClick={() => onAction('toggleDead')} className="danger">
-                        <FaSkullCrossbones /> {token.isDead ? 'Reviver' : 'Matar'}
-                    </button>
-                    <button onClick={() => onAction('delete')} className="danger">
-                        <FaTrash /> Remover
-                    </button>
                 </ActionGrid>
             )}
         </ContextMenuBody>

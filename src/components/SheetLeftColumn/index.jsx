@@ -7,7 +7,7 @@ import { ArchetypeSection } from '../ArchetypeSection';
 import { ClassSection } from '../ClassSection';
 import { LeftColumn, Section, SectionTitle, NotesTextarea } from './styles';
 
-// Componente wrapper para o textarea, para manter o padrão de configuração.
+// ... (NotesSection e handleXpTrackerUpdate sem alterações) ...
 const NotesSection = (props) => <NotesTextarea {...props} />;
 
 export const SheetLeftColumn = ({
@@ -20,11 +20,9 @@ export const SheetLeftColumn = ({
   onRemoveKit,
   goToClassCreator,
   unmetClassReqs,
+  isOwner
 }) => {
-  // --- CORREÇÃO APLICADA AQUI ---
-  // Função wrapper para sanitizar os dados do LevelXPTracker antes de atualizar.
   const handleXpTrackerUpdate = (updates) => {
-    // Mescla as atualizações recebidas com os valores existentes no personagem
     const mergedData = {
       level: updates.level ?? character.level,
       basePoints: updates.basePoints ?? character.basePoints,
@@ -33,8 +31,6 @@ export const SheetLeftColumn = ({
         target: updates.xp?.target ?? character.xp?.target,
       }
     };
-
-    // Garante que todos os valores sejam números válidos, usando 0 ou 10 como fallback
     const sanitizedUpdates = {
       level: Number(mergedData.level) || 0,
       basePoints: Number(mergedData.basePoints) || 10,
@@ -46,7 +42,6 @@ export const SheetLeftColumn = ({
     handleUpdate(sanitizedUpdates);
   };
 
-  // --- Array de Configuração para renderização dinâmica da coluna ---
   const sectionsConfig = [
     {
       key: 'money',
@@ -58,6 +53,7 @@ export const SheetLeftColumn = ({
         onUpdate: (m) => handleUpdate({ money: m }),
         isEditing,
         isDead: character.isDead,
+        isOwner: isOwner,
       },
     },
     {
@@ -70,8 +66,9 @@ export const SheetLeftColumn = ({
         xp: character.xp || { current: 0, target: 10 },
         basePoints: character.basePoints || 10,
         isEditing,
-        onUpdate: handleXpTrackerUpdate, // Esta função agora é segura
+        onUpdate: handleXpTrackerUpdate,
         isDead: character.isDead,
+        isOwner: isOwner, // <<< ADICIONADO AQUI
       },
     },
     {
@@ -107,7 +104,7 @@ export const SheetLeftColumn = ({
       props: {
         value: character.notes || '',
         onChange: (e) => handleUpdate({ notes: e.target.value }),
-        disabled: character.isDead,
+        disabled: character.isDead || !isOwner, // Também desabilitar para não-donos
         placeholder: 'Anotações da sessão…',
       },
     },

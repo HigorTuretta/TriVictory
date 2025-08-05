@@ -12,13 +12,15 @@ const QUICK_ACCESS_CONFIG = [
     { name: 'Adrenalina menor', label: '+1 PA', Icon: GiRunningShoe, color: '#FFC107' },
 ];
 
-export const QuickAccessBar = ({ inventory = [], onConsume = () => {}, isDead }) => {
+export const QuickAccessBar = ({ inventory = [], onConsume = () => {}, isDead, isOwner  }) => {
     // A linha acima foi corrigida. Adicionamos `= () => {}` à prop `onConsume`.
     // Isso garante que `onConsume` seja sempre uma função, prevenindo o erro.
 
     const inventoryMap = useMemo(() => {
         return new Map(inventory.map(item => [item.name, item]));
     }, [inventory]);
+  
+    const controlsDisabled = isDead || !isOwner;
 
     return (
         <BarContainer>
@@ -30,8 +32,9 @@ export const QuickAccessBar = ({ inventory = [], onConsume = () => {}, isDead })
                     <QuickButton
                         key={name}
                         onClick={() => onConsume(name)} // Esta linha agora é segura
-                        disabled={isDead || quantity === 0}
+                        disabled={controlsDisabled || quantity === 0}
                         title={`${name} (x${quantity})`}
+                        
                     >
                         <ButtonIcon $color={color}>
                             <Icon />

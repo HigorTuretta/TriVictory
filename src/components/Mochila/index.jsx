@@ -30,9 +30,9 @@ const ItemDetailsModal = ({ item, onClose }) => {
 };
 
 // --- Subcomponente para cada Item do Inventário ---
-const InventoryItem = ({ item, onQuantityChange, onDelete, onShowDetails, isDead }) => (
+const InventoryItem = ({ item, onQuantityChange, onDelete, onShowDetails, isDead, isOwner }) => (
   <ItemCard onClick={onShowDetails}>
-     <ItemInfo>
+    <ItemInfo>
       <ItemName>{item.name} {item.quantity > 1 ? `(x${item.quantity})` : ''}</ItemName>
       <ItemDetails>
         {item.weight > 0 ? `${item.weight.toFixed(1)}kg` : 'Peso leve'}
@@ -43,17 +43,18 @@ const InventoryItem = ({ item, onQuantityChange, onDelete, onShowDetails, isDead
       </ItemDetails>
     </ItemInfo>
     <ItemActions>
-      <button onClick={(e) => onQuantityChange(e, item.id, -1)} disabled={isDead}><FaMinus /></button>
-      <button onClick={(e) => onQuantityChange(e, item.id, 1)} disabled={isDead}><FaPlus /></button>
-      <button className="delete" onClick={(e) => onDelete(e, item.id, item.name)} disabled={isDead}><FaTrash /></button>
+      <button onClick={(e) => onQuantityChange(e, item.id, -1)} disabled={isDead || !isOwner}><FaMinus /></button>
+      <button onClick={(e) => onQuantityChange(e, item.id, 1)} disabled={isDead || !isOwner}><FaPlus /></button>
+      <button className="delete" onClick={(e) => onDelete(e, item.id, item.name)} disabled={isDead || !isOwner}><FaTrash /></button>
     </ItemActions>
   </ItemCard>
 );
 
 // --- Componente Principal ---
-export const Mochila = ({ items = [], onUpdate, capacity, totalWeight, isDead, onConsume }) => {
+export const Mochila = ({ items = [], onUpdate, capacity, totalWeight, isDead, onConsume, isOwner }) => {
   const [detailsModalItem, setDetailsModalItem] = useState(null);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const controlsDisabled = isDead || !isOwner;
 
   const handleAddItem = (newItem) => {
     const newItems = [...items, { ...newItem, id: uuidv4() }];
@@ -63,10 +64,10 @@ export const Mochila = ({ items = [], onUpdate, capacity, totalWeight, isDead, o
 
   const handleQuantityChange = (e, itemId, delta) => {
     e.stopPropagation();
-    
+
     const itemToUpdate = items.find(item => item.id === itemId);
     if (!itemToUpdate) return;
-    
+
     const newItems = items
       .map(item =>
         item.id === itemId
@@ -74,9 +75,9 @@ export const Mochila = ({ items = [], onUpdate, capacity, totalWeight, isDead, o
           : item
       )
       .filter(item => item.quantity > 0); // Filtra itens cuja quantidade chegou a zero
-      
+
     if (newItems.length < items.length) {
-        toast.error(`"${itemToUpdate.name}" foi removido da mochila.`);
+      toast.error(`"${itemToUpdate.name}" foi removido da mochila.`);
     }
 
     onUpdate(newItems);
@@ -96,7 +97,7 @@ export const Mochila = ({ items = [], onUpdate, capacity, totalWeight, isDead, o
       <MochilaContainer>
         <InventoryHeader>
           <span>Carga: {totalWeight.toFixed(1)}kg / {capacity > 0 ? capacity.toFixed(1) : '∞'}kg</span>
-          <AddButton onClick={() => setIsAddItemModalOpen(true)} disabled={isDead}>
+          <AddButton onClick={() => setIsAddItemModalOpen(true)} disabled={controlsDisabled}>
             <FaPlus /> Adicionar Item
           </AddButton>
         </InventoryHeader>
@@ -114,6 +115,7 @@ export const Mochila = ({ items = [], onUpdate, capacity, totalWeight, isDead, o
                 onDelete={handleDeleteItem}
                 onShowDetails={() => setDetailsModalItem(item)}
                 isDead={isDead}
+                isOwner={isOwner}
               />
             ))
           )}
@@ -123,18 +125,19 @@ export const Mochila = ({ items = [], onUpdate, capacity, totalWeight, isDead, o
           inventory={items}
           onConsume={onConsume}
           isDead={isDead}
+          isOwner={isOwner}
         />
       </MochilaContainer>
 
-      <AddItemModal 
+      <AddItemModal
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
         onSave={handleAddItem}
       />
 
-      <ItemDetailsModal 
-        item={detailsModalItem} 
-        onClose={() => setDetailsModalItem(null)} 
+      <ItemDetailsModal
+        item={detailsModalItem}
+        onClose={() => setDetailsModalItem(null)}
       />
     </>
   );

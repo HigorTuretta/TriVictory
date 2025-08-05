@@ -4,7 +4,7 @@ import { Mochila } from '../Mochila';
 import { RightColumn, Section, SectionTitle } from './styles';
 import { ArtifactList } from '../Artifacts/ArtifactList'
 
-export const SheetRightColumn = ({ character, isEditing, handleUpdate, onConsume, onEditArtifact, onCreateArtifact, onDeleteArtifact }) => {
+export const SheetRightColumn = ({ character, isEditing, handleUpdate, onConsume, onEditArtifact, onCreateArtifact, onDeleteArtifact, isOwner }) => {
   // Guarda de segurança para o caso do personagem ainda não ter carregado.
   if (!character) {
     return <RightColumn />;
@@ -57,6 +57,7 @@ export const SheetRightColumn = ({ character, isEditing, handleUpdate, onConsume
           totalWeight={totalWeight}
           isDead={isDead}
           onConsume={onConsume}
+            isOwner={isOwner} 
         />
       </Section>
 

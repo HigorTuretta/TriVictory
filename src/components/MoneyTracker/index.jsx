@@ -47,13 +47,14 @@ const EditView = ({ money, onUpdate }) => {
 };
 
 // --- Subcomponente para a Visão de Jogo ---
-const DisplayView = ({ money, onUpdate, isDead }) => {
+const DisplayView = ({ money, onUpdate, isDead, isOwner }) => {
     const [showForm, setShowForm] = useState(false);
     const [amount, setAmount] = useState('');
     const [isSubtracting, setIsSubtracting] = useState(false);
     const holdTimeoutRef = useRef(null);
     const holdIntervalRef = useRef(null);
-    
+    const controlsDisabled = isDead || !isOwner;
+
     // Valores padrão para segurança.
     const currentMoney = money || { amount: 0, type: { sigla: '--' } };
 
@@ -123,7 +124,7 @@ const DisplayView = ({ money, onUpdate, isDead }) => {
                                 onMouseLeave={stopHold}
                                 onTouchStart={() => startHold(variant === 'add' ? value : -value)}
                                 onTouchEnd={stopHold}
-                                disabled={isDead || (variant === 'subtract' && currentMoney.amount < value)}
+                               disabled={controlsDisabled || (variant === 'subtract' && currentMoney.amount < value)}
                                 title={`${variant === 'add' ? 'Adicionar' : 'Diminuir'} ${value} (segure)`}
                             >
                                 {label}
@@ -131,8 +132,8 @@ const DisplayView = ({ money, onUpdate, isDead }) => {
                         ))}
                     </QuickControls>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '0.5rem' }}>
-                        <ActionButton $variant="subtract" onClick={() => { setShowForm(true); setIsSubtracting(true); }} disabled={isDead} title="Remover valor personalizado"><FaMinus /></ActionButton>
-                        <ActionButton $variant="add" onClick={() => { setShowForm(true); setIsSubtracting(false); }} disabled={isDead} title="Adicionar valor personalizado"><FaPlus /></ActionButton>
+                        <ActionButton $variant="subtract" onClick={() => { setShowForm(true); setIsSubtracting(true); }}  disabled={controlsDisabled} title="Remover valor personalizado"><FaMinus /></ActionButton>
+                        <ActionButton $variant="add" onClick={() => { setShowForm(true); setIsSubtracting(false); }}  disabled={controlsDisabled} title="Adicionar valor personalizado"><FaPlus /></ActionButton>
                     </div>
                 </>
             )}
@@ -141,7 +142,7 @@ const DisplayView = ({ money, onUpdate, isDead }) => {
 };
 
 // --- Componente Principal ---
-export const MoneyTracker = ({ money, onUpdate, isEditing, isDead }) => {
+export const MoneyTracker = ({ money, onUpdate, isEditing, isDead, isOwner }) => {
     // Guarda de segurança para o caso da prop 'money' ainda não ter chegado.
     if (!money) {
         return <MoneyContainer>Carregando dinheiro...</MoneyContainer>;
@@ -149,5 +150,5 @@ export const MoneyTracker = ({ money, onUpdate, isEditing, isDead }) => {
 
     return isEditing
         ? <EditView money={money} onUpdate={onUpdate} />
-        : <DisplayView money={money} onUpdate={onUpdate} isDead={isDead} />;
+        : <DisplayView money={money} onUpdate={onUpdate} isDead={isDead} isOwner={isOwner} />;
 };

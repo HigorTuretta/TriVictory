@@ -10,7 +10,7 @@ import {
     SelectedItemsContainer, SelectedItem, RemoveButton, GridHeader, 
     AddCustomButton, HintText, CustomItemControls, SpecializationModalContent, 
     SpecializationInput, DisclaimerText, CounterBadge, ModalSelectionWrapper, 
-    ModalOptionButton, ArtifactTag // Importando o novo estilo
+    ModalOptionButton, ArtifactTag
 } from './styles';
 import { ChoiceButton } from '../../screens/CharacterSheet/styles';
 import * as gameData from '../../data/gameData';
@@ -192,12 +192,13 @@ export const SelectionGrid = ({
                 )}
             </GridHeader>
             
-            {selectedItems?.length > 0 && (
+      {selectedItems?.length > 0 && (
                 <SelectedItemsContainer>
                     {selectedItems.map((item) => {
+                        // Esta lógica agora funciona para Desvantagens e Perícias
                         const isLockedByName = lockedItems.has(item.nome);
                         const isLockedBySubOption = item.subOption && lockedItems.has(`${item.nome} (${item.subOption})`);
-                        const isLocked = isLockedByName || isLockedBySubOption;
+                        const isLocked = isLockedByName || isLockedBySubOption || item.fromArtifact;
 
                         return (
                             <SelectedItem key={item.id} $isLocked={isLocked}>

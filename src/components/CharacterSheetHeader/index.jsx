@@ -1,9 +1,9 @@
 // src/components/CharacterSheetHeader/index.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FaCamera, FaExpandArrowsAlt, FaShareAlt, FaLock } from 'react-icons/fa';
+import { FaCamera, FaExpandArrowsAlt, FaShareAlt, FaLock, FaCopy } from 'react-icons/fa'; // Importar FaCopy
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast'; // Importar toast
+import toast from 'react-hot-toast';
 
 import { getMainImageUrl, getTokenImageUrl } from '../../services/cloudinaryService';
 
@@ -16,7 +16,7 @@ import {
   TokenWrap,
   Token,
   UploadBtn,
-  ShareButton, // Importar o novo botão
+  ShareButton,
   ExpandButton,
   Info,
   NameInput,
@@ -34,7 +34,7 @@ export const CharacterSheetHeader = ({
   isDead = false,
   onOpenImageManager,
   onBannerClick,
-  updateCharacter, // Receber a função de atualização
+  updateCharacter,
 }) => {
   const {
     id: characterId,
@@ -42,7 +42,7 @@ export const CharacterSheetHeader = ({
     bannerPosition = 50,
     tokenImage,
     tokenBorderColor = '#7b3ff1',
-    isPublic = false, // Padrão para falso se não existir
+    isPublic = false,
   } = character || {};
 
   const { total = 0, used = 0, remaining = 0, disBonus = 0 } = points || {};
@@ -63,20 +63,20 @@ export const CharacterSheetHeader = ({
     }
   };
 
-  // Lógica para o botão de compartilhamento
-  const handleShare = () => {
-    if (!isOwner || !updateCharacter) return;
-    
+  const handleTogglePublic = () => {
     const newPublicState = !isPublic;
     updateCharacter({ isPublic: newPublicState });
-
     if (newPublicState) {
-      const shareLink = `${window.location.origin}/sheet/${characterId}`;
-      navigator.clipboard.writeText(shareLink);
-      toast.success('Ficha agora é pública! Link copiado para a área de transferência.');
+      handleCopyLink(); // Copia o link automaticamente ao tornar público
     } else {
       toast.error('Ficha agora é privada.');
     }
+  };
+
+  const handleCopyLink = () => {
+    const shareLink = `${window.location.origin}/sheet/${characterId}`;
+    navigator.clipboard.writeText(shareLink);
+    toast.success('Link público copiado para a área de transferência!');
   };
 
   return (
@@ -97,22 +97,35 @@ export const CharacterSheetHeader = ({
 
       <BannerOverlay />
 
-      {isOwner && isEditing && (
-        <UploadBtn title="Gerenciar imagens" onClick={onOpenImageManager}>
-          <FaCamera />
-        </UploadBtn>
+      {isOwner && (
+        <>
+          {isEditing && (
+            <UploadBtn title="Gerenciar imagens" onClick={onOpenImageManager}>
+              <FaCamera />
+            </UploadBtn>
+          )}
+
+          {/* --- LÓGICA DO BOTÃO CORRIGIDA --- */}
+          <ShareButton
+            title={isPublic ? "Tornar ficha privada" : "Compartilhar (link público)"}
+            onClick={handleTogglePublic}
+            $isPublic={isPublic}
+          >
+            {isPublic ? <FaLock /> : <FaShareAlt />}
+          </ShareButton>
+          
+          {isPublic && (
+             <UploadBtn
+                style={{ top: '68px', right: '1rem' }} // Posição do botão de cópia
+                title="Copiar link público"
+                onClick={handleCopyLink}
+              >
+                <FaCopy />
+             </UploadBtn>
+          )}
+        </>
       )}
 
-      {/* NOVO BOTÃO DE COMPARTILHAMENTO */}
-      {isOwner && (
-        <ShareButton
-          title={isPublic ? "Tornar ficha privada" : "Compartilhar (link público)"}
-          onClick={handleShare}
-          $isPublic={isPublic}
-        >
-          {isPublic ? <FaLock /> : <FaShareAlt />}
-        </ShareButton>
-      )}
 
       {bannerUrl && (
         <ExpandButton title="Ampliar imagem" onClick={handleBannerClick}>
@@ -165,5 +178,5 @@ CharacterSheetHeader.propTypes = {
   isDead: PropTypes.bool,
   onOpenImageManager: PropTypes.func,
   onBannerClick: PropTypes.func,
-  updateCharacter: PropTypes.func, // Adicionar prop type
+  updateCharacter: PropTypes.func,
 };

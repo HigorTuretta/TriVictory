@@ -6,7 +6,7 @@ import {
 } from './styles';
 import { FaHeart, FaStar, FaBolt, FaArrowUp } from 'react-icons/fa';
 
-// --- Subcomponente: Modo de Edição ---
+// ... (EditView sem alterações) ...
 const EditView = ({ attributes, points, onAttributeChange, resources }) => {
     const canIncreaseAttribute = (attr) => {
         if (!points) return true;
@@ -99,20 +99,22 @@ const EditView = ({ attributes, points, onAttributeChange, resources }) => {
         </AttributeGrid>
     );
 };
-
-// --- Subcomponente: Modo de Jogo ---
-const DisplayView = ({ attributes, resources, currentResources, onResourceChange, isDead }) => {
+// --- CORREÇÃO APLICADA AQUI ---
+const DisplayView = ({ attributes, resources, currentResources, onResourceChange, isDead, isOwner }) => {
     const holdTimeoutRef = useRef(null);
     const holdIntervalRef = useRef(null);
     
+    // Controles agora estão desabilitados se o personagem estiver morto OU se o usuário não for o dono
+    const controlsDisabled = isDead || !isOwner;
+
     const handleCurrentChange = (resourceKey, currentValue, amount, max) => {
-        if(isDead) return;
+        if(controlsDisabled) return;
         const newValue = Math.max(0, Math.min(max, currentValue + amount));
         onResourceChange(resourceKey, newValue);
     };
     
     const handleSetToMax = (resourceKey, max) => {
-        if(isDead) return;
+        if(controlsDisabled) return;
         onResourceChange(resourceKey, max);
     };
 
@@ -152,9 +154,9 @@ const DisplayView = ({ attributes, resources, currentResources, onResourceChange
                             </ResourceBar>
                         </ResourceColumn>
                         <ResourceControls>
-                            <ResourceButton onMouseDown={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, -1, max))} onMouseUp={stopHold} onMouseLeave={stopHold} onTouchStart={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, -1, max))} onTouchEnd={stopHold} disabled={isDead || current <= 0} title={`Diminuir ${res.key.toUpperCase()}`}>-</ResourceButton>
-                            <ResourceButton onMouseDown={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, 1, max))} onMouseUp={stopHold} onMouseLeave={stopHold} onTouchStart={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, 1, max))} onTouchEnd={stopHold} disabled={isDead || current >= max} title={`Aumentar ${res.key.toUpperCase()}`}>+</ResourceButton>
-                            <ResourceButton onClick={() => handleSetToMax(`${res.key}_current`, max)} disabled={isDead} title={`Restaurar ${res.key.toUpperCase()}`}><FaArrowUp /></ResourceButton>
+                            <ResourceButton onMouseDown={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, -1, max))} onMouseUp={stopHold} onMouseLeave={stopHold} onTouchStart={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, -1, max))} onTouchEnd={stopHold} disabled={controlsDisabled || current <= 0} title={`Diminuir ${res.key.toUpperCase()}`}>-</ResourceButton>
+                            <ResourceButton onMouseDown={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, 1, max))} onMouseUp={stopHold} onMouseLeave={stopHold} onTouchStart={() => startHold(() => handleCurrentChange(`${res.key}_current`, current, 1, max))} onTouchEnd={stopHold} disabled={controlsDisabled || current >= max} title={`Aumentar ${res.key.toUpperCase()}`}>+</ResourceButton>
+                            <ResourceButton onClick={() => handleSetToMax(`${res.key}_current`, max)} disabled={controlsDisabled} title={`Restaurar ${res.key.toUpperCase()}`}><FaArrowUp /></ResourceButton>
                         </ResourceControls>
                     </CompactCard>
                 );
@@ -163,7 +165,6 @@ const DisplayView = ({ attributes, resources, currentResources, onResourceChange
     );
 };
 
-// --- Componente Principal ---
 export const AttributeDisplay = ({ 
     attributes, 
     resources, 
@@ -172,11 +173,11 @@ export const AttributeDisplay = ({
     onResourceChange, 
     isEditing, 
     isDead,
-    points 
+    points,
+    isOwner // Receber a nova prop
 }) => {
     if (isEditing) {
-        // CORREÇÃO: Passa a prop 'resources' para o componente EditView.
         return <EditView attributes={attributes} points={points} onAttributeChange={onAttributeChange} resources={resources} />;
     }
-    return <DisplayView attributes={attributes} resources={resources} currentResources={currentResources} onResourceChange={onResourceChange} isDead={isDead} />;
+    return <DisplayView attributes={attributes} resources={resources} currentResources={currentResources} onResourceChange={onResourceChange} isDead={isDead} isOwner={isOwner} />;
 };

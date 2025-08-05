@@ -5,7 +5,7 @@ import { db } from '../firebase/config';
 import { useAuth } from './AuthContext';
 import _ from 'lodash';
 import { useCharacterCalculations, useCharacterActions } from '../hooks';
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'; // Importar toast para mensagens de erro
 
 const CharacterContext = createContext();
 
@@ -15,56 +15,66 @@ export const CharacterProvider = ({ children, characterId }) => {
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
 
-    // Função de atualização com debounce para o Firestore
     const debouncedUpdate = useCallback(_.debounce((id, data) => {
         if (id) {
             updateDoc(doc(db, 'characters', id), data);
         }
     }, 800), []);
     
-    // Função de atualização local e remota
     const updateCharacter = (patch) => {
         setCharacter(prev => {
             if (!prev) return null;
             const nextState = { ...prev, ...patch };
-            debouncedUpdate(prev.id, patch);
+            // Apenas o dono pode persistir alterações
+            if (prev.ownerId === currentUser?.uid) {
+                debouncedUpdate(prev.id, patch);
+            }
             return nextState;
         });
     };
 
-    // Efeito para carregar os dados do personagem
     useEffect(() => {
-        if (!characterId || !currentUser?.uid) {
+        if (!characterId) {
             setLoading(false);
             return;
         }
         setLoading(true);
+
         const unsub = onSnapshot(doc(db, 'characters', characterId), (snap) => {
             if (!snap.exists()) {
                 toast.error('Ficha não encontrada.');
                 setLoading(false);
                 return;
             }
+
             const data = snap.data();
-            if (!data.viewers?.includes(currentUser.uid)) {
+            const isOwner = data.ownerId === currentUser?.uid;
+            const isViewer = data.viewers?.includes(currentUser?.uid);
+
+            // --- CORREÇÃO APLICADA AQUI ---
+            // Verifica as condições de acesso: pública, dono ou viewer.
+            if (data.isPublic || isOwner || isViewer) {
+                setCharacter({ id: snap.id, ...data });
+                // Desabilita o modo de edição se o usuário não for o dono.
+                if (!isOwner) {
+                    setIsEditing(false);
+                }
+            } else {
                 toast.error('Sem permissão para ver esta ficha.');
-                setLoading(false);
-                return;
+                setCharacter(null);
             }
-            setCharacter({ id: snap.id, ...data });
             setLoading(false);
         });
         return () => unsub();
     }, [characterId, currentUser?.uid]);
 
-    // O valor do contexto agora é apenas o estado base.
-    // Os cálculos e ações serão adicionados no hook 'useCharacter'.
     const contextValue = {
         character,
         loading,
         isEditing,
         setIsEditing,
         updateCharacter,
+        isOwner: character?.ownerId === currentUser?.uid, // Adiciona flag de posse
     };
 
     return (
@@ -74,23 +84,19 @@ export const CharacterProvider = ({ children, characterId }) => {
     );
 };
 
-// --- Hook Principal que os Componentes irão Consumir ---
-// Ele une o contexto base com os hooks de cálculo e ações.
 export const useCharacter = () => {
     const context = useContext(CharacterContext);
     if (context === undefined) {
         throw new Error('useCharacter deve ser usado dentro de um CharacterProvider');
     }
     
-    const { character, updateCharacter } = context;
+    const { character, updateCharacter, points: externalPoints } = context;
 
-    // 1. Pega os dados calculados
     const { points, resources, lockedItems, itemCounts } = useCharacterCalculations(character);
     
-    // 2. Pega as funções de ação
-    const actions = useCharacterActions(character, updateCharacter, resources, lockedItems);
+    // A função de ações agora recebe 'points' para a validação de custo
+    const actions = useCharacterActions(character, updateCharacter, resources, lockedItems, points);
 
-    // 3. Retorna tudo junto em uma API unificada e fácil de usar
     return {
         ...context,
         points,

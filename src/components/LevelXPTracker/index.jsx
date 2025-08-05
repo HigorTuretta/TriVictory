@@ -47,10 +47,13 @@ const EditView = ({ level, xp, basePoints, onUpdate }) => {
 };
 
 // --- Subcomponente para a Visão de Display ---
-const DisplayView = ({ level, xp, progress, isDead, onXpChange, onResetRequest }) => {
+const DisplayView = ({ level, xp, progress, isDead, isOwner, onXpChange, onResetRequest }) => {
     const [isFormActive, setIsFormActive] = useState(false);
     const [xpAmount, setXpAmount] = useState('');
     const [isSubtracting, setIsSubtracting] = useState(false);
+    
+    // CORREÇÃO: Condição unificada para desabilitar controles
+    const controlsDisabled = isDead || !isOwner;
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -75,14 +78,17 @@ const DisplayView = ({ level, xp, progress, isDead, onXpChange, onResetRequest }
             <BarContainer>
                 <BarInfo>
                     <span>Progresso</span>
-                    <ResetActions>
-                        <button title="Resetar XP Atual" onClick={() => onResetRequest('xp')} disabled={isDead}>
-                            <FaSync size={12} />
-                        </button>
-                        <button title="Resetar Nível e XP" className="danger" onClick={() => onResetRequest('level')} disabled={isDead}>
-                            <FaSkull size={12} />
-                        </button>
-                    </ResetActions>
+                    {/* CORREÇÃO: Apenas o dono pode ver os botões de reset */}
+                    {isOwner && (
+                        <ResetActions>
+                            <button title="Resetar XP Atual" onClick={() => onResetRequest('xp')} disabled={controlsDisabled}>
+                                <FaSync size={12} />
+                            </button>
+                            <button title="Resetar Nível e XP" className="danger" onClick={() => onResetRequest('level')} disabled={controlsDisabled}>
+                                <FaSkull size={12} />
+                            </button>
+                        </ResetActions>
+                    )}
                 </BarInfo>
                 <XPBar>
                     <XPProgress style={{ width: `${progress}%` }} />
@@ -92,29 +98,32 @@ const DisplayView = ({ level, xp, progress, isDead, onXpChange, onResetRequest }
                 </div>
             </BarContainer>
 
-            {isFormActive ? (
-                <AddXpForm onSubmit={handleSubmit}>
-                    <AddXpInput
-                        type="number"
-                        value={xpAmount}
-                        onChange={(e) => setXpAmount(e.target.value)}
-                        placeholder="Valor"
-                        autoFocus
-                        onBlur={() => !xpAmount && setIsFormActive(false)}
-                    />
-                    <ActionButton type="submit" title={isSubtracting ? 'Confirmar Remoção' : 'Confirmar Adição'}>
-                        {isSubtracting ? <FaMinus /> : <FaPlus />}
-                    </ActionButton>
-                </AddXpForm>
-            ) : (
-                <Actions>
-                    <ActionButton title="Remover XP" className="remove" onClick={() => { setIsFormActive(true); setIsSubtracting(true); }} disabled={isDead}>
-                        <FaMinus />
-                    </ActionButton>
-                    <ActionButton title="Adicionar XP" onClick={() => { setIsFormActive(true); setIsSubtracting(false); }} disabled={isDead}>
-                        <FaPlus />
-                    </ActionButton>
-                </Actions>
+            {/* CORREÇÃO: Apenas o dono pode ver e usar os controles de XP */}
+            {isOwner && (
+                isFormActive ? (
+                    <AddXpForm onSubmit={handleSubmit}>
+                        <AddXpInput
+                            type="number"
+                            value={xpAmount}
+                            onChange={(e) => setXpAmount(e.target.value)}
+                            placeholder="Valor"
+                            autoFocus
+                            onBlur={() => !xpAmount && setIsFormActive(false)}
+                        />
+                        <ActionButton type="submit" title={isSubtracting ? 'Confirmar Remoção' : 'Confirmar Adição'}>
+                            {isSubtracting ? <FaMinus /> : <FaPlus />}
+                        </ActionButton>
+                    </AddXpForm>
+                ) : (
+                    <Actions>
+                        <ActionButton title="Remover XP" className="remove" onClick={() => { setIsFormActive(true); setIsSubtracting(true); }} disabled={controlsDisabled}>
+                            <FaMinus />
+                        </ActionButton>
+                        <ActionButton title="Adicionar XP" onClick={() => { setIsFormActive(true); setIsSubtracting(false); }} disabled={controlsDisabled}>
+                            <FaPlus />
+                        </ActionButton>
+                    </Actions>
+                )
             )}
         </>
     );
@@ -127,16 +136,16 @@ export const LevelXPTracker = ({
     basePoints = 10,
     isEditing,
     onUpdate,
-    isDead
+    isDead,
+    isOwner // Recebendo a prop
 }) => {
-    const [confirmReset, setConfirmReset] = useState(null); // 'xp' ou 'level'
+    const [confirmReset, setConfirmReset] = useState(null);
 
     const handleXpChange = (amount) => {
         let newXp = xp.current + amount;
         let newLevel = level;
         let newBasePoints = basePoints;
 
-        // Lógica de Level Up
         if (newXp >= xp.target && amount > 0) {
             newLevel += 1;
             newXp -= xp.target;
@@ -160,11 +169,9 @@ export const LevelXPTracker = ({
             toast.success("XP do nível atual zerado!");
         } else if (confirmReset === 'level') {
             const startingBasePoints = basePoints - level;
-            
             onUpdate({ 
                 level: 0, 
                 xp: { ...xp, current: 0 }, 
-                // CORREÇÃO: Garante que o valor resetado não seja menor que o padrão de 10
                 basePoints: Math.max(10, startingBasePoints)
             });
             toast.success("Nível e XP zerados!");
@@ -194,6 +201,7 @@ export const LevelXPTracker = ({
                         xp={xp}
                         progress={progress}
                         isDead={isDead}
+                        isOwner={isOwner} // Passando a prop
                         onXpChange={handleXpChange}
                         onResetRequest={setConfirmReset}
                     />
