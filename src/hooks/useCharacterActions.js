@@ -61,47 +61,14 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         updateCharacter({ [key]: value });
     };
 
-    // --- LÓGICA DE ARTEFATOS COMPLETAMENTE REFEITA ---
-
     const addArtifact = (artifactData) => {
         const artifacts = [...(character.artifacts || []), artifactData];
         let advantages = [...(character.advantages || [])];
         let disadvantages = [...(character.disadvantages || [])];
         let skills = [...(character.skills || [])];
-
         artifactData.qualities.forEach(q => {
             if (!q.subOption) return;
             const newItemBase = { id: uuidv4(), fromArtifact: artifactData.id, custo: 0, subOption: q.subOption };
-
-            if (q.nome === 'Auspicioso') {
-                const advData = findAdv(q.subOption);
-                if (advData) advantages.push({ ...advData, ...newItemBase });
-            } else if (q.nome === 'Amaldiçoado') {
-                const disData = findDis(q.subOption);
-                if (disData) disadvantages.push({ ...disData, ...newItemBase });
-            } else if (q.nome === 'Inteligente' || q.nome === 'Obra-Prima') {
-                const skillData = findSkill(q.subOption);
-                if (skillData) skills.push({ ...skillData, ...newItemBase, custo: 0 }); // Perícia de artefato não custa ponto
-            }
-        });
-
-        updateCharacter({ artifacts, advantages, disadvantages, skills });
-        toast.success(`Artefato "${artifactData.name}" criado!`);
-    };
-
-    const updateArtifact = (artifactData) => {
-        const artifacts = (character.artifacts || []).map(a => a.id === artifactData.id ? artifactData : a);
-        
-        // Remove todos os itens (vantagens, desvantagens, perícias) previamente associados a este artefato
-        let advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactData.id);
-        let disadvantages = (character.disadvantages || []).filter(d => d.fromArtifact !== artifactData.id);
-        let skills = (character.skills || []).filter(s => s.fromArtifact !== artifactData.id);
-        
-        // Adiciona os novos itens baseados nas qualidades atualizadas do artefato
-        artifactData.qualities.forEach(q => {
-            if (!q.subOption) return;
-            const newItemBase = { id: uuidv4(), fromArtifact: artifactData.id, custo: 0, subOption: q.subOption };
-
             if (q.nome === 'Auspicioso') {
                 const advData = findAdv(q.subOption);
                 if (advData) advantages.push({ ...advData, ...newItemBase });
@@ -113,24 +80,40 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
                 if (skillData) skills.push({ ...skillData, ...newItemBase, custo: 0 });
             }
         });
-
+        updateCharacter({ artifacts, advantages, disadvantages, skills });
+        toast.success(`Artefato "${artifactData.name}" criado!`);
+    };
+    const updateArtifact = (artifactData) => {
+        const artifacts = (character.artifacts || []).map(a => a.id === artifactData.id ? artifactData : a);
+        let advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactData.id);
+        let disadvantages = (character.disadvantages || []).filter(d => d.fromArtifact !== artifactData.id);
+        let skills = (character.skills || []).filter(s => s.fromArtifact !== artifactData.id);
+        artifactData.qualities.forEach(q => {
+            if (!q.subOption) return;
+            const newItemBase = { id: uuidv4(), fromArtifact: artifactData.id, custo: 0, subOption: q.subOption };
+            if (q.nome === 'Auspicioso') {
+                const advData = findAdv(q.subOption);
+                if (advData) advantages.push({ ...advData, ...newItemBase });
+            } else if (q.nome === 'Amaldiçoado') {
+                const disData = findDis(q.subOption);
+                if (disData) disadvantages.push({ ...disData, ...newItemBase });
+            } else if (q.nome === 'Inteligente' || q.nome === 'Obra-Prima') {
+                const skillData = findSkill(q.subOption);
+                if (skillData) skills.push({ ...skillData, ...newItemBase, custo: 0 });
+            }
+        });
         updateCharacter({ artifacts, advantages, disadvantages, skills });
         toast.success(`Artefato "${artifactData.name}" atualizado!`);
     };
-
     const removeArtifact = (artifactId) => {
         const artifactName = (character.artifacts || []).find(a => a.id === artifactId)?.name || 'Artefato';
         const artifacts = (character.artifacts || []).filter(a => a.id !== artifactId);
-
-        // Remove todos os itens associados de todas as listas
         const advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactId);
         const disadvantages = (character.disadvantages || []).filter(d => d.fromArtifact !== artifactId);
         const skills = (character.skills || []).filter(s => s.fromArtifact !== artifactId);
-
         updateCharacter({ artifacts, advantages, disadvantages, skills });
         toast.error(`Artefato "${artifactName}" removido.`);
     };
-    
     const addItem = (listKey, item, subOption = null, custoOverride = null, points) => {
         const list = character[listKey] || [];
         if (list.some(i => i.nome === item.nome && !item.repetivel)) {
@@ -145,16 +128,13 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         updateCharacter({ [listKey]: [...list, newItem] });
         toast.success(`${itemNameSingular} "${item.nome}${subOption ? ` (${subOption})` : ''}" adicionada!`);
     };
-
     const removeItem = (listKey, itemId) => {
         const list = character[listKey] || [];
         const targetItem = list.find(i => i.id === itemId);
         if (!targetItem) return;
-
         if (lockedItems.has(targetItem.nome) || lockedItems.has(`${targetItem.nome} (${targetItem.subOption})`)) {
             return toast.error('Este item é obrigatório e não pode ser removido.');
         }
-        
         const itemNameSingular = KEY_TO_NAME_MAP[listKey] || 'Item';
         updateCharacter({ [listKey]: list.filter(i => i.id !== itemId) });
         toast.success(`${itemNameSingular} "${targetItem.nome}${targetItem.subOption ? ` (${targetItem.subOption})` : ''}" removida!`);
@@ -163,36 +143,53 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
     const handleArchetypeChange = (e) => {
         const newName = e.target.value;
         const newArchetype = gameData.arquetipos.find(a => a.nome === newName) || null;
-
+    
         let advantages = (character.advantages || []).filter(v => !v.fromArchetype);
         let disadvantages = (character.disadvantages || []).filter(d => !d.fromArchetype);
-
-        newArchetype?.vantagensGratuitas?.forEach(freeAdv => {
-            const hasExisting = advantages.some(a => a.nome === freeAdv.nome && a.subOption === freeAdv.subOption);
-            if (!hasExisting) {
+        
+        if (newArchetype) {
+            newArchetype.vantagensGratuitas?.forEach(freeAdv => {
                 const advData = findAdv(freeAdv.nome);
                 if (advData) {
-                    advantages.push({ ...advData, id: uuidv4(), fromArchetype: true, subOption: freeAdv.subOption });
+                    const newItem = {
+                        ...advData,
+                        id: uuidv4(),
+                        fromArchetype: true,
+                        custo: 0,
+                    };
+                    if (freeAdv.subOption) {
+                        newItem.subOption = freeAdv.subOption;
+                    }
+                    advantages.push(newItem);
                 }
-            }
-        });
-        
-        newArchetype?.desvantagensGratuitas?.forEach(freeDis => {
-            const hasExisting = disadvantages.some(d => d.nome === freeDis.nome && d.subOption === freeDis.subOption);
-            if (!hasExisting) {
+            });
+            
+            newArchetype.desvantagensGratuitas?.forEach(freeDis => {
                 const disData = findDis(freeDis.nome);
                 if (disData) {
-                    disadvantages.push({ ...disData, id: uuidv4(), fromArchetype: true, custo: 0, subOption: freeDis.subOption });
+                    const newItem = {
+                        ...disData,
+                        id: uuidv4(),
+                        fromArchetype: true,
+                        custo: 0,
+                    };
+                    if (freeDis.subOption) {
+                        newItem.subOption = freeDis.subOption;
+                    }
+                    disadvantages.push(newItem);
                 }
-            }
-        });
-
+            });
+        }
+    
         updateCharacter({ archetype: newArchetype, archetypeChoices: {}, advantages, disadvantages });
         toast.success(newArchetype ? `Arquétipo "${newArchetype.nome}" selecionado!` : 'Arquétipo removido!');
     };
 
     const handleMakeChoice = (choice, chosenItem, subOption = null) => {
-        const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true, custo: chosenItem.custo };
+        const newItem = { ...chosenItem, id: uuidv4(), fromArchetype: true, custo: chosenItem.custo };
+        if (subOption) {
+            newItem.subOption = subOption;
+        }
         const listToUpdate = choice.tipo === 'vantagem' ? 'advantages' : 'disadvantages';
         
         const updates = {
@@ -207,35 +204,29 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         if (!kitName) return;
         const kitData = gameData.classes.find(c => c.nome === kitName);
         if (!kitData) return;
-
         const unmet = unmetReqs(character, kitData.exigencias);
         if (unmet.length > 0) {
             setUnmetClassReqs(unmet);
             return toast.error('Kit indisponível — veja os requisitos pendentes.');
         }
-
         const advantages = [...(character.advantages || [])];
         const disadvantages = [...(character.disadvantages || [])];
-
         kitData.vantagensGratuitas?.forEach(advName => {
             if (!hasReqItem(advantages, advName)) {
                 const advData = findAdv(advName);
-                if (advData) advantages.push({ ...advData, id: uuidv4(), fromClass: true, fromKit: kitData.nome });
+                if (advData) advantages.push({ ...advData, id: uuidv4(), fromClass: true, fromKit: kitData.nome, custo: 0 });
             }
         });
-
         kitData.desvantagensGratuitas?.forEach(disName => {
             if (!hasReqItem(disadvantages, disName)) {
                 const disData = findDis(disName);
                 if (disData) disadvantages.push({ ...disData, id: uuidv4(), fromClass: true, fromKit: kitData.nome, custo: 0 });
             }
         });
-
         setUnmetClassReqs([]);
         updateCharacter({ kits: [...(character.kits || []), kitData], advantages, disadvantages });
         toast.success(`Kit "${kitData.nome}" adicionado!`);
     };
-
     const handleRemoveKit = (kitName) => {
         updateCharacter({
             kits: (character.kits || []).filter(k => k.nome !== kitName),
@@ -244,7 +235,6 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         });
         toast.success(`Kit "${kitName}" removido.`);
     };
-
     const checkTechniqueRequirements = useCallback((technique) => {
         const requirements = technique.requisitos || [];
         const unmet = unmetReqs(character, requirements);
@@ -274,18 +264,14 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const inventory = [...(character.inventory || [])];
         const itemIndex = inventory.findIndex(i => i.name === itemName && i.quantity > 0);
         if (itemIndex === -1) return toast.error(`Você não tem mais "${itemName}".`);
-
         const effect = CONSUMABLE_EFFECTS[itemName];
         if (!effect) return;
-
         const { resource, amount, toast: effectToast } = effect;
         const resourceKey = `${resource}_current`;
         const maxResource = resources[resource];
-
         const updates = { [resourceKey]: Math.min(maxResource, (character[resourceKey] || 0) + amount) };
         inventory[itemIndex].quantity -= 1;
         updates.inventory = inventory.filter(i => i.quantity > 0);
-
         updateCharacter(updates);
         toast.success(`"${itemName}" consumido. ${effectToast}`);
     };
