@@ -109,6 +109,18 @@ export const SelectedItem = styled.div`
   align-items: center;
   gap: 0.5rem;
 `;
+
+export const ArtifactTag = styled.span`
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+`;
+
 export const CounterBadge = styled.div`
   position: absolute;
   top: -5px;

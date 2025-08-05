@@ -18,10 +18,12 @@ export const ArtifactList = ({ artifacts = [], onEdit, onDelete, onCreate, canCr
                         )}
                     </CardHeader>
                     <QualityList>
-                        {artifact.qualities.map(q => (
-                            // MODIFICADO: A estrutura agora inclui a descrição.
-                            <QualityItem key={q.id}>
-                                <span>{q.nome} ({q.custo > 0 ? `+${q.custo}`: q.custo}XP)</span>
+                        {artifact.qualities.map((q, index) => (
+                            <QualityItem key={q.id || `${artifact.id}-${index}`}>
+                                {/* CORREÇÃO: Exibe o subOption se ele existir */}
+                                <span>
+                                    {q.nome}{q.subOption ? `: ${q.subOption}` : ''} ({q.custo > 0 ? `+${q.custo}`: q.custo}XP)
+                                </span>
                                 <QualityDescription>{q.descricao}</QualityDescription>
                             </QualityItem>
                         ))}
