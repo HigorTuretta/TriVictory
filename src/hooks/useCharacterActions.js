@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 import * as gameData from '../data/gameData';
 
+// ... (findAdv, findDis, hasReqItem, checkReq, unmetReqs, CONSUMABLE_EFFECTS, KEY_TO_NAME_MAP - sem alterações) ...
+
 const findAdv = (name) => gameData.vantagens.find((a) => a.nome === name);
 const findDis = (name) => gameData.desvantagens.find((d) => d.nome === name);
 
@@ -48,7 +50,8 @@ const KEY_TO_NAME_MAP = {
     kits: 'Kit'
 };
 
-export const useCharacterActions = (character, updateCharacter, resources, lockedItems, points) => {
+
+export const useCharacterActions = (character, updateCharacter, resources, lockedItems) => {
     const [unmetClassReqs, setUnmetClassReqs] = useState([]);
 
     const handleAttributeChange = (attr, value) => {
@@ -63,67 +66,44 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
     const addArtifact = (artifactData) => {
         const artifacts = [...(character.artifacts || []), artifactData];
         let advantages = [...(character.advantages || [])];
-
-        const auspiciousQuality = artifactData.qualities.find(q => q.nome === 'Auspicioso' && q.subOption);
-
-        if (auspiciousQuality) {
-            const advData = findAdv(auspiciousQuality.subOption);
+        const auspiciousQuality = artifactData.qualities.find(q => q.nome === 'Auspicioso');
+        if (auspiciousQuality && auspiciousQuality.subOption) {
+            const advData = gameData.vantagens.find(v => v.nome === auspiciousQuality.subOption);
             if (advData) {
-                const newAdvantage = {
-                    ...advData,
-                    id: uuidv4(),
-                    fromArtifact: artifactData.id, // Vínculo com o artefato
-                    custo: 0 // Custo em pontos é zero
-                };
-                advantages.push(newAdvantage);
+                addItem('advantages', { ...advData, fromArtifact: artifactData.id }, null, 0);
             }
         }
-
         updateCharacter({ artifacts, advantages });
         toast.success(`Artefato "${artifactData.name}" criado!`);
     };
-
+    
     const updateArtifact = (artifactData) => {
+        const oldArtifact = (character.artifacts || []).find(a => a.id === artifactData.id);
         const artifacts = (character.artifacts || []).map(a => a.id === artifactData.id ? artifactData : a);
-        let advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactData.id);
-        
-        const auspiciousQuality = artifactData.qualities.find(q => q.nome === 'Auspicioso' && q.subOption);
-        if (auspiciousQuality) {
-            const advData = findAdv(auspiciousQuality.subOption);
-            if (advData) {
-                const newAdvantage = {
-                    ...advData,
-                    id: uuidv4(),
-                    fromArtifact: artifactData.id,
-                    custo: 0
-                };
-                advantages.push(newAdvantage);
-            }
-        }
-
-        updateCharacter({ artifacts, advantages });
+        updateCharacter({ artifacts });
         toast.success(`Artefato "${artifactData.name}" atualizado!`);
     };
 
     const removeArtifact = (artifactId) => {
-        const artifactName = (character.artifacts || []).find(a => a.id === artifactId)?.name || 'Artefato';
         const artifacts = (character.artifacts || []).filter(a => a.id !== artifactId);
         const advantages = (character.advantages || []).filter(a => a.fromArtifact !== artifactId);
-
         updateCharacter({ artifacts, advantages });
-        toast.error(`Artefato "${artifactName}" removido.`);
+        toast.error("Artefato removido.");
     };
 
-    const addItem = (listKey, item, subOption = null, custoOverride = null) => {
+    // CORREÇÃO: A função agora recebe 'points' como um argumento.
+    const addItem = (listKey, item, subOption = null, custoOverride = null, points) => {
         const list = character[listKey] || [];
-        // Impede adicionar itens simples não repetíveis que já existem.
         if (list.some(i => i.nome === item.nome && !item.repetivel)) {
             return toast.error(`${item.nome} já foi adicionado(a).`);
         }
         const finalCost = custoOverride !== null ? custoOverride : item.custo;
+        
+        // Agora 'points' está definido e a verificação funciona.
         if (finalCost > 0 && points.remaining < finalCost) {
             return toast.error("Pontos de personagem insuficientes!");
         }
+
         const newItem = { ...item, id: uuidv4(), subOption, custo: finalCost };
         const itemNameSingular = KEY_TO_NAME_MAP[listKey] || 'Item';
         updateCharacter({ [listKey]: [...list, newItem] });
@@ -134,17 +114,15 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         const list = character[listKey] || [];
         const targetItem = list.find(i => i.id === itemId);
         if (!targetItem) return;
-
-        // A lógica de bloqueio agora vem do `lockedItems` que já inclui todas as fontes.
-        if (lockedItems.has(targetItem.nome) || lockedItems.has(`${targetItem.nome} (${targetItem.subOption})`)) {
-            return toast.error('Este item é obrigatório e não pode ser removido.');
+        if (lockedItems.has(targetItem.nome)) {
+            return toast.error('Item obrigatório por Arquétipo ou Kit não pode ser removido.');
         }
-        
         const itemNameSingular = KEY_TO_NAME_MAP[listKey] || 'Item';
         updateCharacter({ [listKey]: list.filter(i => i.id !== itemId) });
         toast.success(`${itemNameSingular} "${targetItem.nome}${targetItem.subOption ? ` (${targetItem.subOption})` : ''}" removida!`);
     };
 
+    // ... (restante do arquivo sem alterações)
     const handleArchetypeChange = (e) => {
         const newName = e.target.value;
         const newArchetype = gameData.arquetipos.find(a => a.nome === newName) || null;
@@ -178,7 +156,6 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
 
     const handleMakeChoice = (choice, chosenItem, subOption = null) => {
         const newItem = { ...chosenItem, id: uuidv4(), subOption: subOption, fromArchetype: true, custo: chosenItem.custo };
-        // Para escolhas de arquétipo, o custo é sempre mantido.
         const listToUpdate = choice.tipo === 'vantagem' ? 'advantages' : 'disadvantages';
         
         const updates = {

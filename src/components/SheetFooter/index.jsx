@@ -10,7 +10,7 @@ import {
   SectionHeader, VisibilityButton, BackstoryTextarea
 } from './styles';
 
-// --- Array de Configuração para as Seções da Ficha ---
+// ... (SECTIONS_CONFIG, BackstorySection - sem alterações) ...
 const SECTIONS_CONFIG = [
   {
     key: 'skills',
@@ -38,7 +38,6 @@ const SECTIONS_CONFIG = [
   },
 ];
 
-// --- Subcomponente para a Seção de História ---
 const BackstorySection = ({ character, isEditing, isVisible, onVisibilityToggle, onUpdate }) => (
   <Section>
     <SectionHeader>
@@ -60,12 +59,11 @@ const BackstorySection = ({ character, isEditing, isVisible, onVisibilityToggle,
   </Section>
 );
 
-
 export const SheetFooter = ({
   isEditing, character, lockedItems, itemCounts, addItem, removeItem,
   onAddTechnique, onRemoveTechnique, checkTechniqueRequirements,
   isBackstoryVisible, setIsBackstoryVisible, handleUpdate,
-  points
+  points // 'points' é recebido como prop
 }) => {
 
   const renderSectionContent = (section) => {
@@ -91,11 +89,11 @@ export const SheetFooter = ({
         selectedItems={selectedItems}
         lockedItems={lockedItems}
         itemCounts={itemCounts}
-        onAddItem={(item, subOption, cost) => addItem(section.key, item, subOption, cost)}
+        // CORREÇÃO: A chamada agora passa o objeto 'points' adiante.
+        onAddItem={(item, subOption, cost) => addItem(section.key, item, subOption, cost, points)}
         onRemoveItem={(id) => removeItem(section.key, id)}
         listName={section.title}
         isEditing={isEditing}
-        // CORREÇÃO: Passa a lista de perícias do personagem para a grade
         characterSkills={character.skills || []}
         points={points}
       />
