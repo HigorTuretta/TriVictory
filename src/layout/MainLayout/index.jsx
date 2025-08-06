@@ -1,19 +1,19 @@
 // src/layout/MainLayout/index.jsx
 import React from 'react';
-import { Outlet } from 'react-router-dom'; // IMPORTANTE: Importar o Outlet
+import { Outlet } from 'react-router-dom';
 import { NavBar } from '../../components/NavBar';
 import { Footer } from '../../components/Footer';
-import { LayoutContainer, Content } from './styles'; 
+import { LayoutContainer, Content } from './styles';
 
-export const MainLayout = () => {
+
+export const MainLayout = ({ toggleTheme, theme }) => {
   return (
     <LayoutContainer>
       <NavBar />
-      {/* CORREÇÃO: Usa <Outlet /> para renderizar as rotas filhas aninhadas */}
       <Content>
         <Outlet />
       </Content>
-      <Footer />
+      <Footer toggleTheme={toggleTheme} theme={theme} />
     </LayoutContainer>
   );
 };

@@ -29,18 +29,18 @@ import { GlobalStyle } from './styles/GlobalStyle';
 import { useUserCustomData } from './hooks/useUserCustomData';
 
 // Componente Interno para gerenciar as rotas
-const AppRoutes = () => {
+const AppRoutes = ({ toggleTheme, theme }) => { // Recebe as props aqui
     const navigate = useNavigate();
     const { allData, addCustomItem, updateCustomItem, deleteCustomItem } = useUserCustomData();
 
     return (
         <Routes>
-            {/* === ROTAS SEM LAYOUT (TELA CHEIA) === */}
+            {/* ... (ROTAS SEM LAYOUT permanecem as mesmas) ... */}
             <Route path="/room/:roomId" element={<ProtectedRoute><GameRoom /></ProtectedRoute>} />
             <Route path="/sheet/:characterId" element={
                 <ProtectedRoute>
                     <CharacterSheet
-                        gameData={allData} // Passa os dados combinados
+                        gameData={allData} 
                         onAddCustomItem={addCustomItem}
                         onUpdateCustomItem={updateCustomItem}
                         onDeleteCustomItem={deleteCustomItem}
@@ -49,9 +49,9 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            {/* === ROTAS COM LAYOUT PADRÃO === */}
-            {/* O componente MainLayout agora atua como um invólucro para as rotas aninhadas */}
-            <Route element={<MainLayout />}>
+            {/* --- CORREÇÃO APLICADA AQUI --- */}
+            {/* Passa as props para o componente de Layout */}
+            <Route element={<MainLayout toggleTheme={toggleTheme} theme={theme} />}>
                 <Route path="/" element={<Navigate to="/rooms" replace />} />
                 <Route path="/rooms" element={<ProtectedRoute><Rooms /></ProtectedRoute>} />
                 <Route path="/characters" element={<ProtectedRoute><CharacterSelect /></ProtectedRoute>} />
@@ -64,12 +64,13 @@ const AppRoutes = () => {
                                 addCustomItem('arquetipos', newItem);
                                 navigate(-1);
                             }}
+                            onExit={() => navigate(-1)} // Adicionando a função de saída
                         />
                     </ProtectedRoute>
                 } />
             </Route>
 
-            {/* === ROTAS DE AUTENTICAÇÃO === */}
+            {/* ... (ROTAS DE AUTENTICAÇÃO permanecem as mesmas) ... */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -83,25 +84,23 @@ function App() {
     const [theme, setTheme] = useLocalStorage('3det_theme', 'dark');
     const currentTheme = theme === 'light' ? lightTheme : darkTheme;
 
-    // A prop 'toggleTheme' pode ser passada para um ThemeContext se o Footer precisar dela.
-    // Para esta correção, focamos na estrutura de rotas.
+    const toggleTheme = () => {
+        setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+    };
+
     return (
         <ThemeProvider theme={currentTheme}>
             <GlobalStyle />
             <Toaster
                 position="top-right"
                 toastOptions={{
-                    duration: 4000,
-                    style: {
-                        background: currentTheme.surface,
-                        color: currentTheme.textPrimary,
-                        border: `1px solid ${currentTheme.border}`,
-                    },
+                    // ...
                 }}
             />
             <BrowserRouter>
                 <AuthProvider>
-                    <AppRoutes />
+                    {/* Passa as props para o componente de Rotas */}
+                    <AppRoutes toggleTheme={toggleTheme} theme={theme} />
                 </AuthProvider>
             </BrowserRouter>
         </ThemeProvider>
