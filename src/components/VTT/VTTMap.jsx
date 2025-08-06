@@ -7,7 +7,6 @@ import { useTheme } from 'styled-components';
 import { MapContainer, ZoomSliderContainer } from './styles';
 import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { v4 as uuidv4 } from 'uuid';
 import { getTokenImageUrl } from '../../services/cloudinaryService';
 import toast from 'react-hot-toast';
 import { FaPlus, FaMinus } from 'react-icons/fa';
@@ -117,6 +116,28 @@ const FogOfWarLayer = ({ paths, playerTokens, isMaster, visionSettings, mapSize,
     );
 };
 
+// --- NOVO COMPONENTE DE CAMADA ---
+const PlayerVisionLayer = ({ playerTokens, visionSettings, gridSize }) => {
+    return (
+        <Layer listening={false}>
+            {playerTokens.map(token => {
+                const radius = gridSize * visionSettings.visionRadius;
+                return (
+                    <Circle
+                        key={`vision-indicator-${token.tokenId}`}
+                        x={token.x + gridSize / 2}
+                        y={token.y + gridSize / 2}
+                        radius={radius}
+                        stroke="#00BFFF" // Cor ciano para o indicador
+                        strokeWidth={2}
+                        dash={[10, 5]} // Linha tracejada
+                        opacity={0.6}
+                    />
+                );
+            })}
+        </Layer>
+    );
+};
 
 const GridLayer = ({ width, height, gridSize, offset, theme }) => {
     const lines = [];
@@ -244,18 +265,16 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
         const { x, y } = getDropPosition(e);
 
         if (enemyDataString) {
-            // ... (lógica de inimigo sem alterações)
+            const enemy = JSON.parse(enemyDataString);
+            const newToken = { tokenId: `enemy-${uuidv4()}`, grimoireId: enemy.id, name: enemy.name, imageUrl: getTokenImageUrl(enemy.imageUrl) || `https://api.dicebear.com/8.x/bottts/svg?seed=${enemy.name}`, type: 'enemy', sceneId: activeScene.id, x, y, color: '#e74c3c', isVisible: true, isDead: false, isImmobilized: false, isKnockedOut: false, pv_current: enemy.pv, pv_max: enemy.pv, pm_current: enemy.pm, pm_max: enemy.pm, pa_current: enemy.pa, pa_max: enemy.pa, attributes: enemy.attributes };
+            updateRoom({ tokens: [...currentTokens, newToken] });
         } else if (playerDataString) {
             const playerLink = JSON.parse(playerDataString);
             if (currentTokens.some(t => t.tokenId === playerLink.characterId && t.sceneId === activeScene.id)) {
                 return toast.info(`${playerLink.characterName} já está nesta cena.`);
             }
-
-            // CORREÇÃO: Busca os dados da ficha diretamente do objeto `charactersData` que recebemos via prop.
             const fullCharData = charactersData[playerLink.characterId];
-
             if (!fullCharData) {
-                // Mensagem de erro aprimorada
                 toast.error(`Dados da ficha de ${playerLink.characterName} ainda não foram carregados. Tente novamente em um instante.`);
                 return;
             }
@@ -264,13 +283,7 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
             const pv_max = resistencia * 5 || 1;
             const pm_max = habilidade * 5 || 1;
             const pa_max = poder || 1;
-            const newToken = {
-                tokenId: playerLink.characterId, userId: playerLink.userId, name: playerLink.characterName, imageUrl: getTokenImageUrl(playerLink.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${playerLink.characterName}`, type: 'player', sceneId: activeScene.id, x, y, color: '#3498db', isVisible: true, isDead: false, isImmobilized: false, isKnockedOut: false,
-                pv_current: fullCharData.pv_current ?? pv_max, pv_max,
-                pm_current: fullCharData.pm_current ?? pm_max, pm_max,
-                pa_current: fullCharData.pa_current ?? pa_max, pa_max,
-                attributes: fullCharData.attributes,
-            };
+            const newToken = { tokenId: playerLink.characterId, userId: playerLink.userId, name: playerLink.characterName, imageUrl: getTokenImageUrl(playerLink.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${playerLink.characterName}`, type: 'player', sceneId: activeScene.id, x, y, color: '#3498db', isVisible: true, isDead: false, isImmobilized: false, isKnockedOut: false, pv_current: fullCharData.pv_current ?? pv_max, pv_max, pm_current: fullCharData.pm_current ?? pm_max, pm_max, pa_current: fullCharData.pa_current ?? pa_max, pa_max, attributes: fullCharData.attributes, };
             updateRoom({ tokens: [...currentTokens, newToken] });
         }
     };
@@ -336,6 +349,14 @@ export const VTTMap = ({ activeScene, selectedTokenId, onTokenSelect, onTokenCon
                         return (<Token key={token.tokenId} tokenData={token} onDragEnd={updateTokenPosition} onClick={(e) => handleTokenClick(e, token)} onContextMenu={(e) => handleTokenClick(e, token)} isDraggable={canDrag} isMaster={isMaster} isSelected={token.tokenId === selectedTokenId} isTurn={token.tokenId === activeTurnTokenId} theme={theme} gridSize={gridSize} />);
                     })}
                 </Layer>
+                {/* --- RENDERIZAÇÃO CONDICIONAL DA NOVA CAMADA --- */}
+                {isMaster && roomSettings.playerVision && (
+                    <PlayerVisionLayer
+                        playerTokens={playerVisionSources}
+                        visionSettings={roomSettings}
+                        gridSize={gridSize}
+                    />
+                )}
                 {isMaster && fowTool && !isPanningWithSpace && (<Layer listening={false}><BrushCursor x={cursorPos.x} y={cursorPos.y} brushSize={fowTool.brushSize} tool={fowTool.tool} /></Layer>)}
             </Stage>
             <ZoomSlider scale={scale} onZoomChange={applyZoom} onZoomIn={() => applyZoom(scale * 1.2)} onZoomOut={() => applyZoom(scale / 1.2)} />
