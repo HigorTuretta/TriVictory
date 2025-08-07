@@ -1,4 +1,3 @@
-// src/contexts/RoomContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -8,88 +7,167 @@ import toast from 'react-hot-toast';
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
-const GRID_SIZE = 70;
 const RoomContext = createContext();
 
 export const RoomProvider = ({ children }) => {
-    const { roomId } = useParams();
-    const { currentUser } = useAuth();
-    const navigate = useNavigate();
-    
-    const [room, setRoom] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const { roomId } = useParams();
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
-    const debouncedUpdate = useCallback(_.debounce((data) => {
-        if (roomId) {
-            const roomRef = doc(db, 'rooms', roomId);
-            updateDoc(roomRef, data).catch(err => toast.error("Falha na sincronização."));
-        }
-    }, 500), [roomId]);
+  const [room, setRoom] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!roomId || !currentUser?.uid) { setLoading(false); return; }
+  const debouncedUpdate = useCallback(
+    _.debounce((data) => {
+      if (!roomId) return;
+      const roomRef = doc(db, 'rooms', roomId);
+      updateDoc(roomRef, data).catch(() => toast.error('Falha na sincronização.'));
+    }, 500),
+    [roomId]
+  );
+
+  useEffect(() => {
+    if (!roomId || !currentUser?.uid) {
+      setLoading(false);
+      return;
+    }
+    const roomRef = doc(db, 'rooms', roomId);
+    const unsub = onSnapshot(roomRef, (snap) => {
+      if (!snap.exists()) {
+        toast.error('Sala não encontrada.');
+        return navigate('/rooms');
+      }
+      const data = snap.data();
+
+      const validated = {
+        scenes: [],
+        tokens: [],
+        initiative: { order: [], currentIndex: -1, isRunning: false },
+        fogOfWar: {},
+        roomSettings: {
+          playerVision: true,
+          allyVision: true,
+          visionRadius: 3.5,
+          showGrid: true,
+          gridSize: 70,
+          gridOffset: { x: 0, y: 0 },
+          ...(data.roomSettings || {}),
+        },
+        ...data,
+      };
+
+      // garantir estrutura FOW por cena
+      const fog = { ...(validated.fogOfWar || {}) };
+      (validated.scenes || []).forEach((s) => {
+        const prev = fog[s.id] || {};
+        fog[s.id] = {
+          fogPaths: prev.fogPaths || [],
+          exploredByUser: prev.exploredByUser || {}, // { [userId]: [{x,y,radius}] }
+        };
+      });
+
+      setRoom({ id: snap.id, ...validated, fogOfWar: fog });
+      setLoading(false);
+    });
+
+    return () => unsub();
+  }, [roomId, currentUser, navigate]);
+
+  const updateRoom = (updateData) => {
+    setRoom((prev) => ({ ...prev, ...updateData }));
+    debouncedUpdate(updateData);
+  };
+
+  // Atualiza posição imediatamente (sem debounce) para evitar "snap back"
+  const updateTokenPosition = (tokenId, newPos) => {
+    setRoom((prev) => {
+      const updated = (prev.tokens || []).map((t) =>
+        t.tokenId === tokenId ? { ...t, ...newPos } : t
+      );
+      if (roomId) {
         const roomRef = doc(db, 'rooms', roomId);
-        const unsubscribe = onSnapshot(roomRef, (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                if (data.masterId !== currentUser.uid && !data.playerIds.includes(currentUser.uid)) {
-                    toast.error("Acesso negado."); return navigate('/rooms');
-                }
-                const validatedData = {
-                    scenes: [], tokens: [], characters: [], members: [],
-                    initiative: { order: [], currentIndex: -1, isRunning: false },
-                    fogOfWar: {},
-                    roomSettings: { playerVision: true, visionRadius: 3.5 },
-                    ...data,
-                };
-                setRoom({ id: snap.id, ...validatedData });
-            } else {
-                toast.error("Sala não encontrada."); navigate('/rooms');
-            }
-            setLoading(false);
+        updateDoc(roomRef, { tokens: updated }).catch(() => {
+          toast.error('Não foi possível salvar o movimento.');
         });
-        return () => unsubscribe();
-    }, [roomId, currentUser, navigate]);
+      }
+      return { ...prev, tokens: updated };
+    });
+  };
 
-    // --- API de Ações do Contexto ---
-
-    const updateRoom = (updateData) => {
-        setRoom(prev => ({...prev, ...updateData}));
-        debouncedUpdate(updateData);
+  const setFogPaths = (activeSceneId, paths) => {
+    if (!activeSceneId) return;
+    const newFog = {
+      ...room.fogOfWar,
+      [activeSceneId]: {
+        ...(room.fogOfWar?.[activeSceneId] || {}),
+        fogPaths: paths,
+        exploredByUser: (room.fogOfWar?.[activeSceneId]?.exploredByUser) || {},
+      },
     };
-    
-    // CORREÇÃO: Lógica de atualização de posição de token simplificada.
-    // Como todos os tokens (jogadores e inimigos) agora vivem no array `room.tokens`,
-    // não precisamos mais de uma lógica condicional.
-    const updateTokenPosition = (tokenId, newPos) => {
-        const updatedTokens = room.tokens.map(t => t.tokenId === tokenId ? { ...t, ...newPos } : t);
-        updateRoom({ tokens: updatedTokens });
-    };
+    updateRoom({ fogOfWar: newFog });
+  };
 
-    const setFogPaths = (activeSceneId, paths) => {
-        if (!activeSceneId) return;
-        const newFogData = { ...room.fogOfWar, [activeSceneId]: { ...room.fogOfWar?.[activeSceneId], fogPaths: paths } };
-        updateRoom({ fogOfWar: newFogData });
-    };
+  // >>> PERSISTÊNCIA IMEDIATA DA EXPLORAÇÃO <<<
+  const recordExploration = (sceneId, userId, circle) => {
+    if (!sceneId || !userId) return;
+    setRoom((prev) => {
+      const sceneFogPrev = prev.fogOfWar?.[sceneId] || {};
+      const exploredByUserPrev = sceneFogPrev.exploredByUser || {};
+      const prevArr = exploredByUserPrev[userId] || [];
+      const MAX = 800; // mais folgado
+      const trimmed = prevArr.length >= MAX ? prevArr.slice(prevArr.length - (MAX - 1)) : prevArr;
+      const exploredByUser = { ...exploredByUserPrev, [userId]: [...trimmed, circle] };
 
-    const addToInitiative = (entity, rollResult) => {
-        const currentOrder = room.initiative?.order || [];
-        if (currentOrder.some(item => item.tokenId === entity.tokenId)) {
-            return toast.error(`"${entity.name}" já está na ordem de iniciativa.`);
-        }
-        const newItem = { id: uuidv4(), tokenId: entity.tokenId, name: entity.name, type: entity.type, initiative: rollResult };
-        const newOrder = [...currentOrder, newItem].sort((a, b) => b.initiative - a.initiative);
-        updateRoom({ initiative: { ...room.initiative, order: newOrder, isRunning: true } });
-        toast.success(`"${entity.name}" rolou ${rollResult} e entrou na iniciativa!`);
-    };
-    
-    const value = { room, loading, roomId, updateRoom, updateTokenPosition, setFogPaths, addToInitiative };
+      const fogOfWar = {
+        ...(prev.fogOfWar || {}),
+        [sceneId]: {
+          fogPaths: sceneFogPrev.fogPaths || [],
+          exploredByUser,
+        },
+      };
 
-    return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>;
+      // escreve JÁ no Firestore para não perder no snapshot seguinte
+      if (roomId) {
+        const roomRef = doc(db, 'rooms', roomId);
+        updateDoc(roomRef, { fogOfWar }).catch(() => {
+          // não trava a UI; já está no estado local
+        });
+      }
+
+      return { ...prev, fogOfWar };
+    });
+  };
+
+  const addToInitiative = (entity, roll) => {
+    const order = room.initiative?.order || [];
+    if (order.some((i) => i.tokenId === entity.tokenId)) {
+      return toast.error(`"${entity.name}" já está na iniciativa.`);
+    }
+    const item = { id: uuidv4(), tokenId: entity.tokenId, name: entity.name, type: entity.type, initiative: roll };
+    const newOrder = [...order, item].sort((a, b) => b.initiative - a.initiative);
+    updateRoom({ initiative: { ...room.initiative, order: newOrder, isRunning: true } });
+  };
+
+  return (
+    <RoomContext.Provider
+      value={{
+        room,
+        loading,
+        roomId,
+        updateRoom,
+        updateTokenPosition,
+        setFogPaths,
+        recordExploration,
+        addToInitiative,
+      }}
+    >
+      {children}
+    </RoomContext.Provider>
+  );
 };
 
 export const useRoom = () => {
-    const context = useContext(RoomContext);
-    if (context === undefined) throw new Error('useRoom deve ser usado dentro de um RoomProvider');
-    return context;
+  const ctx = useContext(RoomContext);
+  if (!ctx) throw new Error('useRoom deve ser usado dentro de um RoomProvider');
+  return ctx;
 };
