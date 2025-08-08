@@ -113,6 +113,7 @@ export const ToolSection = styled.div`
 `;
 // O estilo que faltava ser aplicado
 export const ToolButton = styled.button`
+position: relative;
   inline-size: ${({ $isCollapsed }) => ($isCollapsed ? '44px' : '100%')};
   block-size: 44px;
   margin-inline: ${({ $isCollapsed }) => ($isCollapsed ? 'auto' : '0')};
@@ -158,7 +159,7 @@ export const PlayerList = styled.ul`
 `;
 
 export const PlayerAvatar = styled.img`
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 35px; height: 35px; border-radius: 50%;
   object-fit: cover; flex-shrink: 0;
 `;
 
@@ -174,6 +175,10 @@ export const PlayerName = styled.p`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: .5rem;
 `;
 export const CharacterName = styled.p`
   font-size: 0.8rem;
@@ -479,8 +484,8 @@ export const OptionCard = styled.label`
   }
 
   /* Estilos para o estado desabilitado */
-  ${({ theme, $disabled }) => 
-    $disabled && 
+  ${({ theme, $disabled }) =>
+    $disabled &&
     css`
       cursor: not-allowed;
       opacity: 0.6;
@@ -1087,7 +1092,21 @@ export const ZoomSliderContainer = styled(motion.div)`
     background: ${({ theme }) => theme.background};
     border-radius: 4px;
     outline: none;
-    &::-webkit-slider-thumb { /* ... */ }
-    &::-moz-range-thumb { /* ... */ }
   }
+`;
+export const UnreadBadge = styled.span`
+  position: absolute;
+  top: 12px;
+  right: 4px;
+  background-color: ${({ theme }) => theme.error};
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid ${({ theme }) => theme.surfaceVariant};
 `;

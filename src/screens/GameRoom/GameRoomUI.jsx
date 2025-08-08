@@ -31,23 +31,26 @@ import { JukeboxPlayer } from '../../components/VTT/JukeboxPlayer';
 import toast from 'react-hot-toast';
 import { FogOfWarManager } from '../../components/VTT/FogOfWarManager';
 import { MacroManager } from '../../components/VTT/MacroManager';
+import { useChat } from '../../hooks/useChat'; // NOVO
+import { ChatWindow } from '../../components/VTT/ChatWindow';
 
 const GameRoomContent = () => {
     const { room, updateRoom } = useRoom();
     const { currentUser } = useAuth();
     const { character, updateCharacter } = useCurrentPlayerCharacter();
-    const { executeRoll, isRolling, currentRoll, onAnimationComplete, isModifierModalOpen, closeModifierModal } = useDiceRoller(character, updateCharacter);const { addToInitiative, initiativeOrder, currentIndex, isRunning } = useInitiative();
+    const { executeRoll, isRolling, currentRoll, onAnimationComplete, isModifierModalOpen, closeModifierModal } = useDiceRoller(character, updateCharacter); const { addToInitiative, initiativeOrder, currentIndex, isRunning } = useInitiative();
     const { macros, addMacro, updateMacro, deleteMacro } = useRollMacros();
     const { charactersData, loading: charactersLoading } = useLinkedCharactersData();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     const [windows, setWindows] = useState({
         sceneManager: false, initiativeTracker: false, enemyGrimoire: false,
-        gameLog: true, macroManager: false, fogOfWar: false, roomSettings: false, jukebox: false,
+        gameLog: true, macroManager: false, fogOfWar: false, roomSettings: false, jukebox: false, chat: false,
     });
     const [selectedTokenId, setSelectedTokenId] = useState(null);
     const [contextMenuTokenId, setContextMenuTokenId] = useState(null);
     const [fowTool, setFowTool] = useState({ tool: 'eraser', brushSize: 70 });
+    const { messages, sendMessage, unreadCount } = useChat(windows.chat);
 
     const isMaster = room.masterId === currentUser.uid;
     const activeScene = (Array.isArray(room.scenes) && room.activeSceneId) ? room.scenes.find(s => s.id === room.activeSceneId) : null;
@@ -178,9 +181,9 @@ const GameRoomContent = () => {
         updateRoom({ tokens });
     };
 
- const handleRoll = useCallback(async (...args) => {
+    const handleRoll = useCallback(async (...args) => {
         const result = await executeRoll(...args);
-        
+
         // Se a rolagem gastou PA, força a atualização do token local para feedback imediato
         if (result && result.wasPaSpent) {
             const currentTokens = room.tokens || [];
@@ -217,6 +220,7 @@ const GameRoomContent = () => {
                 <LeftSidebar
                     onToolSelect={toggleWindow}
                     onToggleCollapse={setIsSidebarCollapsed}
+                    unreadChatMessages={unreadCount}
                 />
                 <MapArea>
 
@@ -230,11 +234,11 @@ const GameRoomContent = () => {
                         charactersData={charactersData}
                     />
                 </MapArea>
-               <DiceToolbar macros={macros} onRoll={handleRoll} onOpenMacroManager={() => toggleWindow('macroManager')} />
+                <DiceToolbar macros={macros} onRoll={handleRoll} onOpenMacroManager={() => toggleWindow('macroManager')} />
             </VTTLayout>
 
             <DiceRoller isVisible={isRolling} rollData={currentRoll} onAnimationComplete={onAnimationComplete} />
-           <DiceModifierModal
+            <DiceModifierModal
                 isOpen={isModifierModalOpen}
                 onClose={closeModifierModal}
                 character={character} // Passa o personagem para o modal verificar o PA
@@ -255,7 +259,9 @@ const GameRoomContent = () => {
             </FloatingWindow>
             <FloatingWindow title="Configurações da Sala" isOpen={windows.roomSettings} onClose={() => toggleWindow('roomSettings')}><RoomSettings /></FloatingWindow>
             <FloatingWindow title="Jukebox da Cena" isOpen={windows.jukebox} onClose={() => toggleWindow('jukebox')}><JukeboxManager activeSceneId={activeScene?.id} /></FloatingWindow>
-
+            <FloatingWindow title="Chat da Sala" isOpen={windows.chat} onClose={() => toggleWindow('chat')} initialPosition={{ x: 85, y: 150 }}>
+                <ChatWindow messages={messages} sendMessage={sendMessage} />
+            </FloatingWindow>
             {liveContextMenuToken && (
                 <FloatingWindow
                     title={`Controle: ${liveContextMenuToken.name}`}

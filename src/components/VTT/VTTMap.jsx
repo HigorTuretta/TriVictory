@@ -384,6 +384,15 @@ export const VTTMap = ({
 // mover token + explorar
 useEffect(() => {
   const handleKeyDown = (e) => {
+
+     // --- CORREÇÃO APLICADA AQUI ---
+      // Impede que os atalhos do mapa (Espaço, Setas) funcionem
+      // quando o usuário está focado em um campo de formulário.
+      const activeElement = document.activeElement;
+      if (activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeElement.tagName)) {
+        return; // Não interfere com a digitação
+      }
+      
     if (e.code === 'Space') {
       if (!isPanningWithSpace) { e.preventDefault(); setIsPanningWithSpace(true); }
       return;

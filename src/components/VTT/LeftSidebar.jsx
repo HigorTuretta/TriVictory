@@ -8,9 +8,8 @@ import { getTokenImageUrl } from '../../services/cloudinaryService';
 // NOVO: Importa funções do firestore para atualizar a ficha
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { SidebarContainer, CollapseButton, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton } from './styles';
-import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog, FaChevronLeft, FaChevronRight, FaMusic } from 'react-icons/fa';
-import toast from 'react-hot-toast';
+import { SidebarContainer, CollapseButton, ToolSection, PlayerList, PlayerCard, PlayerAvatar, PlayerInfo, PlayerName, CharacterName, LinkButton, ToolButton, UnreadBadge } from './styles'; // Adiciona UnreadBadge
+import { FaMap, FaEye, FaUsers, FaSkull, FaSignOutAlt, FaCopy, FaLink, FaUnlink, FaScroll, FaCog, FaChevronLeft, FaChevronRight, FaMusic, FaComments, FaCrown  } from 'react-icons/fa'; // Adiciona FaCommentsimport toast from 'react-hot-toast';
 import { Modal } from '../Modal';
 import v from '../../../package.json'
 const LinkCharacterModal = ({ isOpen, onClose, onLink }) => {
@@ -37,7 +36,7 @@ const LinkCharacterModal = ({ isOpen, onClose, onLink }) => {
     );
 };
 
-export const LeftSidebar = ({ onToolSelect, onToggleCollapse }) => {
+export const LeftSidebar = ({ onToolSelect, onToggleCollapse, unreadChatMessages  }) => {
     const { room, roomId, updateRoom } = useRoom();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -121,10 +120,10 @@ export const LeftSidebar = ({ onToolSelect, onToggleCollapse }) => {
                                 const isDraggable = charLink && (isMaster || isSelf);
                                 return (
                                     <PlayerCard key={member.uid} $isCollapsed={isCollapsed} draggable={isDraggable} onDragStart={isDraggable ? (e) => handleDragPlayer(e, charLink) : undefined} style={{ cursor: isDraggable ? 'grab' : 'default' }} title={isDraggable ? `Arraste ${charLink.characterName}` : ''}>
-                                        <PlayerAvatar src={getTokenImageUrl(charLink?.tokenImage) || `https://api.dicebear.com/8.x/adventurer/svg?seed=${member.nickname}`} />
+                                        <PlayerAvatar src={getTokenImageUrl(charLink?.tokenImage) || `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${member.nickname}`} />
                                         <PlayerInfo $isCollapsed={isCollapsed}>
-                                            <PlayerName>{member.nickname} {room.masterId === member.uid && ' (Mestre)'}</PlayerName>
-                                            <CharacterName>{charLink?.characterName || 'Sem personagem'}</CharacterName>
+                                            <PlayerName>{member.nickname} {room.masterId === member.uid  && <FaCrown/>}</PlayerName>
+                                            <CharacterName>{room.masterId === member.uid  ? 'Mestre ' : charLink?.characterName || 'Sem personagem'}</CharacterName>
                                         </PlayerInfo>
                                     </PlayerCard>
                                 )
@@ -152,6 +151,11 @@ export const LeftSidebar = ({ onToolSelect, onToggleCollapse }) => {
 
                 <ToolSection $isCollapsed={isCollapsed}>
                     <h4>Ferramentas Gerais</h4>
+                    <ToolButton onClick={() => onToolSelect('chat')} $isCollapsed={isCollapsed}>
+                        <FaComments /> 
+                        <span>Chat da Sala</span>
+                        {unreadChatMessages > 0 && <UnreadBadge>{unreadChatMessages}</UnreadBadge>}
+                    </ToolButton>
                     <ToolButton onClick={() => onToolSelect('initiativeTracker')} $isCollapsed={isCollapsed}><FaUsers /> <span>Iniciativa</span></ToolButton>
                     <ToolButton onClick={() => onToolSelect('gameLog')} $isCollapsed={isCollapsed}><FaScroll /> <span>Log de Rolagens</span></ToolButton>
                 </ToolSection>

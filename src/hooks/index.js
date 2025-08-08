@@ -14,3 +14,4 @@ export * from './useInitiative';
 export * from './useRollMacros';
 export * from './useFogOfWar';
 export * from './useLinkedCharactersData';
+export * from './useChat';
