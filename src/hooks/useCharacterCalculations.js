@@ -5,7 +5,7 @@ export const useCharacterCalculations = (character) => {
     const points = useMemo(() => {
         if (!character) return { total: 10, used: 0, remaining: 10, disBonus: 0 };
 
-        const { attributes = {}, skills = [], advantages = [], disadvantages = [], archetype, kits = [], basePoints = 10 } = character;
+        const { attributes = {}, skills = [], advantages = [], disadvantages = [], archetype, kits = [], techniques = [], basePoints = 10 } = character; // Adiciona 'techniques'
 
         const attrCost = Object.values(attributes).reduce((s, v) => s + v, 0);
         
@@ -18,10 +18,28 @@ export const useCharacterCalculations = (character) => {
         const disBonus = disadvantages
             .filter(d => !d.fromArchetype && !d.fromClass && !d.fromArtifact)
             .reduce((total, d) => total + (d.custo || 0), 0);
+            
+        // --- CÁLCULO DO CUSTO DAS TÉCNICAS ---
+        const techCostXp = (techniques || []).reduce((total, t) => {
+            // Regra especial para "Pequenos Desejos": é grátis se os requisitos forem cumpridos.
+            if (t.regraEspecial === 'gratis_com_reqs') {
+                const hasMistica = skills.some(s => s.nome === 'Mística');
+                const hasMagia = advantages.some(a => a.nome === 'Magia');
+                if (hasMistica && hasMagia) {
+                    return total; // Custo é zero
+                }
+            }
+            return total + (t.custoXp || 0);
+        }, 0);
+        
+        // Converte XP para Pontos (10 XP = 1 Ponto)
+        const techCostPoints = techCostXp / 10;
+        // --- FIM DO CÁLCULO ---
 
         const kitCost = kits.reduce((total, _, index) => total + (index + 1), 0);
-
-        const used = attrCost + skillCost + advCost + (archetype?.custo || 0) + kitCost;
+        
+        // Adiciona o custo das técnicas ao total de pontos usados
+        const used = attrCost + skillCost + advCost + (archetype?.custo || 0) + kitCost + techCostPoints;
         const totalAvailable = basePoints - disBonus;
 
         return { total: totalAvailable, used, remaining: totalAvailable - used, disBonus: Math.abs(disBonus) };

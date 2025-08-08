@@ -9,22 +9,22 @@ import { CategoryBadge } from '../TechniqueSelectionGrid/styles';
 
 
 const formatRequirements = (reqs = []) => {
-    if (reqs.length === 0) return 'Nenhum';
-    
-    const describeReq = (req) => {
-        const nome = req.nome ? req.nome.charAt(0).toUpperCase() + req.nome.slice(1) : '';
-        switch (req.tipo) {
-            case 'atributo': return `${nome} ${req.valor}`;
-            case 'pericia':
-            case 'vantagem':
-            case 'maestria':
-                return nome;
-            case 'ou':
-                return `(${req.opcoes.map(describeReq).join(' ou ')})`;
-            default: return 'Requisito';
-        }
-    };
-    return reqs.map(describeReq).join(' e ');
+  if (reqs.length === 0) return 'Nenhum';
+
+  const describeReq = (req) => {
+    const nome = req.nome ? req.nome.charAt(0).toUpperCase() + req.nome.slice(1) : '';
+    switch (req.tipo) {
+      case 'atributo': return `${nome} ${req.valor}`;
+      case 'pericia':
+      case 'vantagem':
+      case 'maestria':
+        return nome;
+      case 'ou':
+        return `(${req.opcoes.map(describeReq).join(' ou ')})`;
+      default: return 'Requisito';
+    }
+  };
+  return reqs.map(describeReq).join(' e ');
 };
 
 // --- Subcomponentes para Modularização ---
@@ -38,17 +38,18 @@ const TechniqueHeader = ({ nome, categoria }) => (
 
 // MODIFICADO: Passa o array de requisitos para a nova função de formatação.
 const TechniqueInfo = ({
-  requisitos = [], // Agora recebe o array 'requisitos'
+  requisitos = [],
   alcance,
   custo,
   duracao,
-  testes
+  testes,
+  custoXp // <-- Nova prop
 }) => {
   const infoItems = [
-    // Usa a nova função de formatação
     { label: 'Requisitos', value: formatRequirements(requisitos) },
+    { label: 'Custo em XP', value: custoXp ? `${custoXp} XP` : 'Nenhum' }, // <-- NOVO ITEM
     { label: 'Alcance', value: alcance },
-    { label: 'Custo', value: custo },
+    { label: 'Custo em PM', value: custo }, // <-- Label alterada para clareza
     { label: 'Duração', value: duracao },
   ];
 
@@ -139,10 +140,10 @@ export const TechniqueDetailsModal = ({ isOpen, onClose, technique, onSelect, ch
     <Modal isOpen={isOpen} onClose={onClose} size="large">
       <ModalContentWrapper>
         <TechniqueHeader nome={technique.nome} categoria={technique.categoria} />
-        {/* Passa a propriedade 'requisitos' em vez de 'requisito' */}
-        <TechniqueInfo {...technique} requisitos={technique.requisitos} />
+        {/* Passa a propriedade 'custoXp' para o subcomponente */}
+        <TechniqueInfo {...technique} requisitos={technique.requisitos} custoXp={technique.custoXp} />
         <Description>{technique.descricao}</Description>
-        
+
         {hasVariations ? (
           <VariationsSection
             variations={technique.variacoes}

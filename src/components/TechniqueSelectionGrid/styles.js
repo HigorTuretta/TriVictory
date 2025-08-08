@@ -1,3 +1,4 @@
+// src/components/TechniqueSelectionGrid/styles.js
 import styled from 'styled-components';
 
 export const GridContainer = styled.div`
@@ -108,5 +109,43 @@ export const RemoveButton = styled.button`
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.4);
+  }
+`;
+
+// --- NOVOS ESTILOS PARA MODAIS ---
+// Estes são os estilos que estavam faltando para o modal da técnica "Golpes".
+export const ModalSelectionWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  max-height: 40vh;
+  overflow-y: auto;
+  padding: 0.5rem;
+`;
+
+export const ModalOptionButton = styled.button`
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  background-color: ${({ theme }) => theme.surfaceVariant};
+  color: ${({ theme }) => theme.textPrimary};
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.primary};
+    color: ${({ theme }) => theme.onPrimary};
+    transform: translateX(5px);
+  }
+
+  small {
+    display: block;
+    font-weight: 400;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+    line-height: 1.4;
   }
 `;

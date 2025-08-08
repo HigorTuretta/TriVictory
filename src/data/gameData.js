@@ -1156,6 +1156,7 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Ás Indomável",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Esporte" }, { "tipo": "pericia", "nome": "Máquinas" }] }],
     "alcance": "Pessoal",
     "custo": "Variável",
@@ -1187,429 +1188,228 @@ export const tecnicas = [
   {
     "categoria": "Truques",
     "nome": "Barreira Mística",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "vantagem", "nome": "Magia" }, { "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Pessoal",
     "custo": "1 a 2 PM por uso",
     "duracao": "Um turno",
     "testes": "Seu teste de defesa é normal, mas você pode escolher usar a perícia Mística em vez de Luta.",
-    "descricao": "Você usa seus poderes mágicos para se defender. Com 1 PM, você conjura uma Barreira Mística como reação contra um ataque. Você só precisa conjurar a Barreira Mística uma vez por rodada, no primeiro ataque recebido. Ela permanece ativa até seu próximo turno. Você também pode gastar 1 PM extra para adicionar um destes efeitos:",
+    "descricao": "Você usa seus poderes mágicos para se defender. Com 1 PM, você conjura uma Barreira Mística como reação contra um ataque. Ela permanece ativa até seu próximo turno. Você também pode gastar 1 PM extra para adicionar um destes efeitos:",
     "variacoes": [
-      {
-        "nome": "Debilitante",
-        "descricao": "Se sua defesa superar o ataque, você reduz um atributo do atacante (à sua escolha) em –1, até o fim da cena. Isso não afeta os seus recursos."
-      },
-      {
-        "nome": "Drenante",
-        "descricao": "Se sua defesa superar o ataque, você recupera 2 PM. Cada crítico na defesa recupera mais 2 PM."
-      },
-      {
-        "nome": "Elétrica",
-        "descricao": "Sua defesa eletrifica e atordoa o alvo; o próximo ataque contra ele tem Ganho."
-      },
-      {
-        "nome": "Espinhosa",
-        "descricao": "Se o atacante está Perto, ele sofre 1 ponto de dano. Cada crítico na defesa causa mais 1 ponto de dano."
-      },
-      {
-        "nome": "Luminosa",
-        "descricao": "Se sua defesa superar o ataque, a barreira causa um clarão que ofusca o atacante, causando Perda em seu próximo teste."
-      },
-      {
-        "nome": "Maciça",
-        "descricao": "Você tem defesa perfeita."
-      },
-      {
-        "nome": "Solidária",
-        "descricao": "Você pode conjurar a Barreira Mística para um aliado Perto. Ele tem Ganho na defesa. Você não recebe nenhum benefício nesta rodada."
-      }
+      { "nome": "Debilitante", "descricao": "Se sua defesa superar o ataque, você reduz um atributo do atacante (à sua escolha) em –1, até o fim da cena. Isso não afeta os seus recursos." },
+      { "nome": "Drenante", "descricao": "Se sua defesa superar o ataque, você recupera 2 PM. Cada crítico na defesa recupera mais 2 PM." },
+      { "nome": "Elétrica", "descricao": "Sua defesa eletrifica e atordoa o alvo; o próximo ataque contra ele tem Ganho." },
+      { "nome": "Espinhosa", "descricao": "Se o atacante está Perto, ele sofre 1 ponto de dano. Cada crítico na defesa causa mais 1 ponto de dano." },
+      { "nome": "Luminosa", "descricao": "Se sua defesa superar o ataque, a barreira causa um clarão que ofusca o atacante, causando Perda em seu próximo teste." },
+      { "nome": "Maciça", "descricao": "Você tem defesa perfeita." },
+      { "nome": "Solidária", "descricao": "Você pode conjurar a Barreira Mística para um aliado Perto. Ele tem Ganho na defesa. Você não recebe nenhum benefício nesta rodada." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Cancioneiro Popular",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "pericia", "nome": "Arte" }],
     "alcance": "Perto",
     "custo": "2 PM",
     "duracao": "Instantânea",
     "descricao": "Suas canções têm efeitos emocionais diversos. Cancioneiro Popular não pode ser usado em combate ou conflitos.",
     "variacoes": [
-      {
-        "nome": "Canção de amor",
-        "testes": "Arte (9)",
-        "descricao": "Escolha um alvo e faça um teste de Arte (9). Com sucesso, ele se tornará amigável a você, garantindo Ganho em seu próximo teste social contra ele. Dobrar a meta pode fazer com que ele se apaixone de verdade!"
-      },
-      {
-        "nome": "Canção de ninar",
-        "descricao": "Você canta para o grupo antes de dormir, aumentando a recuperação de recursos em terreno ruim em +1D PM e PV."
-      },
-      {
-        "nome": "Canção de protesto",
-        "testes": "Arte (9)",
-        "descricao": "Escolha um alvo para protestar e faça um teste de Arte (9). Com sucesso, ele terá Perda em seu próximo teste social."
-      },
-      {
-        "nome": "Canção de rua",
-        "testes": "Arte (9)",
-        "descricao": "Faça um teste de Arte (9) onde houver muitos transeuntes (tipicamente vias urbanas). Se passar, tem Ganho no próximo teste de compra."
-      },
-      {
-        "nome": "Canção relaxante",
-        "descricao": "Você canta para o grupo em um momento de descanso, aumentando a recuperação de recursos em um descanso curto em +1 por ponto de atributo."
-      }
+      { "nome": "Canção de amor", "testes": "Arte (9)", "descricao": "Escolha um alvo e faça um teste de Arte (9). Com sucesso, ele se tornará amigável a você, garantindo Ganho em seu próximo teste social contra ele. Dobrar a meta pode fazer com que ele se apaixone de verdade!" },
+      { "nome": "Canção de ninar", "descricao": "Você canta para o grupo antes de dormir, aumentando a recuperação de recursos em terreno ruim em +1D PM e PV." },
+      { "nome": "Canção de protesto", "testes": "Arte (9)", "descricao": "Escolha um alvo para protestar e faça um teste de Arte (9). Com sucesso, ele terá Perda em seu próximo teste social." },
+      { "nome": "Canção de rua", "testes": "Arte (9)", "descricao": "Faça um teste de Arte (9) onde houver muitos transeuntes (tipicamente vias urbanas). Se passar, tem Ganho no próximo teste de compra." },
+      { "nome": "Canção relaxante", "descricao": "Você canta para o grupo em um momento de descanso, aumentando a recuperação de recursos em um descanso curto em +1 por ponto de atributo." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Dobrar Elemento",
+    "custoXp": 10,
     "requisitos": [],
     "alcance": "Perto",
     "custo": "1 PM ou mais por uso",
     "duracao": "Instantânea",
-    "descricao": "Você pode controlar um único elemento à sua escolha, como fogo, terra, água, ar, luz ou trevas; ou elementos mais exóticos, como vapor, gelo, relâmpago ou outros. Para cada elemento você deve aprender um truque diferente. Na maioria dos casos, o elemento deve estar presente para ser controlado. Dobrar Elemento não serve para atacar ou causar dano direto.",
+    "descricao": "Você pode controlar um único elemento à sua escolha. Para cada elemento você deve aprender um truque diferente. O elemento deve estar presente para ser controlado e a técnica não serve para atacar ou causar dano direto.",
     "variacoes": [
-      {
-        "nome": "Manipular",
-        "custo": "1 PM ou mais",
-        "descricao": "Manipular, levitar ou controlar pequenas quantidades do elemento, até cerca de 1kg (para líquidos e sólidos) ou meio metro cúbico (para gases ou energias). Você pode gastar mais PM para controlar quantidades maiores."
-      },
-      {
-        "nome": "Causar incômodo",
-        "custo": "2 PM",
-        "descricao": "Causar incômodo a um alvo, impondo Perda em um teste. Por exemplo, usando água para tornar o chão escorregadio, ou uma lufada de ar para desequilibrá-lo."
-      },
-      {
-        "nome": "Reforçar ataque",
-        "custo": "Variável",
-        "descricao": "Reforçar um ataque com o elemento, adicionando um tipo de dano adequado (como fogo, frio, pancada ou outro) sem causar Perda."
-      },
-      {
-        "nome": "Proteger-se",
-        "custo": "Variável",
-        "descricao": "Usar o elemento para se proteger, conseguindo defesa perfeita se vencer o teste de defesa."
-      },
-      {
-        "nome": "Outros efeitos",
-        "custo": "Variável",
-        "descricao": "Outros efeitos menores ligados ao elemento escolhido. Dobrar Vapor para fazer um motor funcionar, enquanto Dobrar Fogo pode aquecer água ou outro item (mas não a ponto de causar dano)."
-      }
+      { "nome": "Manipular", "custo": "1 PM ou mais", "descricao": "Manipular, levitar ou controlar pequenas quantidades do elemento, até cerca de 1kg (para líquidos e sólidos) ou meio metro cúbico (para gases ou energias). Você pode gastar mais PM para controlar quantidades maiores." },
+      { "nome": "Causar incômodo", "custo": "2 PM", "descricao": "Causar incômodo a um alvo, impondo Perda em um teste. Por exemplo, usando água para tornar o chão escorregadio, ou uma lufada de ar para desequilibrá-lo." },
+      { "nome": "Reforçar ataque", "custo": "Variável", "descricao": "Reforçar um ataque com o elemento, adicionando um tipo de dano adequado (como fogo, frio, pancada ou outro) sem causar Perda." },
+      { "nome": "Proteger-se", "custo": "Variável", "descricao": "Usar o elemento para se proteger, conseguindo defesa perfeita se vencer o teste de defesa." },
+      { "nome": "Outros efeitos", "custo": "Variável", "descricao": "Outros efeitos menores ligados ao elemento escolhido. Dobrar Vapor para fazer um motor funcionar, enquanto Dobrar Fogo pode aquecer água ou outro item (mas não a ponto de causar dano)." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Golpes",
+    "custoXp": 10,
+    "regraEspecial": "escolher_dois",
     "requisitos": [{ "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Variável",
     "custo": "Variável",
     "duracao": "Instantânea",
-    "descricao": "Você domina diversas manobras únicas de artes marciais. Este é um conjunto de truques diferente, pois não contém um grupo completo de habilidades; em vez disso, você escolhe dois golpes da lista. Você pode comprar este truque várias vezes: cada vez, escolhe mais dois golpes. Golpes não podem ser combinados com outras técnicas e vantagens, exceto quando dito o contrário.",
+    "descricao": "Você domina manobras de artes marciais. Ao adquirir esta técnica, escolha dois golpes da lista. Você pode comprá-la mais vezes para escolher outros dois golpes. Golpes não podem ser combinados com outras vantagens, exceto quando dito o contrário.",
     "variacoes": [
-      {
-        "nome": "Derrubar",
-        "custo": "0 ou 1 PM",
-        "descricao": "Quando vence a defesa do adversário, em vez de causar dano, você pode escolher derrubá-lo (ou gastar 1PM para causar dano e também derrubá-lo). Um oponente derrubado tem Perda em todos os testes até usar um movimento para se levantar."
-      },
-      {
-        "nome": "Finta",
-        "custo": "1 PM",
-        "descricao": "Você pode usar um movimento e 1PM para causar Perda no próximo ataque que receber antes de seu próximo turno. Se a defesa vencer o ataque, você tem defesa perfeita, e pode fazer um ataque com Ganho contra o mesmo adversário no seu próximo turno."
-      },
-      {
-        "nome": "Golpe Arriscado",
-        "custo": "1 PM",
-        "descricao": "Gaste 1PM ao atacar. Você tem chance de crítico máxima (4, 5 ou 6 em cada dado), mas qualquer outro resultado é considerado 0. Se não rolar pelo menos um crítico, será uma falha crítica."
-      },
-      {
-        "nome": "Golpe Atordoante",
-        "custo": "2 PM",
-        "descricao": "Gaste 2PM ao atacar. Se causar dano maior que a Resistência do alvo, ele fica atordoado: não pode realizar uma ação no próximo turno, apenas um movimento."
-      },
-      {
-        "nome": "Golpe Debilitante",
-        "custo": "2 PM",
-        "descricao": "Gaste 2PM ao atacar. Se vencer a defesa, em vez de causar dano, reduz um atributo do oponente (à sua escolha) em –1 até o fim do combate. Se você rolar pelo menos um crítico, reduz em –2. Isso não afeta os recursos do adversário."
-      },
-      {
-        "nome": "Golpe Forte",
-        "custo": "1 PM",
-        "descricao": "Gaste 1PM ao atacar. Se vencer a defesa do oponente, causa +2 pontos de dano. Cada crítico aumenta o dano extra em +1. Se a defesa vencer, mas não com defesa perfeita, você ainda causa 1 ponto de dano extra. O dano extra ignora limite de dano."
-      },
-      {
-        "nome": "Golpe Rápido",
-        "custo": "1 PM",
-        "descricao": "Você pode gastar 1PM para fazer um ataque com um movimento, mas o teste tem Perda e não pode utilizar vantagens e técnicas."
-      },
-      {
-        "nome": "Recuperar Fôlego",
-        "custo": "0",
-        "descricao": "Você faz uma pausa breve para se recobrar e voltar ao combate. Use um movimento para recuperar 1D pontos de mana, até um máximo igual à sua Resistência. Você só pode fazer isso durante combates e conflitos."
-      }
+      { "nome": "Derrubar", "custo": "0 ou 1 PM", "descricao": "Quando vence a defesa do adversário, em vez de causar dano, você pode escolher derrubá-lo (ou gastar 1PM para causar dano e também derrubá-lo). Um oponente derrubado tem Perda em todos os testes até usar um movimento para se levantar." },
+      { "nome": "Finta", "custo": "1 PM", "descricao": "Você pode usar um movimento e 1PM para causar Perda no próximo ataque que receber antes de seu próximo turno. Se a defesa vencer o ataque, você tem defesa perfeita, e pode fazer um ataque com Ganho contra o mesmo adversário no seu próximo turno." },
+      { "nome": "Golpe Arriscado", "custo": "1 PM", "descricao": "Gaste 1PM ao atacar. Você tem chance de crítico máxima (4, 5 ou 6 em cada dado), mas qualquer outro resultado é considerado 0. Se não rolar pelo menos um crítico, será uma falha crítica." },
+      { "nome": "Golpe Atordoante", "custo": "2 PM", "descricao": "Gaste 2PM ao atacar. Se causar dano maior que a Resistência do alvo, ele fica atordoado: não pode realizar uma ação no próximo turno, apenas um movimento." },
+      { "nome": "Golpe Debilitante", "custo": "2 PM", "descricao": "Gaste 2PM ao atacar. Se vencer a defesa, em vez de causar dano, reduz um atributo do oponente (à sua escolha) em –1 até o fim do combate. Se você rolar pelo menos um crítico, reduz em –2. Isso não afeta os recursos do adversário." },
+      { "nome": "Golpe Forte", "custo": "1 PM", "descricao": "Gaste 1PM ao atacar. Se vencer a defesa do oponente, causa +2 pontos de dano. Cada crítico aumenta o dano extra em +1. Se a defesa vencer, mas não com defesa perfeita, você ainda causa 1 ponto de dano extra. O dano extra ignora limite de dano." },
+      { "nome": "Golpe Rápido", "custo": "1 PM", "descricao": "Você pode gastar 1PM para fazer um ataque com um movimento, mas o teste tem Perda e não pode utilizar vantagens e técnicas." },
+      { "nome": "Recuperar Fôlego", "custo": "0", "descricao": "Você faz uma pausa breve para se recobrar e voltar ao combate. Use um movimento para recuperar 1D pontos de mana, até um máximo igual à sua Resistência. Você só pode fazer isso durante combates e conflitos." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Grimório Debilitante",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "3 PM por uso (ou 9 PM)",
     "duracao": "Instantânea ou duradoura",
-    "descricao": "Você utiliza sua magia para atrapalhar adversários, alterando as condições do ambiente para ter vantagens contra eles.",
+    "descricao": "Você utiliza sua magia para atrapalhar adversários, alterando as condições do ambiente.",
     "variacoes": [
-      {
-        "nome": "Luz/Trevas",
-        "duracao": "Duradoura",
-        "descricao": "Você ilumina ou escurece a área Perto de um alvo. Uma área escurecida causa Perda em ações que usam a visão (incluindo atacar e defender). Uma área subitamente iluminada causa Perda por uma rodada, enquanto os olhos se ajustam à claridade."
-      },
-      {
-        "nome": "Pés de Chumbo",
-        "testes": "Resistência contra a sua Habilidade",
-        "duracao": "Duradoura",
-        "descricao": "Você aumenta a gravidade no alvo, deixando-o mais lento. O alvo precisa gastar uma ação para realizar um movimento, uma ação completa para uma ação, e uma ação completa extra para tudo que demore mais. O alvo pode resistir com um teste de Resistência contra a sua Habilidade."
-      },
-      {
-        "nome": "Tempestade Mental",
-        "duracao": "Instantânea",
-        "descricao": "Você faz um ataque contra um alvo, podendo receber bônus no teste usando Magia. Se superar a sua defesa, em vez de PV, você diminuirá seus PM."
-      },
-      {
-        "nome": "Terreno Escorregadio de Neo",
-        "custo": "3 PM ou 9 PM",
-        "duracao": "1 turno ou duradoura",
-        "descricao": "A área Perto do alvo fica escorregadia. Qualquer ação que depende de movimentação (incluindo atacar e defender) tem Perda, e qualquer falha resulta em queda. Um personagem caído tem Perda em todos os testes até usar um movimento para se levantar. Dura 1 turno, mas você pode gastar 9 PM para tornar duradoura."
-      }
+      { "nome": "Luz/Trevas", "duracao": "Duradoura", "descricao": "Você ilumina ou escurece a área Perto de um alvo. Uma área escurecida causa Perda em ações que usam a visão (incluindo atacar e defender). Uma área subitamente iluminada causa Perda por uma rodada, enquanto os olhos se ajustam à claridade." },
+      { "nome": "Pés de Chumbo", "testes": "Resistência contra a sua Habilidade", "duracao": "Duradoura", "descricao": "Você aumenta a gravidade no alvo, deixando-o mais lento. O alvo precisa gastar uma ação para realizar um movimento, uma ação completa para uma ação, e uma ação completa extra para tudo que demore mais. O alvo pode resistir com um teste de Resistência contra a sua Habilidade." },
+      { "nome": "Tempestade Mental", "duracao": "Instantânea", "descricao": "Você faz um ataque contra um alvo, podendo receber bônus no teste usando Magia. Se superar a sua defesa, em vez de PV, você diminuirá seus PM." },
+      { "nome": "Terreno Escorregadio de Neo", "custo": "3 PM ou 9 PM", "duracao": "1 turno ou duradoura", "descricao": "A área Perto do alvo fica escorregadia. Qualquer ação que depende de movimentação (incluindo atacar e defender) tem Perda, e qualquer falha resulta em queda. Um personagem caído tem Perda em todos os testes até usar um movimento para se levantar. Dura 1 turno, mas você pode gastar 9 PM para tornar duradoura." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Grimório Irritante",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "0 a 1 PM ou mais",
     "duracao": "Instantânea",
-    "descricao": "Em vez de efeitos dramáticos de poder arcano, você utiliza sua magia para irritar e provocar. Bem chato, mas raramente tem efeito mecânico. Contra alvos tentando tarefas que exigem concentração, pode causar Perda.",
+    "descricao": "Você utiliza sua magia para irritar e provocar. Contra alvos em tarefas que exigem concentração, pode causar Perda.",
     "variacoes": [
-      {
-        "nome": "A Aporrinhação do Caos",
-        "custo": "1 PM por turno",
-        "descricao": "Você cria um pequeno enxame de criaturas que não causam dano, mas incomodam o alvo e causam Perda em um teste, apenas fora de combate. Custa 1 PM, mas pode ser mantido gastando mais 1 PM por turno."
-      },
-      {
-        "nome": "O Apavorante Gás de Luignaccio",
-        "custo": "1 PM por rodada",
-        "testes": "Resistência (9)",
-        "descricao": "O alvo tem direito a um teste de Resistência (9). Se falhar, começa a emitir sonoras flatulências durante uma rodada para cada PM gasto. Durante esse tempo, tem Perda em testes sociais contra qualquer infeliz capaz de farejá-lo."
-      },
-      {
-        "nome": "A Flor Perene de Milady “A”",
-        "custo": "0 PM",
-        "descricao": "Esta magia simples, de custo 0, faz um gerânio inofensivo nascer no local desejado (que pode ser uma criatura). Se arrancado, desaparece — e uma nova flor nasce no lugar, e assim sucessivamente até a magia ser cancelada."
-      },
-      {
-        "nome": "A Gagueira de Raviollius",
-        "custo": "1 PM por rodada",
-        "testes": "Resistência (9)",
-        "descricao": "O alvo tem direito a um teste de Resistência (9). Se falhar, é acometido por gagueira incontrolável durante uma rodada para cada PM gasto. Durante esse tempo, tem Perda em testes que usam a voz (como cantar, usar Influência, comandar Aliados ou conjurar Magia)."
-      }
+      { "nome": "A Aporrinhação do Caos", "custo": "1 PM por turno", "descricao": "Você cria um pequeno enxame de criaturas que não causam dano, mas incomodam o alvo e causam Perda em um teste, apenas fora de combate. Custa 1 PM, mas pode ser mantido gastando mais 1 PM por turno." },
+      { "nome": "O Apavorante Gás de Luignaccio", "custo": "1 PM por rodada", "testes": "Resistência (9)", "descricao": "O alvo tem direito a um teste de Resistência (9). Se falhar, começa a emitir sonoras flatulências durante uma rodada para cada PM gasto. Durante esse tempo, tem Perda em testes sociais contra qualquer infeliz capaz de farejá-lo." },
+      { "nome": "A Flor Perene de Milady “A”", "custo": "0 PM", "descricao": "Esta magia simples, de custo 0, faz um gerânio inofensivo nascer no local desejado (que pode ser uma criatura). Se arrancado, desaparece — e uma nova flor nasce no lugar, e assim sucessivamente até a magia ser cancelada." },
+      { "nome": "A Gagueira de Raviollius", "custo": "1 PM por rodada", "testes": "Resistência (9)", "descricao": "O alvo tem direito a um teste de Resistência (9). Se falhar, é acometido por gagueira incontrolável durante uma rodada para cada PM gasto. Durante esse tempo, tem Perda em testes que usam a voz (como cantar, usar Influência, comandar Aliados ou conjurar Magia)." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Monasticismo Marcial",
+    "custoXp": 10,
     "requisitos": [],
     "alcance": "Pessoal",
     "custo": "2 PM por uso",
     "duracao": "Instantânea",
     "descricao": "Você passou por treinamento marcial rigoroso, como os monges shaolin.",
     "variacoes": [
-      {
-        "nome": "Corpo fechado",
-        "descricao": "Ganho em um teste de Resistência para evitar um efeito negativo de vantagens ou poderes."
-      },
-      {
-        "nome": "Inviolável",
-        "descricao": "Mantendo-se imóvel (sem realizar ações ou movimentos), você tem Ganho e defesa perfeita em todos os testes de defesa até seu próximo turno."
-      },
-      {
-        "nome": "Palma de ferro",
-        "descricao": "Ganho em um teste de Poder para quebrar objetos inanimados (mas não testes de ataque)."
-      },
-      {
-        "nome": "Realinhar chakras",
-        "descricao": "Usando uma ação, você pode repetir um teste de Resistência para eliminar algum efeito negativo (e pode gastar mais 2 PM para usar Corpo Fechado e ter Ganho nesse teste)."
-      }
+      { "nome": "Corpo fechado", "descricao": "Ganho em um teste de Resistência para evitar um efeito negativo de vantagens ou poderes." },
+      { "nome": "Inviolável", "descricao": "Mantendo-se imóvel (sem realizar ações ou movimentos), você tem Ganho e defesa perfeita em todos os testes de defesa até seu próximo turno." },
+      { "nome": "Palma de ferro", "descricao": "Ganho em um teste de Poder para quebrar objetos inanimados (mas não testes de ataque)." },
+      { "nome": "Realinhar chakras", "descricao": "Usando uma ação, você pode repetir um teste de Resistência para eliminar algum efeito negativo (e pode gastar mais 2 PM para usar Corpo Fechado e ter Ganho nesse teste)." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Ninjutsu",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "pericia", "nome": "Manha" }],
     "alcance": "Perto",
     "custo": "2 PM por uso",
     "duracao": "Instantânea",
     "descricao": "Você é um mestre em truques de infiltração e sabotagem.",
     "variacoes": [
-      {
-        "nome": "Bomba de fumaça",
-        "descricao": "Usando uma ação, todos os personagens Perto (incluindo aliados) ficam cegos por uma rodada, recebendo Perda em testes que usam a visão (como fazer um ataque, ou impedir sua fuga)."
-      },
-      {
-        "nome": "Corrida ninja",
-        "descricao": "Você dobra seu deslocamento neste turno. Por exemplo, pode ir de Perto para Muito Longe com apenas um movimento."
-      },
-      {
-        "nome": "Estrepes",
-        "descricao": "Usando uma ação, você espalha objetos espinhosos no chão para atrapalhar um alvo Perto. Ele tem Perda em um teste que você escolher, até seu próximo turno."
-      },
-      {
-        "nome": "Jutsu de troca",
-        "descricao": "Como reação, você troca de lugar com um item próximo, como um tronco de árvore. Ganho no teste de defesa, apenas uma vez por rodada."
-      },
-      {
-        "nome": "Pipa ninja",
-        "descricao": "Você usa um movimento para saltar até Longe, e uma ação para abrir uma grande capa de tecido e voar durante uma rodada. Você pode continuar voando se usar uma ação por rodada para controlar a pipa, ou pode fechá-la com um movimento e voltar ao chão sem sofrer dano."
-      }
+      { "nome": "Bomba de fumaça", "descricao": "Usando uma ação, todos os personagens Perto (incluindo aliados) ficam cegos por uma rodada, recebendo Perda em testes que usam a visão (como fazer um ataque, ou impedir sua fuga)." },
+      { "nome": "Corrida ninja", "descricao": "Você dobra seu deslocamento neste turno. Por exemplo, pode ir de Perto para Muito Longe com apenas um movimento." },
+      { "nome": "Estrepes", "descricao": "Usando uma ação, você espalha objetos espinhosos no chão para atrapalhar um alvo Perto. Ele tem Perda em um teste que você escolher, até seu próximo turno." },
+      { "nome": "Jutsu de troca", "descricao": "Como reação, você troca de lugar com um item próximo, como um tronco de árvore. Ganho no teste de defesa, apenas uma vez por rodada." },
+      { "nome": "Pipa ninja", "descricao": "Você usa um movimento para saltar até Longe, e uma ação para abrir uma grande capa de tecido e voar durante uma rodada. Você pode continuar voando se usar uma ação por rodada para controlar a pipa, ou pode fechá-la com um movimento e voltar ao chão sem sofrer dano." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Pequenos Desejos",
-    "requisitos": [{ "tipo": "pericia", "nome": "Mística" }],
+    "custoXp": 10,
+    "regraEspecial": "gratis_com_reqs",
+    "requisitos": [{ "tipo": "pericia", "nome": "Mística" }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "0 a 1 PM por uso",
     "duracao": "Instantânea",
     "testes": "Teste de Mística (para truques simples)",
-    "descricao": "Esta magia realiza uma série de efeitos e ilusões inofensivas, mais para distrair e entreter que qualquer outra coisa. Personagens treinados em Mística e com a vantagem Magia recebem esta técnica sem gastar XP.",
+    "descricao": "Realiza uma série de efeitos e ilusões inofensivas. Personagens que cumprem os requisitos (Mística e Magia) recebem esta técnica gratuitamente, sem gastar XP.",
     "variacoes": [
-      {
-        "nome": "Criar objetos",
-        "custo": "0 PM",
-        "descricao": "Criar pequenos objetos sem utilidade prática, como flores, lenços, borboletas ou pombos (mágicos, que logo desaparecem)."
-      },
-      {
-        "nome": "Levitar item",
-        "custo": "0 PM",
-        "descricao": "Levitar e mover um item leve, lentamente, como se tivesse Poder 0."
-      },
-      {
-        "nome": "Colorir, limpar ou sujar",
-        "custo": "0 PM",
-        "descricao": "Colorir, limpar ou sujar itens pequenos (incluindo roupas)."
-      },
-      {
-        "nome": "Aquecer, esfriar ou temperar",
-        "custo": "0 PM",
-        "descricao": "Aquecer, esfriar e/ou temperar (mas não produzir) uma refeição, ou outro item de até 500g."
-      },
-      {
-        "nome": "Criar ser feérico",
-        "custo": "1 PM",
-        "descricao": "Criar um pequeno ser feérico, feito de magia, que realiza uma tarefa simples como apanhar lenha, colher frutos, pescar, vigiar uma área, alimentar um mascote, etc."
-      }
+      { "nome": "Criar objetos", "custo": "0 PM", "descricao": "Criar pequenos objetos sem utilidade prática, como flores, lenços, borboletas ou pombos (mágicos, que logo desaparecem)." },
+      { "nome": "Levitar item", "custo": "0 PM", "descricao": "Levitar e mover um item leve, lentamente, como se tivesse Poder 0." },
+      { "nome": "Colorir, limpar ou sujar", "custo": "0 PM", "descricao": "Colorir, limpar ou sujar itens pequenos (incluindo roupas)." },
+      { "nome": "Aquecer, esfriar ou temperar", "custo": "0 PM", "descricao": "Aquecer, esfriar e/ou temperar (mas não produzir) uma refeição, ou outro item de até 500g." },
+      { "nome": "Criar ser feérico", "custo": "1 PM", "descricao": "Criar um pequeno ser feérico, feito de magia, que realiza uma tarefa simples como apanhar lenha, colher frutos, pescar, vigiar uma área, alimentar um mascote, etc." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Praga",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Perto",
     "custo": "2 PM",
     "duracao": "Variada",
     "testes": "Teste de Poder contra a Resistência do alvo.",
-    "descricao": "Você aponta o dedo e roga uma praga contra alguém! Se vencer, ele sofre um dos efeitos a seguir, à sua escolha:",
+    "descricao": "Você aponta o dedo e roga uma praga contra alguém! Se vencer o teste oposto, ele sofre um dos efeitos a seguir, à sua escolha:",
     "variacoes": [
-      {
-        "duracao": "Até o fim da cena",
-        "descricao": "-1 em testes de um atributo."
-      },
-      {
-        "duracao": "Até o fim da sessão",
-        "descricao": "Perda em um único teste à sua escolha."
-      },
-      {
-        "duracao": "Até o fim da cena",
-        "descricao": "Vantagens e técnicas custam +1 PM."
-      },
-      {
-        "duracao": "Até o fim da cena",
-        "descricao": "Qualquer resultado 1 em um teste causa falha crítica."
-      }
+      { "duracao": "Até o fim da cena", "descricao": "-1 em testes de um atributo." },
+      { "duracao": "Até o fim da sessão", "descricao": "Perda em um único teste à sua escolha." },
+      { "duracao": "Até o fim da cena", "descricao": "Vantagens e técnicas custam +1 PM." },
+      { "duracao": "Até o fim da cena", "descricao": "Qualquer resultado 1 em um teste causa falha crítica." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Raio Místico",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "vantagem", "nome": "Magia" }, { "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Perto ou Longe",
     "custo": "1 a 2 PM por uso",
     "duracao": "Instantânea",
     "testes": "Seu teste de ataque é normal, mas você pode escolher usar a perícia Mística em vez de Luta.",
-    "descricao": "Você usa seus poderes mágicos para atacar. Com uma ação e 1 PM, você dispara um Raio Místico contra um alvo Perto ou Longe. Você também pode gastar 1 PM extra para adicionar um destes efeitos:",
+    "descricao": "Você usa seus poderes mágicos para atacar. Com uma ação e 1 PM, dispara um Raio Místico. Você pode gastar 1 PM extra para adicionar um destes efeitos:",
     "variacoes": [
-      {
-        "nome": "Ácido",
-        "testes": "Resistência (6 + dano sofrido)",
-        "descricao": "Na próxima rodada, o alvo faz um teste de Resistência (6 + dano sofrido). Se falhar, sofre 1D–1 de dano extra."
-      },
-      {
-        "nome": "Congelante",
-        "descricao": "Se sofrer dano, o alvo congela, sofrendo Perda em seu próximo teste."
-      },
-      {
-        "nome": "Debilitante",
-        "descricao": "Se vencer a defesa, em vez de causar dano, você reduz um atributo do alvo (à sua escolha) em –1, até o fim da cena. Isso não afeta os seus recursos."
-      },
-      {
-        "nome": "Distante",
-        "descricao": "O alcance do raio muda para Muito Longe."
-      },
-      {
-        "nome": "Elétrico",
-        "descricao": "Se causar dano, o choque atordoa o alvo; o próximo ataque contra ele tem Ganho."
-      },
-      {
-        "nome": "Flamejante",
-        "descricao": "Faça o teste de ataque com Poder +2."
-      }
+      { "nome": "Ácido", "testes": "Resistência (6 + dano sofrido)", "descricao": "Na próxima rodada, o alvo faz um teste de Resistência (6 + dano sofrido). Se falhar, sofre 1D–1 de dano extra." },
+      { "nome": "Congelante", "descricao": "Se sofrer dano, o alvo congela, sofrendo Perda em seu próximo teste." },
+      { "nome": "Debilitante", "descricao": "Se vencer a defesa, em vez de causar dano, você reduz um atributo do alvo (à sua escolha) em –1, até o fim da cena. Isso não afeta os seus recursos." },
+      { "nome": "Distante", "descricao": "O alcance do raio muda para Muito Longe." },
+      { "nome": "Elétrico", "descricao": "Se causar dano, o choque atordoa o alvo; o próximo ataque contra ele tem Ganho." },
+      { "nome": "Flamejante", "descricao": "Faça o teste de ataque com Poder +2." }
     ]
   },
   {
     "categoria": "Truques",
     "nome": "Super-Movimento",
+    "custoXp": 10,
     "requisitos": [{ "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Esporte" }, { "tipo": "pericia", "nome": "Luta" }, { "tipo": "vantagem", "nome": "Magia" }] }],
     "alcance": "Pessoal",
     "custo": "1 PM por uso",
     "duracao": "Instantânea",
     "descricao": "Através de treinamento ou magia, você realiza movimentos impossíveis para uma pessoa comum.",
     "variacoes": [
-      {
-        "custo": "1 PM por uso",
-        "descricao": "Pode andar em paredes e tetos. Se descer, deve gastar mais 1 PM para prender-se novamente."
-      },
-      {
-        "custo": "1 PM por uso",
-        "descricao": "Saltar até Muito Longe com um movimento, sem sofrer Perda nem dano de queda ao voltar ao chão."
-      },
-      {
-        "custo": "1 PM por rodada",
-        "descricao": "Correr sobre a água ou outra superfície instável. Deve gastar um movimento e 1 PM por rodada, ou afundará."
-      },
-      {
-        "custo": "1 PM por uso",
-        "descricao": "Ganho em um teste para se livrar de cordas, amarras e outros tipos de contenção."
-      }
+      { "custo": "1 PM por uso", "descricao": "Pode andar em paredes e tetos. Se descer, deve gastar mais 1 PM para prender-se novamente." },
+      { "custo": "1 PM por uso", "descricao": "Saltar até Muito Longe com um movimento, sem sofrer Perda nem dano de queda ao voltar ao chão." },
+      { "custo": "1 PM por rodada", "descricao": "Correr sobre a água ou outra superfície instável. Deve gastar um movimento e 1 PM por rodada, ou afundará." },
+      { "custo": "1 PM por uso", "descricao": "Ganho em um teste para se livrar de cordas, amarras e outros tipos de contenção." }
     ]
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Absorver Mana",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "pericia", "nome": "Mística" }],
     "alcance": "Pessoal",
     "custo": "0 PM",
     "duracao": "Instantânea",
-    "descricao": "No lugar de gastar sua própria energia para ativar poderes, você pode absorvê-la do ambiente. Você pode usar um movimento para absorver 1D PM, ou uma ação para absorver 1D+H PM. Estes PM podem superar o seu limite, mas você não pode absorver mais mana até gastar o que já foi absorvido. Mana ambiental é volátil: você só pode segurá-lo por uma rodada; PM absorvidos que não sejam gastos até o fim do seu próximo turno são perdidos."
+    "descricao": "Em vez de gastar sua própria energia, você pode absorvê-la do ambiente. Use um movimento para absorver 1D PM, ou uma ação para 1D+H PM. PM absorvidos podem superar seu limite, mas se não forem gastos até o fim do seu próximo turno, são perdidos."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Área de Batalha",
+    "custoXp": 20,
     "requisitos": [
       { "tipo": "ou", "opcoes": [{ "tipo": "atributo", "nome": "Poder", "valor": 2 }, { "tipo": "atributo", "nome": "Habilidade", "valor": 2 }] },
       { "tipo": "pericia", "nome": "Mística" }
@@ -1617,31 +1417,34 @@ export const tecnicas = [
     "alcance": "Perto",
     "custo": "2 PM para ativar, 1 PM por rodada para manter",
     "duracao": "Enquanto pagar o custo",
-    "testes": "Oponentes que não queiram ser transportados podem fazer um teste oposto de Resistência para anular a técnica.",
-    "descricao": "Usando uma ação, você transporta a você e um número máximo de personagens igual a seu Poder ou Habilidade (escolha um) para um campo de batalha especial, em outra dimensão, onde possui vantagens sobre eles. Escolha duas vantagens de 1 ponto, ou uma de 2 pontos. Você não precisa possuí-las; enquanto está na área de batalha, elas passam a fazer parte da sua ficha. Se tiver a vantagem, seu custo em PM é reduzido à metade. Adquirindo a técnica diversas vezes, você pode ter mais de uma área de batalha, ou uma única que concede vantagens maiores quando invocada. Você pode ativar todas elas com uma única ação, mas deve pagar o custo total em PM de todas as técnicas."
+    "testes": "Oponentes podem fazer um teste oposto de Resistência para anular.",
+    "descricao": "Usando uma ação, você transporta a si e a um número de alvos (até seu P ou H) para um campo de batalha dimensional onde você possui vantagens. Escolha duas vantagens de 1pt ou uma de 2pts; elas se aplicam a você enquanto a área durar."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Bola de Fogo",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "3 PM + Magia",
     "duracao": "Instantânea",
-    "descricao": "Um dos mais conhecidos feitiços de ataque, esta técnica cria uma grande esfera flamejante que explode ao atingir o alvo. Faça um ataque. Você pode aumentar a intensidade do fogo, usando Magia para ter bônus no teste. Se usar a regra de Tipos de Dano, este ataque causa dano de fogo. Devido à grande área da explosão, a Bola de Fogo também atinge todos os alvos Perto do alvo original. Além disso, todos sofrem Perda em seus testes de defesa."
+    "descricao": "Cria uma esfera flamejante que explode ao atingir o alvo. Faça um ataque, usando Magia para ter bônus. O ataque atinge todos os alvos Perto do alvo original, e todos sofrem Perda em seus testes de defesa."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Combo",
-    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 1 }, { "tipo": "vantagem", "nome": "Golpe" }],
+    "custoXp": 20,
+    "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 1 }, { "tipo": "tecnica", "nome": "Golpes" }],
     "alcance": "Variável",
     "custo": "0 PM",
     "duracao": "Instantânea",
     "testes": "O oponente rola a defesa uma só vez, mas você rola um novo ataque para superá-la a cada novo golpe.",
-    "descricao": "Você pode realizar diversos golpes em sequência. Quando acerta um golpe (ou seja, seu ataque supera a defesa) no oponente, pode usar um movimento para realizar um novo golpe contra ele. Se tiver mais movimentos e seguir vencendo a defesa, você pode adicionar mais golpes ao combo, até um máximo de golpes extras igual à sua Habilidade. No entanto, nenhum golpe pode ser repetido no mesmo combo."
+    "descricao": "Ao acertar um dos seus Golpes, você pode usar um movimento para realizar um novo golpe (diferente) contra ele. Pode continuar o combo gastando movimentos, até um máximo de golpes extras igual à sua Habilidade."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Consertar",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "pericia", "nome": "Máquinas" }],
     "alcance": "Perto",
     "custo": "2 a 10 PM",
@@ -1651,6 +1454,7 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Desprezo",
+    "custoXp": 20,
     "requisitos": [
       { "tipo": "atributo", "nome": "Poder", "valor": 2 },
       { "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Arte" }, { "tipo": "pericia", "nome": "Influência" }] }
@@ -1664,52 +1468,58 @@ export const tecnicas = [
   {
     "categoria": "Técnicas Comuns",
     "nome": "Disparo de Energia",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Luta" }, { "tipo": "vantagem", "nome": "Magia" }] }],
     "alcance": "Longe",
     "custo": "3 PM",
     "duracao": "Instantânea",
-    "descricao": "Você concentra sua energia espiritual em uma esfera, raio ou outro formato, e dispara contra um alvo. Você pode fazer um ataque com Poder +2 e atingir um personagem Longe, sem Perda, mesmo sem a vantagem Alcance. Você pode gastar tempo e movimentos para concentrar energia — cada movimento aumenta o Poder em +2, sem custo extra em PM, até um máximo de movimentos igual ao Poder inicial. Você pode usar mais de uma rodada para acumular o bônus, mas não pode fazer outras ações e movimentos durante esse tempo. Todo disparo de energia tem um nome próprio e impressionante, que o atacante grita quando dispara. Invente esse nome. Se você (o jogador!) gritá-lo, a técnica gasta –1PM."
+    "descricao": "Você concentra sua energia espiritual e dispara contra um alvo. Faça um ataque com Poder +2 que atinge um personagem Longe sem Perda. Você pode gastar movimentos para concentrar energia, aumentando o Poder em +2 para cada movimento, até um máximo igual ao seu Poder inicial."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Encantar",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Arte" }, { "tipo": "pericia", "nome": "Influência" }, { "tipo": "vantagem", "nome": "Magia" }] }],
     "alcance": "Perto",
     "custo": "3 PM (ou mais com Magia)",
     "duracao": "Duradoura",
     "testes": "Faça um teste de Poder resistido por um de Resistência do alvo.",
-    "descricao": "Seja por fala mansa, música cativante, ou poder mágico puro e simples, você torna um alvo extremamente amigável a você. Se tiver sucesso, ele não poderá realizar ações agressivas contra você (como atacá-lo). Além disso, também vai entender qualquer pedido seu como uma sugestão muito razoável. Pedidos muito difíceis ou contrários à sua natureza, como atacar um aliado ou violar um Código, permitem que ele faça um novo teste de Resistência para quebrar o encanto. Usando Magia, você pode gastar mais PM para ter bônus no teste, seguindo as regras da vantagem."
+    "descricao": "Você torna um alvo extremamente amigável. Se tiver sucesso, ele não poderá realizar ações agressivas contra você e entenderá qualquer pedido seu como uma sugestão razoável. Pedidos difíceis ou contrários à natureza do alvo permitem um novo teste de Resistência para quebrar o encanto."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Gambiarra",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "pericia", "nome": "Saber" }, { "tipo": "maestria", "nome": "Saber" }],
     "alcance": "Pessoal",
     "custo": "2 PM",
     "duracao": "Instantânea",
-    "descricao": "Você junta um barbante, chiclete, clipes de papel e faz uma bomba. Ou um computador. Ou ambos! Você pode gastar 2 PM para trocar qualquer perícia por Saber em um teste, mantendo a mesma meta. Você só pode fazer isso se tiver tempo e recursos suficientes; não é possível durante um combate, cenas de conflito ou testes resistidos."
+    "descricao": "Você junta um barbante e um chiclete e faz uma bomba. Ou um computador. Gaste 2 PM para trocar qualquer perícia por Saber em um teste. Você só pode fazer isso se tiver tempo e recursos; não funciona durante combates, cenas de conflito ou testes resistidos."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Golpe Púrpura",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Poder", "valor": 3 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Perto",
     "custo": "3 PM",
     "duracao": "Instantânea",
-    "descricao": "Tornado famoso pelo General Púrpura, líder do exército ARSENAL e senhor da Ilha do Martelo, este golpe poderoso atinge o alvo com força tremenda. Faça um ataque. Você recebe um crítico automático. Além disso, caso consiga outro crítico, o alvo é também arremessado um passo de distância. Cada novo crítico aumenta essa distância, chegando a Fora de Alcance se rolar mais três críticos! Se houver obstáculos ou barreiras no caminho, o alvo também sofre 1D de dano extra para cada distância percorrida."
+    "descricao": "Este golpe atinge o alvo com força tremenda. Faça um ataque. Você recebe um crítico automático. Com outro crítico, o alvo é arremessado um passo de distância. Cada novo crítico aumenta essa distância. Se houver obstáculos, o alvo sofre 1D de dano extra por distância percorrida."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Grito da Selva",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Poder", "valor": 2 }, { "tipo": "pericia", "nome": "Animais" }],
     "alcance": "Pessoal",
     "custo": "3 PM",
     "duracao": "Duradoura",
-    "descricao": "Você usa uma ação completa, toma fôlego e emite um grito poderoso, ouvido a quilômetros de distância. No início de seu próximo turno, animais selvagens ou outras criaturas da região surgem para ajudá-lo. Os animais permanecem até o fim da cena, atuando como um Ajudante de tipo à sua escolha em cada utilização. Ainda é preciso pagar PM de acordo com a regra da vantagem. Os animais surgem mesmo nos lugares mais improváveis — afinal, a vida sempre encontra um meio! Contudo, se o mestre achar isso impossível, ninguém responde ao chamado — mas você ganha um dharma como compensação, apenas uma vez na aventura!"
+    "descricao": "Você usa uma ação completa para emitir um grito poderoso. No início de seu próximo turno, animais selvagens surgem para ajudá-lo, agindo como um Ajudante de tipo à sua escolha até o fim da cena. Se o mestre julgar impossível, você ganha um dharma como compensação."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Inspirar",
+    "custoXp": 20,
     "requisitos": [
       { "tipo": "atributo", "nome": "Poder", "valor": 2 },
       { "tipo": "ou", "opcoes": [{ "tipo": "pericia", "nome": "Arte" }, { "tipo": "pericia", "nome": "Influência" }, { "tipo": "vantagem", "nome": "Devoto" }] }
@@ -1718,124 +1528,137 @@ export const tecnicas = [
     "custo": "3 ou 6 PM",
     "duracao": "Duradoura",
     "testes": "Teste de Poder (9)",
-    "descricao": "Você inspira um aliado com uma música ou discurso edificante. Faça um teste de Poder (9). Com sucesso, o aliado ganha +2 em todos os testes até o fim da cena. Cada acerto crítico em seu teste aumenta esse bônus em +1. Gastando 6 PM, você afeta todos os aliados Perto."
+    "descricao": "Você inspira um aliado com uma música ou discurso. Faça um teste de Poder (9). Com sucesso, o aliado ganha +2 em todos os testes até o fim da cena. Cada crítico aumenta o bônus em +1. Gastando 6 PM, você afeta todos os aliados Perto."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Invocar Elemental",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "3 PM",
     "duracao": "Duradoura",
-    "descricao": "Você invoca uma criatura elemental, um ser de outro plano de existência, feito inteiramente de um elemento como água, ar, terra ou fogo. Enquanto está neste plano, ele age como um Ajudante, de um tipo escolhido por você ao conjurar a magia. Ainda é preciso pagar PM de cada utilização como Ajudante."
+    "descricao": "Você invoca uma criatura elemental de outro plano. Ele age como um Ajudante, de um tipo escolhido por você ao conjurar a magia. Ainda é preciso pagar o custo em PM de cada utilização do Ajudante."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Megalon",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 3 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "10 PM",
     "duracao": "Duradoura",
-    "testes": "Um alvo recebendo esta magia contra a vontade tem direito a um teste de Resistência contra a sua Habilidade para evitá-la.",
-    "descricao": "Você aumenta o tamanho de uma criatura, tornando-a mais robusta, porém desajeitada. O alvo tem Ganho em todos os testes que envolvem esforço ou vigor físico, mas também Perda em testes de agilidade, coordenação e furtividade."
+    "testes": "Um alvo involuntário pode resistir com um teste de Resistência contra a sua Habilidade.",
+    "descricao": "Você aumenta o tamanho de uma criatura. O alvo tem Ganho em testes de esforço ou vigor físico, mas Perda em testes de agilidade, coordenação e furtividade."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Mikron",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 3 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Perto",
     "custo": "10 PM",
     "duracao": "Duradoura",
-    "testes": "Um alvo recebendo esta magia contra a vontade tem direito a um teste de Resistência contra a sua Habilidade para evitá-la.",
-    "descricao": "Você diminui o tamanho de uma criatura, tornando-a ágil, porém enfraquecida. O alvo tem Ganho em todos os testes que envolvem agilidade, coordenação e furtividade, mas passa a ter Perda em testes que envolvem esforço ou vigor físico."
+    "testes": "Um alvo involuntário pode resistir com um teste de Resistência contra a sua Habilidade.",
+    "descricao": "Você diminui o tamanho de uma criatura. O alvo tem Ganho em testes de agilidade, coordenação e furtividade, mas Perda em testes de esforço ou vigor físico."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Pisão do Titã",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Poder", "valor": 3 }],
     "alcance": "Perto",
     "custo": "3 PM",
     "duracao": "Instantânea",
-    "descricao": "Faça um ataque. Você golpeia o chão, atingindo com uma onda de choque todos os alvos (inimigos e aliados) Perto. Alvos que recebam dano acima de seu valor de Resistência são derrubados. Um personagem caído tem Perda em todos os testes até usar um movimento para se levantar."
+    "descricao": "Faça um ataque. Você golpeia o chão, atingindo com uma onda de choque todos os alvos Perto. Alvos que recebam dano acima de sua Resistência são derrubados."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Poeira Glacial",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "3 PM + bônus de Magia",
     "duracao": "Instantânea",
-    "descricao": "Você esfria o ar ao redor de um alvo, congelando-o. Faça um ataque. Você pode aumentar a intensidade do frio, usando Magia para receber bônus no teste. Se usar a regra de Tipos de Dano, este ataque causa dano de frio. Se o alvo perde um valor de PV acima de sua Resistência, ele congela, recebendo Perda em todos os testes por uma rodada."
+    "descricao": "Você esfria o ar ao redor de um alvo. Faça um ataque, usando Magia para receber bônus. Se o alvo perder PV acima de sua Resistência, ele congela, recebendo Perda em todos os testes por uma rodada."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Queimar o Cosmo",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Resistência", "valor": 2 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Pessoal",
     "custo": "5 a 25 PM",
     "duracao": "Duradoura",
-    "descricao": "Você usa uma ação para queimar energia cósmica, fazendo-a fluir pelo seu corpo e aumentando suas capacidades. Cada 5 PM aumentam +1 seu Poder, Habilidade e Resistência, até o fim da cena (recursos não são afetados). O bônus máximo é igual à sua Resistência original, ou +5, o que for menor."
+    "descricao": "Você usa uma ação para aumentar seus atributos. Cada 5 PM gastos aumentam P, H e R em +1 até o fim da cena (recursos não são afetados). O bônus máximo é igual à sua Resistência original ou +5, o que for menor."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Raio da Fúria",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 3 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "10 PM",
     "duracao": "Duradoura",
-    "testes": "Um alvo recebendo esta magia contra a vontade tem direito a um teste de Resistência contra seu Poder para evitá-la.",
-    "descricao": "Você tem o poder de enfurecer os seres e transformá-los em monstros incontroláveis. O alvo recebe Poder +2 em testes de ataque, e tem críticos com 5 ou 6. No entanto, também tem Perda em todos os outros testes (incluindo defesa), e gasta o dobro de PM para vantagens e técnicas. Quando o efeito termina, o alvo fica exausto; seus PM caem a zero e tem Perda em todos os testes até descansar."
+    "testes": "Um alvo involuntário pode resistir com um teste de Resistência contra seu Poder.",
+    "descricao": "Você enfurece um ser. O alvo recebe P+2 e críticos com 5 ou 6 nos ataques. No entanto, tem Perda em todos os outros testes e gasta o dobro de PM. Ao fim, fica exausto (PM 0 e Perda em tudo até descansar)."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Rajada de Golpes",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Perto",
     "custo": "3 PM",
     "duracao": "Instantânea",
-    "descricao": "Você atinge o alvo com uma sequência veloz de golpes, atacando com Poder+2 e chance de crítico 5 ou 6. Você pode gastar movimentos no mesmo turno para desferir ainda mais golpes; cada movimento aumenta o Poder em +2, sem custo extra em PM, até um máximo de movimentos igual à sua Habilidade."
+    "descricao": "Você atinge o alvo com uma sequência veloz de golpes, atacando com Poder+2 e crítico com 5 ou 6. Você pode gastar movimentos no mesmo turno para aumentar o Poder em +2 por movimento, até um máximo igual à sua Habilidade."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Relâmpago",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 2 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "3 PM + bônus de Magia",
     "duracao": "Instantânea",
-    "descricao": "Você dispara um raio elétrico contra o alvo. Faça um ataque. Você pode aumentar a intensidade da eletricidade, usando Magia para ter bônus no teste. Se usar a regra de Tipos de Dano, este ataque causa dano de choque. Se o alvo perde um valor de PV acima da sua Resistência, fica atordoado, dando Ganho ao oponente em todos os testes resistidos (inclusive ataque e defesa) por uma rodada."
+    "descricao": "Você dispara um raio elétrico. Faça um ataque, usando Magia para ter bônus. Se o alvo perder PV acima de sua Resistência, fica atordoado, dando Ganho ao oponente em todos os testes resistidos por uma rodada."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Role os Dados",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 3 }, { "tipo": "pericia", "nome": "Arte" }],
     "alcance": "Perto",
     "custo": "5 PM",
     "duracao": "Instantânea",
     "testes": "Teste de Arte (9)",
-    "descricao": "O bardo do grupo também pode cantar o maior sucesso da banda Holy Avenger! Role um teste de Arte (9). Com sucesso, você e todos os aliados Perto recuperam 1PA. Para cada crítico na rolagem, recuperam 1PA extra. Se você (o jogador!) cantar o refrão da música, a técnica custa –1PM para ser usada. Se o grupo inteiro cantar, reduz em –2PM!"
+    "descricao": "Você canta um sucesso! Role um teste de Arte (9). Com sucesso, você e todos os aliados Perto recuperam 1 PA. Cada crítico recupera 1 PA extra."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Sabedoria dos Ermos",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "vantagem", "nome": "Arena" }, { "tipo": "pericia", "nome": "Sobrevivência" }],
     "alcance": "Pessoal",
     "custo": "1 ou 3 PM",
     "duracao": "Instantânea",
-    "descricao": "Seu conhecimento de sobrevivência permite obter itens necessários em locais com os quais você está familiarizado. Quando está na sua Arena, você pode gastar 1PM para usar um item comum, ou 3PM para um item incomum, além do que tiver no Inventário. Você não pode usar este item para recuperar os PM que acabou de gastar na técnica."
+    "descricao": "Quando está na sua Arena, você pode gastar 1 PM para usar um item comum, ou 3 PM para um item incomum, além do seu Inventário. Você não pode usar este item para recuperar os PM que gastou na técnica."
   },
   {
     "categoria": "Técnicas Comuns",
     "nome": "Setas Infalíveis de Petrovna",
+    "custoXp": 20,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 1 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Longe",
     "custo": "1 PM por seta",
     "duracao": "Instantânea",
     "testes": "As setas atingem automaticamente, sem teste de ataque ou defesa.",
-    "descricao": "Você usa uma ação para criar uma ou mais setas de energia mágica, até um máximo de setas igual à sua Habilidade, que ficam flutuando ao seu redor — permanecendo até o fim da cena, ou até serem disparadas. Com um movimento, você pode disparar todas as setas para um ou mais alvos à sua escolha, dividindo-as como quiser. Cada uma causando 1 ponto de dano e então sumindo. Alvos com defesa perfeita automática não sofrem dano. Você pode manter apenas um conjunto de setas preparado por vez."
+    "descricao": "Você usa uma ação para criar setas de energia (até um máximo igual à sua Habilidade). Com um movimento, pode dispará-las. Cada seta causa 1 ponto de dano. Alvos com defesa perfeita automática não sofrem dano."
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Abrir Chakra",
+    "custoXp": 30,
     "requisitos": [
       { "tipo": "ou", "opcoes": [{ "tipo": "atributo", "nome": "Poder", "valor": 4 }, { "tipo": "atributo", "nome": "Habilidade", "valor": 4 }, { "tipo": "atributo", "nome": "Resistência", "valor": 4 }] },
       { "tipo": "pericia", "nome": "Luta" }
@@ -1843,63 +1666,58 @@ export const tecnicas = [
     "alcance": "Pessoal",
     "custo": "15 PM",
     "duracao": "Duradoura",
-    "descricao": "Você desbloqueia um chakra, um vórtice de energia espiritual em seu corpo. Cada atributo tem um chakra correspondente, que são técnicas separadas. Abrir o chakra usa um movimento. Até o fim da cena, você tem Ganho e um crítico automático em testes do atributo correspondente (incluindo testes de ataque e defesa). Quando o efeito termina você cai exausto, com o recurso daquele atributo reduzido a zero. Caso seja Resistência, você cai derrotado e inconsciente. Para os demais, tem Perda em todos os testes devido ao cansaço, até se recuperar.",
+    "descricao": "Você desbloqueia um chakra. Cada atributo tem um chakra correspondente (técnicas separadas). Abrir o chakra usa um movimento. Até o fim da cena, você tem Ganho e um crítico automático em testes do atributo. Ao fim, o recurso do atributo cai a zero.",
     "variacoes": [
-      {
-        "nome": "Poder",
-        "descricao": "O alvo tem Perda em testes de defesa."
-      },
-      {
-        "nome": "Habilidade",
-        "custo": "1 PM por movimento extra",
-        "descricao": "Você pode gastar 1PM para fazer um movimento extra. O máximo de movimentos por rodada é igual ao atributo. Cada três movimentos podem ser trocados por uma ação extra, mas você só pode realizar um ataque extra por rodada, independente de quantas ações realizar."
-      },
-      {
-        "nome": "Resistência",
-        "descricao": "Você recebe 20PV extras e todas as suas defesas são perfeitas."
-      }
+      { "nome": "Poder", "descricao": "O alvo tem Perda em testes de defesa." },
+      { "nome": "Habilidade", "custo": "1 PM por movimento extra", "descricao": "Você pode gastar 1PM para fazer um movimento extra (até H por rodada). Cada três movimentos podem ser trocados por uma ação extra (máximo um ataque extra por rodada)." },
+      { "nome": "Resistência", "descricao": "Você recebe 20PV extras e todas as suas defesas são perfeitas." }
     ]
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Bomba Vital",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Resistência", "valor": 4 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Longe",
     "custo": "Variável",
     "duracao": "Instantânea",
     "testes": "Teste de Resistência (9)",
-    "descricao": "Você absorve energia da própria natureza, acumulando magia ambiente bruta e moldando-a como uma esfera brilhante, arremessada contra um oponente. Use uma ação completa e faça um teste de Resistência (9). Para cada ponto que seu teste superar a meta, você acumula 1PM na bomba, até uma quantidade máxima por rodada igual ao atributo. Você pode demorar mais para acumular mais energia, até um limite de rodadas igual à sua Resistência. Quando chegar a esse limite, precisa arremessar a bomba ou dissipá-la. Enquanto está acumulando energia, aliados Perto podem doar PM a você. Cada ação de um aliado doa 1D PM. Quando estiver pronto, você pode usar outra ação completa para arremessar a bomba. Este ataque atinge todos os alvos Perto do alvo principal, com um bônus de Poder igual aos PM acumulados. Para 20PM ou mais, o ataque tem Ganho. Mesmo não usando sua própria energia, a exaustão faz seus PM caírem a zero. Você também tem Perda em todos os testes até descansar."
+    "descricao": "Você absorve energia da natureza para criar uma bomba. Com uma ação completa, teste R (9). Para cada ponto acima da meta, acumule 1 PM. Você pode acumular por rodadas (até seu R). Aliados podem doar PM. O arremesso é uma ação completa. O ataque tem bônus de Poder igual aos PM acumulados e atinge alvos Perto do principal."
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Dim Mak",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }, { "tipo": "pericia", "nome": "Luta" }],
     "alcance": "Perto",
     "custo": "5 PM",
     "duracao": "Instantânea",
-    "descricao": "Você sabe atingir pontos de pressão no corpo do oponente, para paralisar membros ou órgãos vitais, e até matar com um simples toque! Quando usa o Dim Mak, você faz um ataque com chance de crítico máxima (4, 5 ou 6) que não pode ser combinado com nenhuma outra vantagem ou técnica. Superando a defesa, em vez de causar dano, o alvo perde 2 pontos em um atributo à sua escolha. Cada crítico faz perder 1 ponto adicional. Caso o atributo seja reduzido a 0, é considerado nulo. O alvo perde os recursos desse atributo, e não pode fazer testes que o utilizem. Caso seja Resistência, o alvo entra em coma e deve fazer imediatamente um teste de morte. Se sobreviver, a recuperação será demorada: 1 ponto de atributo para cada 1D dias de repouso absoluto."
+    "descricao": "Você atinge pontos de pressão para paralisar ou matar. Seu ataque tem crítico com 4, 5 ou 6. Se vencer a defesa, em vez de dano, o alvo perde 2 pontos em um atributo à sua escolha. Cada crítico faz perder +1 ponto. Se um atributo chegar a 0, ele é nulo. Se for Resistência, o alvo faz um teste de morte."
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Mata-Kaiju",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Muito Longe",
     "custo": "10 PM + bônus de Magia",
     "duracao": "Instantânea",
-    "descricao": "Uma das mais poderosas magias de destruição conhecidas, dispara uma avassaladora descarga de energia que destrói uma grande área ao redor do ponto de impacto. Mata-Kaiju requer três rodadas para ser conjurada. A primeira, usando Magia para aumentar o seu ataque ao máximo, gastando PM para ter bônus no teste; a segunda, concentrando e intensificando a energia reunida; e a terceira, para fazer o disparo. O teste de ataque tem dois críticos automáticos (duas escalas acima!) e atinge todos os alvos Longe do alvo principal. Devido à imensa área do ataque, todos os testes de defesa recebem duas Perdas."
+    "descricao": "Uma das mais poderosas magias de destruição. Requer três rodadas para ser conjurada: a 1ª usa Magia para acumular bônus; a 2ª concentra a energia; a 3ª dispara. O ataque tem dois críticos automáticos, atinge todos os alvos Longe do principal, e todos sofrem duas Perdas na defesa.",
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Megalon Superior",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 6 }, { "tipo": "tecnica", "nome": "Megalon" }],
     "alcance": "Perto",
     "custo": "25 ou 50 PM",
     "duracao": "Duradoura",
-    "descricao": "Versão aprimorada da magia Megalon, capaz de transformar o alvo em algo realmente titânico! O alvo é elevado uma escala acima (25PM) ou duas (50PM)."
+    "descricao": "Versão aprimorada da magia Megalon, capaz de transformar o alvo em algo titânico! O alvo é elevado uma escala acima (25 PM) ou duas (50 PM)."
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Metamagia",
+    "custoXp": 30,
     "requisitos": [
       { "tipo": "atributo", "nome": "Habilidade", "valor": 5 },
       { "tipo": "vantagem", "nome": "Magia" },
@@ -1908,113 +1726,83 @@ export const tecnicas = [
     "alcance": "Variável",
     "custo": "Variável",
     "duracao": "Instantânea",
-    "descricao": "Você domina as artes místicas com tamanha precisão que pode modificar todos os seus parâmetros! Este é um conjunto de truques lendários, que altera o efeito da vantagem Magia e qualquer técnica que a tenha entre os requisitos. Sempre que usar Magia ou suas técnicas, você pode gastar mais PM para adicionar os seguintes efeitos:",
+    "descricao": "Você domina as artes místicas com tamanha precisão que pode modificar todos os seus parâmetros. Sempre que usar Magia ou técnicas que a exijam, você pode gastar mais PM para adicionar os seguintes efeitos:",
     "variacoes": [
-      {
-        "nome": "Acelerar magia",
-        "custo": "+5 PM",
-        "descricao": "Diminuir o tipo de ação da magia em um passo (de ação para movimento, por exemplo)."
-      },
-      {
-        "nome": "Alvos extras",
-        "custo": "+1 PM por alvo extra",
-        "descricao": "Até um máximo de alvos iguais à sua Habilidade. O efeito da magia deve ser dividido entre eles."
-      },
-      {
-        "nome": "Duplicar magia",
-        "custo": "Custo da magia x2",
-        "descricao": "Cria um efeito extra da magia na mesma ação, pagando duas vezes o custo em PM."
-      },
-      {
-        "nome": "Estender magia",
-        "custo": "+3 PM por passo",
-        "descricao": "Aumentar o alcance de magia um passo (de Perto para Longe, por exemplo). Você pode usar mais PM para estendê-lo ainda mais."
-      },
-      {
-        "nome": "Expandir magia",
-        "custo": "+3 PM (Perto), +9 PM (Longe), +15 PM (Muito Longe)",
-        "descricao": "Afetar todos Perto do alvo, ou Longe, ou Muito Longe. Cada passo de distância impõe uma Perda em testes de defesa para evitar."
-      }
+      { "nome": "Acelerar magia", "custo": "+5 PM", "descricao": "Diminuir o tipo de ação da magia em um passo (de ação para movimento, por exemplo)." },
+      { "nome": "Alvos extras", "custo": "+1 PM por alvo extra", "descricao": "Até um máximo de alvos iguais à sua Habilidade. O efeito da magia deve ser dividido entre eles." },
+      { "nome": "Duplicar magia", "custo": "Custo da magia x2", "descricao": "Cria um efeito extra da magia na mesma ação, pagando duas vezes o custo em PM." },
+      { "nome": "Estender magia", "custo": "+3 PM por passo", "descricao": "Aumentar o alcance de magia um passo (de Perto para Longe, por exemplo). Você pode usar mais PM para estendê-lo ainda mais." },
+      { "nome": "Expandir magia", "custo": "+3 PM (Perto), +9 PM (Longe), +15 PM (Muito Longe)", "descricao": "Afetar todos Perto do alvo, ou Longe, ou Muito Longe. Cada passo de distância impõe uma Perda em testes de defesa para evitar." }
     ]
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Morte Estelar",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 9 }, { "tipo": "vantagem", "nome": "Magia" }],
     "alcance": "Muito Longe",
     "custo": "100 PM",
     "duracao": "Instantânea",
-    "descricao": "Esta talvez seja a magia mais destrutiva de todo o universo conhecido! Usada pela própria semideusa Vitória para derrotar o deus-monstro K’Athanoa, consome toda a energia de uma estrela, que desaparece do céu. Essa energia então é convertida em um único disparo, destruindo imediatamente o alvo — não importando ser uma criatura, uma cidade, um planeta ou mesmo um deus! Obviamente, cada vez que essa técnica é usada, um sol morre em algum lugar do universo — existindo uma chance de extinção para mundos ou civilizações inteiras. Caso isso ocorra (resultado 1 em 1D), entidades cósmicas mantenedoras do equilíbrio universal procuram o conjurador para aplicar penalidades adequadas."
+    "descricao": "Esta talvez seja a magia mais destrutiva do universo. Usada pela semideusa Vitória para derrotar K’Athanoa, consome a energia de uma estrela para destruir imediatamente qualquer alvo. Cada uso desta técnica mata um sol em algum lugar do universo."
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Percepção Cósmica",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }, { "tipo": "maestria", "nome": "Percepção" }],
     "alcance": "Pessoal",
     "custo": "5 PM para ativar, 1 PM por rodada para manter",
     "duracao": "Enquanto pagar o custo",
-    "descricao": "Você é uno com o mundo! Com uma ação e 5PM, pode entrar em um estado de conexão profunda com o universo, e enxergar as próprias linhas de energia que ligam os seres vivos e o mundo ao seu redor. Você deve gastar 1PM no começo do seu turno para manter esse estado de conexão cósmica. Enquanto está com a técnica ativa, você tem Ganho e um crítico automático em todos os testes de Percepção. Além disso, pode gastar 1PM para adquirir qualquer Sentido por uma rodada, ou trocar a perícia de qualquer teste (inclusive ataque e defesa) por Percepção."
+    "descricao": "Você é uno com o mundo! Com uma ação e 5 PM, entra em um estado de conexão com o universo. Enquanto a técnica está ativa, você tem Ganho e crítico automático em todos os testes de Percepção. Além disso, pode gastar 1 PM para adquirir qualquer Sentido por uma rodada, ou trocar a perícia de qualquer teste por Percepção."
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Rapsódia das Arcas",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Poder", "valor": 4 }, { "tipo": "maestria", "nome": "Arte" }],
     "alcance": "Perto",
     "custo": "3 PM por rodada",
     "duracao": "4 rodadas",
     "testes": "Teste de Poder com meta crescente (6, 9, 12, 15)",
-    "descricao": "Você executa uma longa canção épica, exaltando os feitos de seus companheiros, tornando-os a melhor versão de si mesmos. A cada rodada você faz um teste de Poder com meta crescente. Para cada sucesso, seus aliados Perto recebem um novo benefício cumulativo:",
+    "descricao": "Você executa uma canção épica. A cada rodada, faz um teste de Poder com meta crescente. Cada sucesso concede um novo benefício cumulativo aos seus aliados Perto:",
     "variacoes": [
-      {
-        "nome": "1ª Rodada",
-        "meta": "6",
-        "descricao": "Todas as vantagens e técnicas de seus aliados custam –2PM."
-      },
-      {
-        "nome": "2ª Rodada",
-        "meta": "9",
-        "descricao": "Seus aliados recuperam 5PV e 5PM no começo de seu turno."
-      },
-      {
-        "nome": "3ª Rodada",
-        "meta": "12",
-        "descricao": "Seus aliados conseguem crítico com 5 ou 6."
-      },
-      {
-        "nome": "4ª Rodada",
-        "meta": "15",
-        "descricao": "Seus aliados têm defesa perfeita e Ganho em um teste na rodada."
-      }
+      { "nome": "1ª Rodada", "meta": "6", "descricao": "Todas as vantagens e técnicas de seus aliados custam –2PM." },
+      { "nome": "2ª Rodada", "meta": "9", "descricao": "Seus aliados recuperam 5PV e 5PM no começo de seu turno." },
+      { "nome": "3ª Rodada", "meta": "12", "descricao": "Seus aliados conseguem crítico com 5 ou 6." },
+      { "nome": "4ª Rodada", "meta": "15", "descricao": "Seus aliados têm defesa perfeita e Ganho em um teste na rodada." }
     ]
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Sabedoria Selvagem",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 4 }, { "tipo": "tecnica", "nome": "Sabedoria dos Ermos" }],
     "alcance": "Pessoal",
     "custo": "5 ou 10 PM",
     "duracao": "Instantânea",
-    "descricao": "Você é ainda mais eficiente em encontrar itens de utilidade em locais com os quais é familiarizado. Quando está na sua Arena, você pode gastar 5PM para usar um item raro, ou 10PM para um item lendário. Não, você não pode usar esse item para recuperar os PM que gastou na própria técnica!"
+    "descricao": "Você é ainda mais eficiente em encontrar itens em locais familiares. Quando está na sua Arena, pode gastar 5 PM para usar um item raro, ou 10 PM para um item lendário. Você não pode usar este item para recuperar os PM que gastou na técnica."
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Trapacear o Destino",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }, { "tipo": "maestria", "nome": "Manha" }],
     "alcance": "Pessoal",
     "custo": "5 a 15 PM",
     "duracao": "Instantânea",
-    "descricao": "Você é tão esguio e trapaceiro que nem o próprio destino consegue pegá-lo! Sempre que rolar 1 em um dado, você pode gastar 5PM para virá-lo do outro lado e trocá-lo por um 6 (e um acerto crítico). Você pode até transformar uma falha crítica em um sucesso devastador! Diferente de outras técnicas, este custo nunca pode ser reduzido por vantagens, poderes ou outros meios."
+    "descricao": "Nem o próprio destino consegue pegá-lo! Sempre que rolar 1 em um dado, você pode gastar 5 PM para virá-lo e trocá-lo por um 6 (e um crítico). Você pode até transformar uma falha crítica em um sucesso. Este custo nunca pode ser reduzido."
   },
   {
     "categoria": "Técnicas Lendárias",
     "nome": "Visão do Futuro",
+    "custoXp": 30,
     "requisitos": [{ "tipo": "atributo", "nome": "Habilidade", "valor": 5 }],
     "alcance": "Pessoal",
     "custo": "3 PM",
     "duracao": "Instantânea",
-    "descricao": "O futuro é show! Você consegue enxergar alguns instantes no futuro e, talvez, fazer algo para mudá-lo. Sempre que alguém faz um teste contra você, seja um ataque, defesa ou teste resistido, você pode gastar 3PM como reação para fazê-lo rolar esse teste duas vezes, e ficar com o resultado que você escolher."
+    "descricao": "Você consegue enxergar instantes no futuro. Sempre que alguém faz um teste contra você, pode gastar 3 PM como reação para fazê-lo rolar o teste duas vezes, e você escolhe com qual resultado ele ficará."
   }
-]
+];
 
 export const moedas = [
   // Fantasia

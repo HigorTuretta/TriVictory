@@ -235,20 +235,38 @@ export const useCharacterActions = (character, updateCharacter, resources, locke
         });
         toast.success(`Kit "${kitName}" removido.`);
     };
-    const checkTechniqueRequirements = useCallback((technique) => {
+const checkTechniqueRequirements = useCallback((technique) => {
         const requirements = technique.requisitos || [];
         const unmet = unmetReqs(character, requirements);
         return { meets: unmet.length === 0, unmet };
     }, [character]);
-
-    const handleAddTechnique = (technique, variation) => {
+const handleAddTechnique = (technique, variation) => {
         const currentTechniques = character.techniques || [];
         const subOption = variation ? variation.nome : null;
+
         if (currentTechniques.some(t => t.nome === technique.nome && t.subOption === subOption)) {
             return toast.error(`Você já possui esta técnica.`);
         }
+        
+        // --- VALIDAÇÃO DE CUSTO ---
+        let pointCost = (technique.custoXp || 0) / 10;
+
+        // Regra especial para "Pequenos Desejos"
+        if (technique.regraEspecial === 'gratis_com_reqs') {
+            const { meets } = checkTechniqueRequirements(technique);
+            if (meets) {
+                pointCost = 0; // Se os requisitos são cumpridos, é grátis
+            }
+        }
+        
+        if (pointCost > 0 && points.remaining < pointCost) {
+            return toast.error("Pontos de personagem insuficientes!");
+        }
+        // --- FIM DA VALIDAÇÃO ---
+
         const newTechnique = { ...technique, id: uuidv4(), subOption, descricao: variation ? variation.descricao : technique.descricao };
-        delete newTechnique.variacoes;
+        delete newTechnique.variacoes; // Remove as variações para não poluir o objeto salvo
+        
         updateCharacter({ techniques: [...currentTechniques, newTechnique] });
         toast.success(`Técnica "${newTechnique.nome}${subOption ? `: ${subOption}` : ''}" adicionada!`);
     };
