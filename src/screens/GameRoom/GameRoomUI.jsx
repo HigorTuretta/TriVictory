@@ -52,7 +52,7 @@ const GameRoomContent = () => {
     const [selectedTokenId, setSelectedTokenId] = useState(null);
     const [contextMenuTokenId, setContextMenuTokenId] = useState(null);
     const [fowTool, setFowTool] = useState({ tool: 'eraser', brushSize: 70 });
-    const { messages, sendMessage, unreadCount } = useChat(windows.chat);
+    const { messages, sendMessage, unreadCount, deleteMessage, clearChat } = useChat(windows.chat);
     const [localPings, setLocalPings] = useState([]);
     const lastPingIdRef = useRef(null);
 
@@ -223,7 +223,7 @@ const GameRoomContent = () => {
         // Se houver um novo ping e for diferente do último processado...
         if (latestPing && latestPing.id !== lastPingIdRef.current) {
             lastPingIdRef.current = latestPing.id; // Marca como processado
-            
+
             // Adiciona ao estado local para renderização
             setLocalPings(current => [...current, latestPing]);
 
@@ -290,8 +290,18 @@ const GameRoomContent = () => {
             </FloatingWindow>
             <FloatingWindow title="Configurações da Sala" isOpen={windows.roomSettings} onClose={() => toggleWindow('roomSettings')}><RoomSettings /></FloatingWindow>
             <FloatingWindow title="Jukebox da Cena" isOpen={windows.jukebox} onClose={() => toggleWindow('jukebox')}><JukeboxManager activeSceneId={activeScene?.id} /></FloatingWindow>
-            <FloatingWindow title="Chat da Sala" isOpen={windows.chat} onClose={() => toggleWindow('chat')} initialPosition={{ x: 85, y: 150 }}>
-                <ChatWindow messages={messages} sendMessage={sendMessage} />
+            <FloatingWindow
+                title="Chat da Sala" // O título agora é controlado pelo cabeçalho interno
+                isOpen={windows.chat}
+                onClose={() => toggleWindow('chat')}
+                initialPosition={{ x: 85, y: 150 }}
+            >
+                <ChatWindow
+                    messages={messages}
+                    sendMessage={sendMessage}
+                    deleteMessage={deleteMessage} // Passa a função de deletar
+                    clearChat={clearChat}         // Passa a função de limpar
+                />
             </FloatingWindow>
             {liveContextMenuToken && (
                 <FloatingWindow

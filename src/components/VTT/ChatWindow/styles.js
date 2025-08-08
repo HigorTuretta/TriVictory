@@ -21,6 +21,7 @@ export const MessageList = styled.div`
 `;
 
 export const MessageItem = styled.div`
+ position: relative;
     display: flex;
     flex-direction: column;
     padding: 0.6rem 0.9rem;
@@ -36,6 +37,11 @@ export const MessageItem = styled.div`
     /* Borda para indicar mensagem privada */
     border: 2px solid ${({ theme, $isPrivate }) => $isPrivate ? theme.secondary : 'transparent'};
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+     &:hover > button {
+        opacity: 1;
+        visibility: visible;
+    }
 `;
 
 export const Sender = styled.strong`
@@ -173,5 +179,54 @@ export const SendButton = styled.button`
 
     &:hover {
         filter: brightness(1.1);
+    }
+`;
+
+export const DeleteMessageButton = styled.button`
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: ${({ theme }) => theme.surface};
+    color: ${({ theme }) => theme.textSecondary};
+    border: 1px solid ${({ theme }) => theme.border};
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: all 0.2s ease;
+    
+    // Escondido por padrão, aparece no hover (definido no MessageItem)
+    opacity: 0;
+    visibility: hidden;
+
+    &:hover {
+        background-color: ${({ theme }) => theme.error};
+        color: white;
+        transform: scale(1.1);
+    }
+`;
+
+export const ClearChatButton = styled.button`
+    background: transparent;
+    color: ${({ theme }) => theme.textSecondary};
+    border: 1px solid transparent;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    
+    &:hover {
+        color: ${({ theme }) => theme.error};
+        border-color: ${({ theme }) => theme.error};
+        background-color: ${({ theme }) => theme.error}20;
     }
 `;
