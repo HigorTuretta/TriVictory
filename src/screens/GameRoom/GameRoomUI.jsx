@@ -53,13 +53,13 @@ const GameRoomContent = () => {
     const [contextMenuTokenId, setContextMenuTokenId] = useState(null);
     const [fowTool, setFowTool] = useState({ tool: 'eraser', brushSize: 70 });
     const { messages, sendMessage, unreadCount } = useChat(windows.chat);
+    const [localPings, setLocalPings] = useState([]);
+    const lastPingIdRef = useRef(null);
 
-    const prevPingsRef = useRef([]);
     const pingSound = useMemo(() => new Howl({
         src: [pingSoundFile],
         volume: 0.1,
     }), []);
-
 
     const isMaster = room.masterId === currentUser.uid;
     const activeScene = (Array.isArray(room.scenes) && room.activeSceneId) ? room.scenes.find(s => s.id === room.activeSceneId) : null;
@@ -219,21 +219,25 @@ const GameRoomContent = () => {
     };
 
     useEffect(() => {
-        const currentPings = room.pings || [];
-        const prevPings = prevPingsRef.current;
+        const latestPing = room?.latestPing;
+        // Se houver um novo ping e for diferente do último processado...
+        if (latestPing && latestPing.id !== lastPingIdRef.current) {
+            lastPingIdRef.current = latestPing.id; // Marca como processado
+            
+            // Adiciona ao estado local para renderização
+            setLocalPings(current => [...current, latestPing]);
 
-        // Detecta se um novo ping foi adicionado comparando os IDs
-        if (currentPings.length > prevPings.length) {
-            const newPing = currentPings.find(p => !prevPings.some(pp => pp.id === p.id));
-            // Toca o som para todos, exceto para quem enviou (para não ouvir duas vezes)
-            if (newPing && newPing.senderId !== currentUser.uid) {
+            // Toca o som para todos, exceto para quem enviou
+            if (latestPing.senderId !== currentUser.uid) {
                 pingSound.play();
             }
+
+            // Agenda a remoção do estado local
+            setTimeout(() => {
+                setLocalPings(current => current.filter(p => p.id !== latestPing.id));
+            }, 4000); // Garante que a animação tenha tempo de completar
         }
-
-        prevPingsRef.current = currentPings;
-    }, [room.pings, currentUser.uid, pingSound]);
-
+    }, [room?.latestPing, currentUser.uid, pingSound]);
 
     const activeTurnTokenId = (initiativeOrder[currentIndex] || null)?.tokenId;
 
@@ -258,6 +262,7 @@ const GameRoomContent = () => {
                         activeTurnTokenId={activeTurnTokenId}
                         fowTool={isMaster && windows.fogOfWar ? fowTool : null}
                         charactersData={charactersData}
+                        localPings={localPings}
                     />
                 </MapArea>
                 <DiceToolbar macros={macros} onRoll={handleRoll} onOpenMacroManager={() => toggleWindow('macroManager')} />

@@ -340,7 +340,8 @@ export const VTTMap = ({
   onTokenContextMenu,
   activeTurnTokenId,
   fowTool,
-  charactersData
+  charactersData,
+  localPings
 }) => {
    const { room, updateRoom, updateTokenPosition, setFogPaths, recordExploration, addPing } = useRoom();
   const { currentUser } = useAuth();
@@ -779,8 +780,8 @@ export const VTTMap = ({
           </>
         )}
 
-         <Layer listening={false}>
-            {(room.pings || []).map(ping => (
+       <Layer listening={false}>
+            {(localPings || []).map(ping => (
                 <PingAnimation key={ping.id} x={ping.x} y={ping.y} theme={theme} />
             ))}
         </Layer>

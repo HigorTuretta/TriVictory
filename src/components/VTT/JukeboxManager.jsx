@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 import { uploadAudio } from '../../services/cloudinaryService';
 import _ from 'lodash';
-import { FaPlay, FaPause, FaTrash, FaUndo, FaRedo } from 'react-icons/fa';
+import { FaPlay, FaPause, FaTrash, FaUndo, FaRedo, FaVolumeDown, FaVolumeUp } from 'react-icons/fa';
 import { JukeboxContainer, TrackList, TrackItem, TrackInfo, TrackControls, JukeboxForm } from './styles';
 
 export const JukeboxManager = ({ activeSceneId }) => {
@@ -70,6 +70,11 @@ export const JukeboxManager = ({ activeSceneId }) => {
         }
     };
 
+    const handleVolumeChange = (trackId, currentVolume, delta) => {
+        const newVolume = Math.max(0, Math.min(1, currentVolume + delta)); // Clamps between 0 and 1
+        handleControlClick(trackId, { volume: newVolume });
+    }
+
     const handleDelete = (trackId) => {
         const newPlaylist = playlist.filter(track => track.id !== trackId);
         updatePlaylist(newPlaylist);
@@ -78,7 +83,7 @@ export const JukeboxManager = ({ activeSceneId }) => {
 
     return (
         <JukeboxContainer>
-            <TrackList>
+             <TrackList>
                 {!activeSceneId ? <p>Nenhuma cena ativa selecionada.</p> :
                  playlist.length === 0 ? <p>Nenhuma faixa de áudio para esta cena.</p> :
                  playlist.map(track => (
@@ -88,11 +93,19 @@ export const JukeboxManager = ({ activeSceneId }) => {
                             <button onClick={() => handleControlClick(track.id, { isPlaying: !track.isPlaying })}>
                                 {track.isPlaying ? <FaPause/> : <FaPlay/>}
                             </button>
+                            {/* --- CONTROLES DE VOLUME ATUALIZADOS --- */}
+                            <button onClick={() => handleVolumeChange(track.id, track.volume, -0.05)} disabled={track.volume <= 0} title="Diminuir Volume">
+                                <FaVolumeDown size={14}/>
+                            </button>
                             <input
                                 type="range" min="0" max="1" step="0.05"
                                 value={track.volume}
                                 onChange={(e) => handleControlClick(track.id, { volume: parseFloat(e.target.value) })}
                             />
+                            <button onClick={() => handleVolumeChange(track.id, track.volume, 0.05)} disabled={track.volume >= 1} title="Aumentar Volume">
+                                <FaVolumeUp size={14}/>
+                            </button>
+                            {/* --- FIM DA ATUALIZAÇÃO --- */}
                             <button onClick={() => handleControlClick(track.id, { loop: !track.loop })} title={track.loop ? "Desativar Loop" : "Ativar Loop"}>
                                 {track.loop ? <FaRedo/> : <FaUndo/>}
                             </button>
