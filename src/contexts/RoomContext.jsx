@@ -148,6 +148,37 @@ export const RoomProvider = ({ children }) => {
     updateRoom({ initiative: { ...room.initiative, order: newOrder, isRunning: true } });
   };
 
+  const addPing = useCallback((position) => {
+    if (!roomId) return;
+    const roomRef = doc(db, 'rooms', roomId);
+
+    const newPing = {
+      id: uuidv4(),
+      x: position.x,
+      y: position.y,
+      senderId: currentUser.uid,
+    };
+
+    const currentPings = room?.pings || [];
+    const updatedPings = [...currentPings, newPing];
+
+    updateDoc(roomRef, { pings: updatedPings });
+
+
+    setTimeout(() => {
+      // Para evitar race conditions, buscamos a lista de pings mais atual
+      // antes de filtrar e remover, caso outro ping tenha sido adicionado.
+      getDoc(roomRef).then(docSnap => {
+        if (docSnap.exists()) {
+          const latestPings = docSnap.data().pings || [];
+          const pingsAfterRemoval = latestPings.filter(p => p.id !== newPing.id);
+          updateDoc(roomRef, { pings: pingsAfterRemoval });
+        }
+      });
+    }, 4000); // O ping some após 4 segundos
+
+  }, [roomId, room?.pings, currentUser?.uid]);
+
   return (
     <RoomContext.Provider
       value={{
@@ -159,6 +190,7 @@ export const RoomProvider = ({ children }) => {
         setFogPaths,
         recordExploration,
         addToInitiative,
+        addPing,
       }}
     >
       {children}

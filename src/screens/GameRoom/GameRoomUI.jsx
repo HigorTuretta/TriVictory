@@ -1,6 +1,6 @@
 // src/screens/GameRoom/GameRoomUI.jsx
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useRoom } from '../../contexts/RoomContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCurrentPlayerCharacter } from '../../hooks/useCurrentPlayerCharacter';
@@ -33,6 +33,8 @@ import { FogOfWarManager } from '../../components/VTT/FogOfWarManager';
 import { MacroManager } from '../../components/VTT/MacroManager';
 import { useChat } from '../../hooks/useChat'; // NOVO
 import { ChatWindow } from '../../components/VTT/ChatWindow';
+import { Howl } from 'howler';
+import pingSoundFile from '../../assets/sounds/ping.mp3';
 
 const GameRoomContent = () => {
     const { room, updateRoom } = useRoom();
@@ -51,6 +53,13 @@ const GameRoomContent = () => {
     const [contextMenuTokenId, setContextMenuTokenId] = useState(null);
     const [fowTool, setFowTool] = useState({ tool: 'eraser', brushSize: 70 });
     const { messages, sendMessage, unreadCount } = useChat(windows.chat);
+
+    const prevPingsRef = useRef([]);
+    const pingSound = useMemo(() => new Howl({
+        src: [pingSoundFile],
+        volume: 0.1,
+    }), []);
+
 
     const isMaster = room.masterId === currentUser.uid;
     const activeScene = (Array.isArray(room.scenes) && room.activeSceneId) ? room.scenes.find(s => s.id === room.activeSceneId) : null;
@@ -208,6 +217,23 @@ const GameRoomContent = () => {
         setContextMenuTokenId(token.tokenId);
         setSelectedTokenId(null);
     };
+
+    useEffect(() => {
+        const currentPings = room.pings || [];
+        const prevPings = prevPingsRef.current;
+
+        // Detecta se um novo ping foi adicionado comparando os IDs
+        if (currentPings.length > prevPings.length) {
+            const newPing = currentPings.find(p => !prevPings.some(pp => pp.id === p.id));
+            // Toca o som para todos, exceto para quem enviou (para não ouvir duas vezes)
+            if (newPing && newPing.senderId !== currentUser.uid) {
+                pingSound.play();
+            }
+        }
+
+        prevPingsRef.current = currentPings;
+    }, [room.pings, currentUser.uid, pingSound]);
+
 
     const activeTurnTokenId = (initiativeOrder[currentIndex] || null)?.tokenId;
 

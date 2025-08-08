@@ -295,6 +295,43 @@ const ZoomSlider = ({ scale, onZoomChange, onZoomIn, onZoomOut }) => (
   </ZoomSliderContainer>
 );
 
+const PingAnimation = ({ x, y, theme }) => {
+    const circleRef = useRef(null);
+
+    useEffect(() => {
+        const node = circleRef.current;
+        if (!node) return;
+
+        // Animação com Konva.Tween
+        const tween = new Konva.Tween({
+            node: node,
+            duration: 1.2, // Duração da animação
+            scaleX: 10,
+            scaleY: 10,
+            opacity: 0,
+            easing: Konva.Easings.EaseOut,
+        });
+
+        tween.play();
+        return () => tween.destroy(); // Limpa o tween ao desmontar
+    }, []);
+
+    return (
+        <Circle
+            ref={circleRef}
+            x={x}
+            y={y}
+            radius={8}
+            stroke={theme.secondary} // Cor vibrante do ping
+            strokeWidth={3}
+            opacity={0.8}
+            listening={false} // Para não interferir com cliques
+        />
+    );
+};
+
+
+
 // --------- principal ---------
 export const VTTMap = ({
   activeScene,
@@ -305,7 +342,7 @@ export const VTTMap = ({
   fowTool,
   charactersData
 }) => {
-  const { room, updateRoom, updateTokenPosition, setFogPaths, recordExploration } = useRoom();
+   const { room, updateRoom, updateTokenPosition, setFogPaths, recordExploration, addPing } = useRoom();
   const { currentUser } = useAuth();
   const isMaster = room.masterId === currentUser.uid;
   const theme = useTheme();
@@ -321,6 +358,22 @@ export const VTTMap = ({
   const throttleExplore = useRef(
     _.throttle((sceneId, userId, circle) => recordExploration(sceneId, userId, circle), 120, { trailing: true })
   ).current;
+
+  const throttledPing = useCallback(
+    _.throttle((pos) => addPing(pos), 1000, { trailing: false }), // Limita para 1 ping por segundo
+    [addPing]
+  );
+
+   const getPointerPosOnMap = (e) => {
+    const stage = e.target.getStage();
+    if (!stage) return null;
+    const pos = stage.getPointerPosition();
+    return {
+      x: (pos.x - stage.x()) / stage.scaleX(),
+      y: (pos.y - stage.y()) / stage.scaleY(),
+    };
+  };
+
 
   const roomSettings = room.roomSettings || {
     playerVision: true,
@@ -381,72 +434,72 @@ export const VTTMap = ({
   useEffect(() => { if (activeScene) setMapSize({ width: 0, height: 0 }); }, [activeScene?.id]);
 
   // mover token + explorar
-// mover token + explorar
-useEffect(() => {
-  const handleKeyDown = (e) => {
+  // mover token + explorar
+  useEffect(() => {
+    const handleKeyDown = (e) => {
 
-     // --- CORREÇÃO APLICADA AQUI ---
+      // --- CORREÇÃO APLICADA AQUI ---
       // Impede que os atalhos do mapa (Espaço, Setas) funcionem
       // quando o usuário está focado em um campo de formulário.
       const activeElement = document.activeElement;
       if (activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeElement.tagName)) {
         return; // Não interfere com a digitação
       }
-      
-    if (e.code === 'Space') {
-      if (!isPanningWithSpace) { e.preventDefault(); setIsPanningWithSpace(true); }
-      return;
-    }
-    if (!e.code.startsWith('Arrow')) return;
-    if (!selectedTokenId) return;
 
-    const token = sceneTokens.find((t) => t.tokenId === selectedTokenId);
-    if (!token || (token.isImmobilized && !isMaster)) return;
-    if (!isMaster && token.userId !== currentUser.uid) return;
+      if (e.code === 'Space') {
+        if (!isPanningWithSpace) { e.preventDefault(); setIsPanningWithSpace(true); }
+        return;
+      }
+      if (!e.code.startsWith('Arrow')) return;
+      if (!selectedTokenId) return;
 
-    e.preventDefault();
-    const step = gridSize;
-    let newPos = { x: token.x, y: token.y };
-    if (e.key === 'ArrowUp') newPos.y -= step;
-    if (e.key === 'ArrowDown') newPos.y += step;
-    if (e.key === 'ArrowLeft') newPos.x -= step;
-    if (e.key === 'ArrowRight') newPos.x += step;
+      const token = sceneTokens.find((t) => t.tokenId === selectedTokenId);
+      if (!token || (token.isImmobilized && !isMaster)) return;
+      if (!isMaster && token.userId !== currentUser.uid) return;
 
-    updateTokenPosition(selectedTokenId, newPos);
+      e.preventDefault();
+      const step = gridSize;
+      let newPos = { x: token.x, y: token.y };
+      if (e.key === 'ArrowUp') newPos.y -= step;
+      if (e.key === 'ArrowDown') newPos.y += step;
+      if (e.key === 'ArrowLeft') newPos.x -= step;
+      if (e.key === 'ArrowRight') newPos.x += step;
 
-    if (roomSettings.playerVision && token.type === 'player') {
-      const centerX = newPos.x + gridSize / 2;
-      const centerY = newPos.y + gridSize / 2;
-      const radius = gridSize * (roomSettings.visionRadius || 3.5);
-      throttleExplore(activeScene.id, token.userId, { x: centerX, y: centerY, radius });
-    }
-  };
+      updateTokenPosition(selectedTokenId, newPos);
 
-  const handleKeyUp = (e) => {
-    if (e.code === 'Space') { e.preventDefault(); setIsPanningWithSpace(false); }
-  };
+      if (roomSettings.playerVision && token.type === 'player') {
+        const centerX = newPos.x + gridSize / 2;
+        const centerY = newPos.y + gridSize / 2;
+        const radius = gridSize * (roomSettings.visionRadius || 3.5);
+        throttleExplore(activeScene.id, token.userId, { x: centerX, y: centerY, radius });
+      }
+    };
 
-  // ✅ aqui estava o bug: faltava o segundo argumento
-  window.addEventListener('keydown', handleKeyDown);
-  window.addEventListener('keyup', handleKeyUp);
+    const handleKeyUp = (e) => {
+      if (e.code === 'Space') { e.preventDefault(); setIsPanningWithSpace(false); }
+    };
 
-  return () => {
-    window.removeEventListener('keydown', handleKeyDown);
-    window.removeEventListener('keyup', handleKeyUp);
-  };
-}, [
-  isPanningWithSpace,
-  selectedTokenId,
-  sceneTokens,
-  isMaster,
-  gridSize,
-  roomSettings.playerVision,
-  roomSettings.visionRadius,
-  activeScene?.id,
-  currentUser.uid,
-  updateTokenPosition,
-  throttleExplore
-]);
+    // ✅ aqui estava o bug: faltava o segundo argumento
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [
+    isPanningWithSpace,
+    selectedTokenId,
+    sceneTokens,
+    isMaster,
+    gridSize,
+    roomSettings.playerVision,
+    roomSettings.visionRadius,
+    activeScene?.id,
+    currentUser.uid,
+    updateTokenPosition,
+    throttleExplore
+  ]);
 
 
   const handleTokenClick = (e, token) => {
@@ -563,6 +616,17 @@ useEffect(() => {
   // Pintura FOW (mestre)
   const [fowDrawing, setFowDrawing] = useState(null);
   const handleMouseDown = (e) => {
+    // Gatilho do Ping com o botão do meio (scroll)
+    if (e.evt.button === 1) {
+      e.evt.preventDefault();
+      const pos = getPointerPosOnMap(e);
+      if (pos) {
+        throttledPing(pos);
+      }
+      return;
+    }
+    
+    // Lógica existente do Fog of War
     if (!isMaster || !activeScene || e.target !== e.target.getStage() || !fowTool || isPanningWithSpace) return;
     setIsDrawing(true);
     const pos = e.target.getRelativePointerPosition();
@@ -699,7 +763,6 @@ useEffect(() => {
             })}
           </Layer>
         )}
-
         {/* MESTRE */}
         {isMaster && (
           <>
@@ -715,6 +778,13 @@ useEffect(() => {
             )}
           </>
         )}
+
+         <Layer listening={false}>
+            {(room.pings || []).map(ping => (
+                <PingAnimation key={ping.id} x={ping.x} y={ping.y} theme={theme} />
+            ))}
+        </Layer>
+        
 
         {isMaster && fowTool && !isPanningWithSpace && (
           <Layer listening={false}>
